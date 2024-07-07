@@ -1,10 +1,14 @@
 import Foundation
 
-struct BudgetSubCategory: Identifiable {
+struct BudgetSubCategory: Identifiable, Hashable {
     var id: UUID = UUID()
     var name: String
     var allocationPercentage: Double
     var description: String
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 struct BudgetCategory: Identifiable {
@@ -31,6 +35,11 @@ class BudgetCategoryStore: ObservableObject {
             BudgetSubCategory(name: "Ride Share", allocationPercentage: 0.01, description: "Monthly ride share costs"),
             BudgetSubCategory(name: "Tolls", allocationPercentage: 0.01, description: "Monthly tolls"),
             BudgetSubCategory(name: "Maintenance", allocationPercentage: 0.01, description: "Monthly car maintenance costs")
+        ]),
+        BudgetCategory(name: "Goals", emoji: "🎯", allocationPercentage: 0.20, description: "Savings goals and future financial plans.", subcategories: [
+            BudgetSubCategory(name: "Emergency Fund", allocationPercentage: 0.10, description: "Savings for emergencies."),
+            BudgetSubCategory(name: "Vacation", allocationPercentage: 0.05, description: "Savings for a vacation."),
+            BudgetSubCategory(name: "New Car", allocationPercentage: 0.05, description: "Savings for a new car.")
         ])
         // Add more categories and subcategories as needed
     ]
@@ -49,5 +58,17 @@ class BudgetCategoryStore: ObservableObject {
 
     func updateCategory(index: Int, name: String, emoji: String, allocationPercentage: Double, description: String) {
         categories[index] = BudgetCategory(name: name, emoji: emoji, allocationPercentage: allocationPercentage, description: description, subcategories: categories[index].subcategories)
+    }
+
+    func updateSubCategory(categoryIndex: Int, subcategoryIndex: Int, name: String, allocationPercentage: Double, description: String) {
+        categories[categoryIndex].subcategories[subcategoryIndex] = BudgetSubCategory(name: name, allocationPercentage: allocationPercentage, description: description)
+    }
+
+    func deleteSubCategory(from categoryIndex: Int, subcategory: BudgetSubCategory) {
+        categories[categoryIndex].subcategories.removeAll { $0.id == subcategory.id }
+    }
+
+    func addSubCategory(to categoryIndex: Int, subcategory: BudgetSubCategory) {
+        categories[categoryIndex].subcategories.append(subcategory)
     }
 }
