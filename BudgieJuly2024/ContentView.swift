@@ -49,14 +49,6 @@ struct ContentView: View {
                         .font(.title)
                         .fontWeight(.bold)
                         .padding(.top, 8)
-
-                    Picker("", selection: $selectedViewOption) {
-                        Text("Per Month").tag(BudgetViewOption.totalMonthly)
-                        Text("Per Paycheck").tag(BudgetViewOption.perPaycheck)
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal)
-                    .padding(.top, 8)
                 }
                 .background(Color.white)
                 .zIndex(1)
@@ -70,6 +62,33 @@ struct ContentView: View {
                     .padding(.top, 16)
                 }
                 .background(Color.clear)
+
+                VStack(spacing: 12) {
+                    Picker("", selection: $selectedViewOption) {
+                        Text("Per Month").tag(BudgetViewOption.totalMonthly)
+                        Text("Per Paycheck").tag(BudgetViewOption.perPaycheck)
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+
+                    Button(action: {
+                        showCategorySelection = true
+                    }) {
+                        Text("Add Categories")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(
+                                LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing)
+                            )
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                    .padding(.top, 8)
+                }
+                .padding()
             }
             .navigationBarHidden(true)
             .environmentObject(budgetCategoryStore)
@@ -156,46 +175,51 @@ struct ContentView: View {
                                         }
                                     }
                                     .padding(.vertical, 6)
-
                                     if expandedSubCategoryIndex == subcategory.id {
                                         VStack(alignment: .leading, spacing: 8) {
                                             Text("Description")
                                                 .font(.subheadline)
-                                                .fontWeight(.bold)
+                                                .bold()
+                                                .foregroundColor(.black)
                                             TextEditor(text: Binding(
                                                 get: { subcategory.description },
                                                 set: { newValue in
-                                                    if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }),
-                                                       let subcategoryIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-                                                        budgetCategoryStore.categories[categoryIndex].subcategories[subcategoryIndex].description = newValue
+                                                    if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                                        if let subIndex = budgetCategoryStore.categories[index].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
+                                                            budgetCategoryStore.categories[index].subcategories[subIndex].description = newValue
+                                                        }
                                                     }
                                                 }
                                             ))
                                             .frame(height: 60)
-                                            .padding(.bottom, 4)
-                                            .background(Color(UIColor.systemGray6))
-                                            .cornerRadius(10)
+                                            .background(Color(UIColor.systemGray5))
+                                            .cornerRadius(8)
 
-                                            Text("SubCategory Amount")
+                                            Text("Subcategory Amount")
                                                 .font(.subheadline)
-                                                .fontWeight(.bold)
+                                                .bold()
+                                                .foregroundColor(.black)
                                             TextField("Amount", value: Binding(
                                                 get: { subcategory.allocationPercentage * totalMonthlyBudget },
                                                 set: { newValue in
-                                                    if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }),
-                                                       let subcategoryIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-                                                        let newAllocationPercentage = newValue / totalMonthlyBudget
-                                                        budgetCategoryStore.categories[categoryIndex].subcategories[subcategoryIndex].allocationPercentage = newAllocationPercentage
+                                                    if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                                        if let subIndex = budgetCategoryStore.categories[index].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
+                                                            budgetCategoryStore.categories[index].subcategories[subIndex].allocationPercentage = newValue / totalMonthlyBudget
+                                                        }
                                                     }
                                                 }
                                             ), formatter: currencyFormatter)
-                                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                                                .keyboardType(.decimalPad)
+                                                .padding(8)
+                                                .background(Color(UIColor.systemGray5))
+                                                .cornerRadius(8)
                                         }
                                         .padding()
-                                        .background(Color(UIColor.systemGray5))
+                                        .background(Color(UIColor.systemGray6))
                                         .cornerRadius(10)
                                     }
                                 }
+                                .background(Color(UIColor.systemGray6).opacity(0.2))
                                 Divider()
                             }
                         }
@@ -206,22 +230,6 @@ struct ContentView: View {
                 }
                 Divider()
             }
-
-            Button(action: {
-                showCategorySelection = true
-            }) {
-                Text("Add Categories")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(
-                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                       startPoint: .topLeading,
-                                       endPoint: .bottomTrailing)
-                    )
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-            .padding(.top, 8)
         }
         .padding()
     }
