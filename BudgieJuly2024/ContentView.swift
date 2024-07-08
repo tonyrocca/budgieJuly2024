@@ -53,7 +53,7 @@ struct ContentView: View {
                     Text("Your Personalized Budget")
                         .font(.title)
                         .fontWeight(.bold)
-                        .padding(.top, 8)
+                        .padding(.top, 16)
                 }
                 .background(Color.white)
                 .zIndex(1)
@@ -77,6 +77,7 @@ struct ContentView: View {
                             .resizable()
                             .frame(width: 50, height: 50)
                             .foregroundColor(.blue)
+                            .shadow(radius: 4)
                     }
                     .padding(.trailing, 16)
                     .padding(.bottom, 16)
@@ -85,7 +86,7 @@ struct ContentView: View {
             .navigationBarHidden(true)
             .environmentObject(budgetCategoryStore)
             .sheet(isPresented: $showCategorySelection) {
-                // Here you can show the category selection view or any other view you want to display when the user clicks "Add Categories"
+                // Show category selection view or any other view when the user clicks "Add Categories"
             }
             .sheet(isPresented: $showPredefinedSubcategorySelection) {
                 predefinedSubcategorySelection()
@@ -131,6 +132,7 @@ struct ContentView: View {
             HStack {
                 Text("\(category.emoji) \(category.name)")
                     .font(.body)
+                    .fontWeight(.semibold)
                 Spacer()
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations.first(where: { $0.key == category.name })?.value ?? 0)) ?? "$0")")
                     .font(.body)
@@ -224,9 +226,20 @@ struct ContentView: View {
                             budgetCategoryStore.deleteSubCategory(from: categoryIndex, subcategory: subcategory)
                         }
                     }) {
-                        Text("Delete")
-                            .foregroundColor(.red)
+                        HStack {
+                            Image(systemName: "trash.fill")
+                                .foregroundColor(.red)
+                            Text("Delete Subcategory")
+                                .foregroundColor(.red)
+                                .font(.headline)
+                        }
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .background(Color(UIColor.systemGray5))
+                        .cornerRadius(8)
+                        .padding(.horizontal)
                     }
+                    .buttonStyle(PlainButtonStyle())
                 }
                 .padding()
                 .background(Color(UIColor.systemGray6))
@@ -243,15 +256,19 @@ struct ContentView: View {
             }
         }) {
             HStack {
-                Text("Add Subcategory")
-                Spacer()
-                Text("Add")
+                Image(systemName: "plus.circle.fill")
                     .foregroundColor(.blue)
+                Text("Add Subcategory")
+                    .foregroundColor(.blue)
+                    .font(.headline)
             }
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .background(Color(UIColor.systemGray5))
+            .cornerRadius(8)
+            .padding(.horizontal)
         }
-        .padding()
-        .background(Color(UIColor.systemGray6).opacity(0.2))
-        .cornerRadius(10)
+        .buttonStyle(PlainButtonStyle())
     }
 
     private func predefinedSubcategorySelection() -> some View {
