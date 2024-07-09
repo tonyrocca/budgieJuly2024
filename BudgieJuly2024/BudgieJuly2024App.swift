@@ -6,8 +6,11 @@ struct BudgieJuly2024App: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView(paymentFrequency: .monthly, paycheckAmountText: "")
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            NavigationView {
+                PaymentInputView()
+                    .environmentObject(BudgetCategoryStore.shared)
+                    .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            }
         }
     }
 }

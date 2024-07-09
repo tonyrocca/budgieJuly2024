@@ -19,6 +19,9 @@
 		7713A2FC2C3A28E500A0AFCE /* BudgetCategoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A2FB2C3A28E500A0AFCE /* BudgetCategoryStore.swift */; };
 		7713A2FE2C3A298800A0AFCE /* PaymentCadence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A2FD2C3A298800A0AFCE /* PaymentCadence.swift */; };
 		7713A3042C3A2A3000A0AFCE /* BudgieModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A3032C3A2A3000A0AFCE /* BudgieModel.swift */; };
+		7713A3122C3BA70900A0AFCE /* PaymentInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A3112C3BA70900A0AFCE /* PaymentInputView.swift */; };
+		7713A3142C3BA90B00A0AFCE /* SubcategorySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A3132C3BA90B00A0AFCE /* SubcategorySelectionView.swift */; };
+		7713A3162C3BA92400A0AFCE /* CategorySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A3152C3BA92400A0AFCE /* CategorySelectionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +57,9 @@
 		7713A2FB2C3A28E500A0AFCE /* BudgetCategoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetCategoryStore.swift; sourceTree = "<group>"; };
 		7713A2FD2C3A298800A0AFCE /* PaymentCadence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentCadence.swift; sourceTree = "<group>"; };
 		7713A3032C3A2A3000A0AFCE /* BudgieModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgieModel.swift; sourceTree = "<group>"; };
+		7713A3112C3BA70900A0AFCE /* PaymentInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentInputView.swift; sourceTree = "<group>"; };
+		7713A3132C3BA90B00A0AFCE /* SubcategorySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubcategorySelectionView.swift; sourceTree = "<group>"; };
+		7713A3152C3BA92400A0AFCE /* CategorySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategorySelectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +114,9 @@
 				7713A2CC2C32005900A0AFCE /* BudgieJuly2024App.swift */,
 				7713A2FB2C3A28E500A0AFCE /* BudgetCategoryStore.swift */,
 				7713A3032C3A2A3000A0AFCE /* BudgieModel.swift */,
+				7713A3112C3BA70900A0AFCE /* PaymentInputView.swift */,
+				7713A3152C3BA92400A0AFCE /* CategorySelectionView.swift */,
+				7713A3132C3BA90B00A0AFCE /* SubcategorySelectionView.swift */,
 				7713A2CE2C32005900A0AFCE /* ContentView.swift */,
 				7713A2FD2C3A298800A0AFCE /* PaymentCadence.swift */,
 				7713A2D52C32005A00A0AFCE /* Persistence.swift */,
@@ -274,7 +283,10 @@
 			files = (
 				7713A2D62C32005A00A0AFCE /* Persistence.swift in Sources */,
 				7713A2CF2C32005900A0AFCE /* ContentView.swift in Sources */,
+				7713A3122C3BA70900A0AFCE /* PaymentInputView.swift in Sources */,
+				7713A3162C3BA92400A0AFCE /* CategorySelectionView.swift in Sources */,
 				7713A2CD2C32005900A0AFCE /* BudgieJuly2024App.swift in Sources */,
+				7713A3142C3BA90B00A0AFCE /* SubcategorySelectionView.swift in Sources */,
 				7713A2D92C32005A00A0AFCE /* BudgieJuly2024.xcdatamodeld in Sources */,
 				7713A3042C3A2A3000A0AFCE /* BudgieModel.swift in Sources */,
 				7713A2FE2C3A298800A0AFCE /* PaymentCadence.swift in Sources */,

@@ -1,4 +1,3 @@
-
 import Foundation
 
 struct BudgieModel {
@@ -27,7 +26,7 @@ struct BudgieModel {
             let categoryAllocation = monthlyPaycheck * adjustedPercentage
             allocations[category.name] = categoryAllocation
 
-            for subcategory in category.subcategories {
+            for subcategory in category.subcategories where subcategory.isSelected {
                 let subcategoryAllocation = categoryAllocation * subcategory.allocationPercentage / category.allocationPercentage
                 allocations[subcategory.name] = subcategoryAllocation
             }

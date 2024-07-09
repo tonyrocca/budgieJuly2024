@@ -21,6 +21,8 @@ struct ContentView: View {
     @FocusState private var isInputFocused: Bool
     @State private var selectedViewOption: BudgetViewOption = .totalMonthly
 
+    var selectedCategories: [BudgetCategory]
+
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -30,10 +32,11 @@ struct ContentView: View {
         return formatter
     }()
 
-    init(paymentFrequency: PaymentCadence, paycheckAmountText: String) {
+    init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String) {
         self._paymentCadence = State(initialValue: paymentFrequency)
         self._paycheckAmountText = State(initialValue: paycheckAmountText)
         self._budgieModel = State(initialValue: BudgieModel(paycheckAmount: 0.0))
+        self.selectedCategories = selectedCategories
     }
 
     var totalMonthlyBudget: Double {
@@ -117,7 +120,7 @@ struct ContentView: View {
             .background(Color(UIColor.systemGray5))
             .cornerRadius(10)
 
-            ForEach(budgetCategoryStore.categories) { category in
+            ForEach(selectedCategories) { category in
                 VStack {
                     categoryView(category)
                 }
@@ -150,7 +153,7 @@ struct ContentView: View {
 
             if expandedCategoryIndex == category.id {
                 VStack(alignment: .leading, spacing: 8) {
-                    ForEach(category.subcategories) { subcategory in
+                    ForEach(category.subcategories.filter { $0.isSelected }) { subcategory in
                         subcategoryView(for: subcategory, in: category)
                     }
                     addSubcategoryButton(for: category)
@@ -409,7 +412,7 @@ enum BudgetViewOption: String {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(paymentFrequency: .monthly, paycheckAmountText: "")
+        ContentView(selectedCategories: BudgetCategoryStore.shared.categories, paymentFrequency: .monthly, paycheckAmountText: "")
             .environmentObject(BudgetCategoryStore.shared)
     }
 }
