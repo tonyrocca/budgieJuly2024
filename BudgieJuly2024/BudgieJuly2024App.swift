@@ -8,7 +8,6 @@ struct BudgieJuly2024App: App {
         WindowGroup {
             NavigationView {
                 PaymentInputView()
-                    .environmentObject(BudgetCategoryStore.shared)
                     .environment(\.managedObjectContext, persistenceController.container.viewContext)
             }
         }

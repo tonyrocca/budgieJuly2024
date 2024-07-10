@@ -7,7 +7,7 @@ struct ContentView: View {
     @State private var paycheckAmountText: String
     @State private var paycheckAmount: Double? = nil
     @State private var paymentCadence: PaymentCadence
-    @State private var allocations: [(key: String, value: Double)] = []
+    @State private var allocations: [UUID: Double] = [:]
     @State private var showDetails = false
     @State private var expandedCategoryIndex: UUID? = nil
     @State private var expandedSubCategoryIndex: UUID? = nil
@@ -137,7 +137,7 @@ struct ContentView: View {
                     .font(.body)
                     .fontWeight(.semibold)
                 Spacer()
-                Text("\(currencyFormatter.string(from: NSNumber(value: allocations.first(where: { $0.key == category.name })?.value ?? 0)) ?? "$0")")
+                Text("\(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")")
                     .font(.body)
                     .foregroundColor(.black)
                 Button(action: {
@@ -171,7 +171,7 @@ struct ContentView: View {
                 Text("\(subcategory.name)")
                     .font(.body)
                 Spacer()
-                Text("\(currencyFormatter.string(from: NSNumber(value: subcategory.allocationPercentage * totalMonthlyBudget)) ?? "$0")")
+                Text("\(currencyFormatter.string(from: NSNumber(value: allocations[subcategory.id] ?? 0)) ?? "$0")")
                     .font(.body)
                     .foregroundColor(.black)
                 Button(action: {
@@ -210,11 +210,13 @@ struct ContentView: View {
                         .bold()
                         .foregroundColor(.black)
                     TextField("Amount", value: Binding(
-                        get: { subcategory.allocationPercentage * totalMonthlyBudget },
+                        get: { allocations[subcategory.id] ?? 0.0 },
                         set: { newValue in
                             if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
                                 if let subIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
                                     budgetCategoryStore.categories[categoryIndex].subcategories[subIndex].allocationPercentage = newValue / totalMonthlyBudget
+                                    budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+                                    allocations = budgieModel.allocations
                                 }
                             }
                         }
@@ -227,6 +229,8 @@ struct ContentView: View {
                     Button(action: {
                         if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
                             budgetCategoryStore.deleteSubCategory(from: categoryIndex, subcategory: subcategory)
+                            budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+                            allocations = budgieModel.allocations
                         }
                     }) {
                         HStack {
@@ -287,6 +291,8 @@ struct ContentView: View {
                         if let index = currentCategoryIndex {
                             budgetCategoryStore.addSubCategory(to: index, subcategory: subcategory)
                             showPredefinedSubcategorySelection = false
+                            budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+                            allocations = budgieModel.allocations
                         }
                     }) {
                         HStack {
@@ -372,6 +378,8 @@ struct ContentView: View {
                     let newSubcategory = BudgetSubCategory(name: newSubcategoryName, allocationPercentage: amount / totalMonthlyBudget, description: newSubcategoryDescription)
                     budgetCategoryStore.addSubCategory(to: index, subcategory: newSubcategory)
                     showAddSubcategoryForm = false
+                    budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+                    allocations = budgieModel.allocations
                 }
             }) {
                 Text("Add")
@@ -400,8 +408,8 @@ struct ContentView: View {
 
     private func calculateBudget() {
         budgieModel.paymentCadence = paymentCadence
-        budgieModel.calculateAllocations()
-        allocations = budgieModel.sortedAllocations
+        budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+        allocations = budgieModel.allocations
     }
 }
 
