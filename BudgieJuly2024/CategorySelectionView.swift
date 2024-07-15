@@ -1,69 +1,100 @@
 import SwiftUI
 
 struct CategorySelectionView: View {
-    @Binding var selectedCategories: [BudgetCategory]
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
-    @State private var showNextButton = false
-
+    @Binding var selectedCategories: [BudgetCategory]
     var paymentFrequency: PaymentCadence
     var paycheckAmountText: String
 
+    private let currencyFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = Locale.current
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 2
+        return formatter
+    }()
+
     var body: some View {
         VStack(spacing: 16) {
-            Text("Select Categories")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.top, 16)
-            
-            List {
-                ForEach(budgetCategoryStore.categories) { category in
-                    HStack {
-                        Text(category.name)
-                        Spacer()
-                        if selectedCategories.contains(where: { $0.id == category.id }) {
-                            Image(systemName: "checkmark")
-                                .foregroundColor(.blue)
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Choose the categories for your budget")
+                    .font(.headline)
+                    .foregroundColor(.black)
+                    .padding(.top, 16)
+                    .padding(.leading, 16)
+
+                ScrollView {
+                    VStack(spacing: 16) {
+                        ForEach(budgetCategoryStore.categories) { category in
+                            CategoryRow(category: category, isSelected: selectedCategories.contains(where: { $0.id == category.id })) {
+                                if let index = selectedCategories.firstIndex(where: { $0.id == category.id }) {
+                                    selectedCategories.remove(at: index)
+                                } else {
+                                    selectedCategories.append(category)
+                                }
+                            }
                         }
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        if let index = selectedCategories.firstIndex(where: { $0.id == category.id }) {
-                            selectedCategories.remove(at: index)
-                        } else {
-                            selectedCategories.append(category)
-                        }
-                        updateShowNextButton()
-                    }
+                    .padding(.horizontal, 16)
                 }
             }
-            .listStyle(InsetGroupedListStyle())
 
             Spacer()
 
-            if showNextButton {
-                NavigationLink(destination: SubcategorySelectionView(selectedCategories: $selectedCategories, paymentFrequency: paymentFrequency, paycheckAmountText: paycheckAmountText)) {
-                    Text("Next")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                           startPoint: .topLeading,
-                                           endPoint: .bottomTrailing)
-                        )
-                        .cornerRadius(10)
-                        .padding(.horizontal)
-                        .shadow(radius: 5)
-                }
-                .padding(.bottom, 50)
+            NavigationLink(destination: SubcategorySelectionView(selectedCategories: $selectedCategories, paymentFrequency: paymentFrequency, paycheckAmountText: paycheckAmountText).environmentObject(BudgetCategoryStore.shared)) {
+                Text("Next")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                       startPoint: .topLeading,
+                                       endPoint: .bottomTrailing)
+                    )
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .shadow(radius: 5)
             }
+            .padding(.bottom, 50)
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
     }
+}
 
-    private func updateShowNextButton() {
-        showNextButton = !selectedCategories.isEmpty
+struct CategoryRow: View {
+    var category: BudgetCategory
+    var isSelected: Bool
+    var toggleSelection: () -> Void
+
+    var body: some View {
+        Button(action: {
+            toggleSelection()
+        }) {
+            HStack {
+                Text(category.emoji)
+                    .font(.largeTitle)
+                    .padding(.trailing, 8)
+                Text(category.name)
+                    .font(.body)
+                    .foregroundColor(.primary)
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .padding(.trailing, 8)
+                }
+            }
+            .padding()
+            .background(Color(UIColor.secondarySystemGroupedBackground))
+            .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color(UIColor.systemGray4), lineWidth: 1)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
