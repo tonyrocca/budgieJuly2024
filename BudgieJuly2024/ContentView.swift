@@ -9,8 +9,8 @@ struct ContentView: View {
     @State private var paymentCadence: PaymentCadence
     @State private var allocations: [UUID: Double] = [:]
     @State private var showDetails = false
-    @State private var expandedCategoryIndex: UUID? = nil
-    @State private var expandedSubCategoryIndex: UUID? = nil
+    @State private var expandedCategoryIds: Set<UUID> = []
+    @State private var expandedSubCategoryIds: Set<UUID> = []
     @State private var showCategorySelection = false
     @State private var showPredefinedSubcategorySelection = false
     @State private var showAddSubcategoryForm = false
@@ -142,16 +142,20 @@ struct ContentView: View {
                     .foregroundColor(.black)
                 Button(action: {
                     withAnimation {
-                        expandedCategoryIndex = expandedCategoryIndex == category.id ? nil : category.id
+                        if expandedCategoryIds.contains(category.id) {
+                            expandedCategoryIds.remove(category.id)
+                        } else {
+                            expandedCategoryIds.insert(category.id)
+                        }
                     }
                 }) {
-                    Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
+                    Image(systemName: expandedCategoryIds.contains(category.id) ? "chevron.up" : "chevron.down")
                         .foregroundColor(.green)
                 }
             }
             .padding(.vertical, 6)
 
-            if expandedCategoryIndex == category.id {
+            if expandedCategoryIds.contains(category.id) {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(category.subcategories.filter { $0.isSelected }) { subcategory in
                         subcategoryView(for: subcategory, in: category)
@@ -176,16 +180,20 @@ struct ContentView: View {
                     .foregroundColor(.black)
                 Button(action: {
                     withAnimation {
-                        expandedSubCategoryIndex = expandedSubCategoryIndex == subcategory.id ? nil : subcategory.id
+                        if expandedSubCategoryIds.contains(subcategory.id) {
+                            expandedSubCategoryIds.remove(subcategory.id)
+                        } else {
+                            expandedSubCategoryIds.insert(subcategory.id)
+                        }
                     }
                 }) {
-                    Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
+                    Image(systemName: expandedSubCategoryIds.contains(subcategory.id) ? "chevron.up" : "chevron.down")
                         .foregroundColor(.green)
                 }
             }
             .padding(.vertical, 6)
 
-            if expandedSubCategoryIndex == subcategory.id {
+            if expandedSubCategoryIds.contains(subcategory.id) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Description")
                         .font(.subheadline)
