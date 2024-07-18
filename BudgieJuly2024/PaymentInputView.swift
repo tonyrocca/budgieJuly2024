@@ -5,7 +5,7 @@ struct PaymentInputView: View {
     @State private var incomeText: String = ""
     @State private var showNextButton: Bool = false
     @FocusState private var isInputFocused: Bool
-    @State private var selectedCategories: [BudgetCategory] = []
+    @State private var selectedDebtCategories: [BudgetCategory] = []
 
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -91,7 +91,7 @@ struct PaymentInputView: View {
             Spacer()
 
             if showNextButton {
-                NavigationLink(destination: CategorySelectionView(selectedCategories: $selectedCategories, paymentFrequency: paymentFrequency!, paycheckAmountText: incomeText).environmentObject(BudgetCategoryStore.shared)) {
+                NavigationLink(destination: DebtQuestionView(paymentFrequency: paymentFrequency!, paycheckAmountText: incomeText).environmentObject(BudgetCategoryStore.shared)) {
                     Text("Next")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -120,6 +120,5 @@ struct PaymentInputView: View {
 struct PaymentInputView_Previews: PreviewProvider {
     static var previews: some View {
         PaymentInputView()
-            .environmentObject(BudgetCategoryStore.shared)
     }
 }

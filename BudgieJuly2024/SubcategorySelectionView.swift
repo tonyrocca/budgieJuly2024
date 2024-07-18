@@ -69,7 +69,7 @@ struct SubcategorySelectionView: View {
                                             }
                                         }
                                         .padding()
-                                        .background(subcategory.isSelected ? Color(UIColor.systemGray5) : Color.white)
+                                        .background(Color.white)
                                         .cornerRadius(10)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 10)

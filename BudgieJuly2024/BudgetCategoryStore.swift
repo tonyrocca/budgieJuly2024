@@ -4,6 +4,7 @@ enum CategoryType: String, Codable {
     case need
     case want
     case saving
+    case debt
 }
 
 struct BudgetSubCategory: Identifiable, Codable {
@@ -12,13 +13,17 @@ struct BudgetSubCategory: Identifiable, Codable {
     var allocationPercentage: Double
     var description: String
     var isSelected: Bool
+    var amount: Double?
+    var dueDate: Date?
 
-    init(id: UUID = UUID(), name: String, allocationPercentage: Double, description: String, isSelected: Bool = false) {
+    init(id: UUID = UUID(), name: String, allocationPercentage: Double, description: String, isSelected: Bool = false, amount: Double? = nil, dueDate: Date? = nil) {
         self.id = id
         self.name = name
         self.allocationPercentage = allocationPercentage
         self.description = description
         self.isSelected = isSelected
+        self.amount = amount
+        self.dueDate = dueDate
     }
 }
 
@@ -30,8 +35,10 @@ struct BudgetCategory: Identifiable, Codable {
     var subcategories: [BudgetSubCategory]
     var description: String
     var type: CategoryType
+    var amount: Double?
+    var dueDate: Date?
 
-    init(id: UUID = UUID(), name: String, emoji: String, allocationPercentage: Double, subcategories: [BudgetSubCategory], description: String, type: CategoryType) {
+    init(id: UUID = UUID(), name: String, emoji: String, allocationPercentage: Double, subcategories: [BudgetSubCategory], description: String, type: CategoryType, amount: Double? = nil, dueDate: Date? = nil) {
         self.id = id
         self.name = name
         self.emoji = emoji
@@ -39,6 +46,8 @@ struct BudgetCategory: Identifiable, Codable {
         self.subcategories = subcategories
         self.description = description
         self.type = type
+        self.amount = amount
+        self.dueDate = dueDate
     }
 }
 
@@ -49,16 +58,43 @@ class BudgetCategoryStore: ObservableObject {
 
     init() {
         categories = [
+            // Debt Categories
+            BudgetCategory(
+                name: "Student Loan",
+                emoji: "🎓",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Student loan debt",
+                type: .debt
+            ),
+            BudgetCategory(
+                name: "Medical Debt",
+                emoji: "🏥",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Medical debt",
+                type: .debt
+            ),
+            BudgetCategory(
+                name: "Credit Card Debt",
+                emoji: "💳",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Credit card debt",
+                type: .debt
+            ),
+            // Add other debt categories similarly
+            // Existing categories
             BudgetCategory(
                 name: "Housing",
                 emoji: "🏠",
-                allocationPercentage: 0.3,
+                allocationPercentage: 0.0,
                 subcategories: [
-                    BudgetSubCategory(name: "Mortgage", allocationPercentage: 0.6, description: ""),
-                    BudgetSubCategory(name: "Rent", allocationPercentage: 0.4, description: ""),
-                    BudgetSubCategory(name: "Utilities", allocationPercentage: 0.2, description: ""),
-                    BudgetSubCategory(name: "HOA Fee", allocationPercentage: 0.1, description: ""),
-                    BudgetSubCategory(name: "Home Maintenance", allocationPercentage: 0.1, description: "")
+                    BudgetSubCategory(name: "Mortgage", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Rent", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Utilities", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "HOA Fee", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Home Maintenance", allocationPercentage: 0.0, description: "")
                 ],
                 description: "Housing related expenses",
                 type: .need
@@ -66,13 +102,13 @@ class BudgetCategoryStore: ObservableObject {
             BudgetCategory(
                 name: "Transportation",
                 emoji: "🚗",
-                allocationPercentage: 0.2,
+                allocationPercentage: 0.0,
                 subcategories: [
-                    BudgetSubCategory(name: "Car Payment", allocationPercentage: 0.5, description: ""),
-                    BudgetSubCategory(name: "Public Transportation", allocationPercentage: 0.3, description: ""),
-                    BudgetSubCategory(name: "Ride Share", allocationPercentage: 0.1, description: ""),
-                    BudgetSubCategory(name: "Tolls", allocationPercentage: 0.1, description: ""),
-                    BudgetSubCategory(name: "Maintenance", allocationPercentage: 0.1, description: "")
+                    BudgetSubCategory(name: "Car Payment", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Public Transportation", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Ride Share", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Tolls", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Maintenance", allocationPercentage: 0.0, description: "")
                 ],
                 description: "Transportation related expenses",
                 type: .need
@@ -80,11 +116,11 @@ class BudgetCategoryStore: ObservableObject {
             BudgetCategory(
                 name: "Goals",
                 emoji: "🎯",
-                allocationPercentage: 0.2,
+                allocationPercentage: 0.0,
                 subcategories: [
-                    BudgetSubCategory(name: "Emergency Fund", allocationPercentage: 0.4, description: "Savings for emergencies."),
-                    BudgetSubCategory(name: "Vacation", allocationPercentage: 0.3, description: "Savings for a vacation."),
-                    BudgetSubCategory(name: "New Car", allocationPercentage: 0.3, description: "Savings for a new car.")
+                    BudgetSubCategory(name: "Emergency Fund", allocationPercentage: 0.0, description: "Savings for emergencies."),
+                    BudgetSubCategory(name: "Vacation", allocationPercentage: 0.0, description: "Savings for a vacation."),
+                    BudgetSubCategory(name: "New Car", allocationPercentage: 0.0, description: "Savings for a new car.")
                 ],
                 description: "Savings goals",
                 type: .saving

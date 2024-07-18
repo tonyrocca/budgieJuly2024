@@ -6,8 +6,10 @@ struct BudgieJuly2024App: App {
 
     var body: some Scene {
         WindowGroup {
-            WelcomeView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            NavigationView {
+                PaymentInputView()
+                    .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            }
         }
     }
 }
