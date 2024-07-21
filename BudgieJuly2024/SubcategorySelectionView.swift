@@ -8,14 +8,12 @@ struct SubcategorySelectionView: View {
 
     @State private var expandedCategory: UUID?
 
-    private let currencyFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = Locale.current
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 2
-        return formatter
-    }()
+    private func toggleSubcategorySelection(_ subcategory: BudgetSubCategory, in category: BudgetCategory) {
+        if let categoryIndex = selectedCategories.firstIndex(where: { $0.id == category.id }),
+           let subcategoryIndex = selectedCategories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
+            selectedCategories[categoryIndex].subcategories[subcategoryIndex].isSelected.toggle()
+        }
+    }
 
     var body: some View {
         VStack(spacing: 16) {
@@ -107,13 +105,6 @@ struct SubcategorySelectionView: View {
             .padding(.bottom, 50)
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
-    }
-
-    private func toggleSubcategorySelection(_ subcategory: BudgetSubCategory, in category: BudgetCategory) {
-        if let categoryIndex = selectedCategories.firstIndex(where: { $0.id == category.id }),
-           let subcategoryIndex = selectedCategories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-            selectedCategories[categoryIndex].subcategories[subcategoryIndex].isSelected.toggle()
-        }
     }
 }
 

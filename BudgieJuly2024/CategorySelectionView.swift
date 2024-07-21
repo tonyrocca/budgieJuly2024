@@ -16,7 +16,7 @@ struct CategorySelectionView: View {
 
             ScrollView {
                 VStack(spacing: 16) {
-                    ForEach(budgetCategoryStore.categories.filter { $0.type == .need || $0.type == .want }) { category in
+                    ForEach(budgetCategoryStore.categories.filter { $0.type == .need }) { category in
                         Button(action: {
                             toggleCategorySelection(category)
                         }) {
@@ -27,7 +27,7 @@ struct CategorySelectionView: View {
                                     .font(.title2)
                                     .fontWeight(.bold)
                                 Spacer()
-                                if selectedCategories.contains(where: { $0.id == category.id }) {
+                                if isSelected(category) {
                                     Image(systemName: "checkmark.circle.fill")
                                         .foregroundColor(.green)
                                         .padding(.trailing, 8)
@@ -75,6 +75,10 @@ struct CategorySelectionView: View {
         } else {
             selectedCategories.append(category)
         }
+    }
+
+    private func isSelected(_ category: BudgetCategory) -> Bool {
+        selectedCategories.contains(where: { $0.id == category.id })
     }
 }
 
