@@ -1,75 +1,58 @@
 import SwiftUI
 
 struct DebtSelectionView: View {
+    @Binding var income: String
+    @Binding var paymentFrequency: PaymentCadence
+    var hasExpenses: Bool
+    var hasSavingsGoals: Bool
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
-    @Binding var selectedDebtCategories: [BudgetCategory]
 
     var body: some View {
-        VStack(spacing: 16) {
-            headerView
-            debtCategoryScrollView
-        }
-        .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
-    }
-
-    private var headerView: some View {
-        Text("What debt do you have?")
-            .font(.headline)
-            .foregroundColor(.black)
-            .padding(.horizontal, 16)
-    }
-
-    private var debtCategoryScrollView: some View {
-        ScrollView {
-            VStack(spacing: 16) {
+        VStack {
+            List {
                 ForEach(budgetCategoryStore.categories.filter { $0.type == .debt }) { category in
-                    debtCategoryButton(for: category)
+                    Toggle(isOn: Binding(
+                        get: { category.isSelected },
+                        set: { newValue in
+                            if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                budgetCategoryStore.categories[index].isSelected = newValue
+                            }
+                        }
+                    )) {
+                        HStack {
+                            Text(category.emoji)
+                            Text(category.name)
+                        }
+                    }
                 }
             }
-            .padding(.horizontal, 16)
-        }
-    }
 
-    private func debtCategoryButton(for category: BudgetCategory) -> some View {
-        Button(action: {
-            toggleCategorySelection(category)
-        }) {
-            HStack {
-                Text(category.emoji)
-                    .font(.largeTitle)
-                Text(category.name)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                Spacer()
-                if selectedDebtCategories.contains(where: { $0.id == category.id }) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                        .padding(.trailing, 8)
-                }
+            NavigationLink(destination: DebtDetailView(income: $income, paymentFrequency: $paymentFrequency, hasExpenses: hasExpenses, hasSavingsGoals: hasSavingsGoals)
+                .environmentObject(budgetCategoryStore)) {
+                Text("Next")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                       startPoint: .topLeading,
+                                       endPoint: .bottomTrailing)
+                    )
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .shadow(radius: 5)
             }
-            .padding()
-            .background(Color.white)
-            .cornerRadius(10)
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color(UIColor.systemGray4), lineWidth: 1)
-            )
+            .padding(.bottom, 50)
         }
-        .buttonStyle(PlainButtonStyle())
-    }
-
-    private func toggleCategorySelection(_ category: BudgetCategory) {
-        if let index = selectedDebtCategories.firstIndex(where: { $0.id == category.id }) {
-            selectedDebtCategories.remove(at: index)
-        } else {
-            selectedDebtCategories.append(category)
-        }
+        .navigationTitle("Select Debt Categories")
+        .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
     }
 }
 
 struct DebtSelectionView_Previews: PreviewProvider {
     static var previews: some View {
-        DebtSelectionView(selectedDebtCategories: .constant([]))
+        DebtSelectionView(income: .constant("5000"), paymentFrequency: .constant(.monthly), hasExpenses: true, hasSavingsGoals: true)
             .environmentObject(BudgetCategoryStore.shared)
     }
 }

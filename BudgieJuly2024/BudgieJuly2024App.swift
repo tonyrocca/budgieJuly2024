@@ -7,7 +7,8 @@ struct BudgieJuly2024App: App {
     var body: some Scene {
         WindowGroup {
             NavigationView {
-                PaymentInputView()
+                WelcomeView()
+                    .environmentObject(BudgetCategoryStore.shared)
                     .environment(\.managedObjectContext, persistenceController.container.viewContext)
             }
         }

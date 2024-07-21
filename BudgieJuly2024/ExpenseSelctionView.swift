@@ -1,14 +1,15 @@
 import SwiftUI
 
-struct GoalSelectionView: View {
+struct ExpenseSelectionView: View {
     @Binding var income: String
     @Binding var paymentFrequency: PaymentCadence
+    var hasSavingsGoals: Bool
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
 
     var body: some View {
         VStack {
             List {
-                ForEach(budgetCategoryStore.categories.filter { $0.type == .saving }) { category in
+                ForEach(budgetCategoryStore.categories.filter { $0.type == .need }) { category in
                     Toggle(isOn: Binding(
                         get: { category.isSelected },
                         set: { newValue in
@@ -25,7 +26,7 @@ struct GoalSelectionView: View {
                 }
             }
 
-            NavigationLink(destination: ContentView(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)
+            NavigationLink(destination: ExpenseSubcategorySelectionView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, hasSavingsGoals: hasSavingsGoals)
                 .environmentObject(budgetCategoryStore)) {
                 Text("Next")
                     .font(.headline)
@@ -43,14 +44,14 @@ struct GoalSelectionView: View {
             }
             .padding(.bottom, 50)
         }
-        .navigationTitle("Select Goals")
+        .navigationTitle("Select Expense Categories")
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
     }
 }
 
-struct GoalSelectionView_Previews: PreviewProvider {
+struct ExpenseSelectionView_Previews: PreviewProvider {
     static var previews: some View {
-        GoalSelectionView(income: .constant("5000"), paymentFrequency: .constant(.monthly))
+        ExpenseSelectionView(income: .constant("5000"), paymentFrequency: .constant(.monthly), hasSavingsGoals: true)
             .environmentObject(BudgetCategoryStore.shared)
     }
 }

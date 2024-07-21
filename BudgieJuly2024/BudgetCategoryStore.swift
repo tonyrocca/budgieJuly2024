@@ -35,10 +35,11 @@ struct BudgetCategory: Identifiable, Codable {
     var subcategories: [BudgetSubCategory]
     var description: String
     var type: CategoryType
+    var isSelected: Bool
     var amount: Double?
     var dueDate: Date?
 
-    init(id: UUID = UUID(), name: String, emoji: String, allocationPercentage: Double, subcategories: [BudgetSubCategory], description: String, type: CategoryType, amount: Double? = nil, dueDate: Date? = nil) {
+    init(id: UUID = UUID(), name: String, emoji: String, allocationPercentage: Double, subcategories: [BudgetSubCategory], description: String, type: CategoryType, isSelected: Bool = false, amount: Double? = nil, dueDate: Date? = nil) {
         self.id = id
         self.name = name
         self.emoji = emoji
@@ -46,6 +47,7 @@ struct BudgetCategory: Identifiable, Codable {
         self.subcategories = subcategories
         self.description = description
         self.type = type
+        self.isSelected = isSelected
         self.amount = amount
         self.dueDate = dueDate
     }
