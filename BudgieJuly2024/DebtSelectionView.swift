@@ -9,6 +9,14 @@ struct DebtSelectionView: View {
 
     var body: some View {
         VStack {
+            Text("Please select the debt categories you currently have.")
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.top, 20)
+                .padding(.horizontal, 20)
+                .multilineTextAlignment(.center)
+                .padding(.bottom, 10)
+
             List {
                 ForEach(budgetCategoryStore.categories.filter { $0.type == .debt }) { category in
                     Toggle(isOn: Binding(
@@ -26,6 +34,9 @@ struct DebtSelectionView: View {
                     }
                 }
             }
+            .listStyle(InsetGroupedListStyle())
+
+            Spacer()
 
             NavigationLink(destination: DebtDetailView(income: $income, paymentFrequency: $paymentFrequency, hasExpenses: hasExpenses, hasSavingsGoals: hasSavingsGoals)
                 .environmentObject(budgetCategoryStore)) {

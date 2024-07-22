@@ -9,8 +9,16 @@ struct ExpenseSubcategorySelectionView: View {
 
     var body: some View {
         VStack {
+            Text("Select the subcategories for your expenses.")
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.top, 20)
+                .padding(.horizontal, 20)
+                .multilineTextAlignment(.center)
+                .padding(.bottom, 10)
+
             List {
-                ForEach(selectedCategories) { category in
+                ForEach(selectedCategories.filter { $0.type == .need }) { category in
                     Section(header: Text("\(category.emoji) \(category.name)")) {
                         ForEach(category.subcategories) { subcategory in
                             Toggle(isOn: Binding(
@@ -29,6 +37,9 @@ struct ExpenseSubcategorySelectionView: View {
                     }
                 }
             }
+            .listStyle(InsetGroupedListStyle())
+
+            Spacer()
 
             NavigationLink(destination: nextView()) {
                 Text("Next")

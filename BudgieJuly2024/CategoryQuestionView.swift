@@ -9,22 +9,41 @@ struct CategoryQuestionView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Do you have any of the following?")
-                .font(.headline)
-                .padding(.top, 16)
+            Text("Please select the key sections you want to include in your budget.")
+                .font(.title2)
+                .fontWeight(.bold)
+                .padding(.top, 20)
+                .padding(.horizontal, 20)
+                .multilineTextAlignment(.center)
 
-            Toggle("Debt", isOn: $hasDebt)
+            List {
+                Toggle(isOn: $hasDebt) {
+                    HStack {
+                        Text("💳")
+                        Text("Debt")
+                    }
+                }
                 .toggleStyle(SwitchToggleStyle(tint: Color.blue))
-                .padding(.horizontal, 16)
 
-            Toggle("Expenses", isOn: $hasExpenses)
+                Toggle(isOn: $hasExpenses) {
+                    HStack {
+                        Text("🏠")
+                        Text("Expenses")
+                    }
+                }
                 .toggleStyle(SwitchToggleStyle(tint: Color.blue))
-                .padding(.horizontal, 16)
 
-            Toggle("Savings Goals", isOn: $hasSavingsGoals)
+                Toggle(isOn: $hasSavingsGoals) {
+                    HStack {
+                        Text("💰")
+                        Text("Savings")
+                    }
+                }
                 .toggleStyle(SwitchToggleStyle(tint: Color.blue))
-                .padding(.horizontal, 16)
-
+            }
+            .listStyle(InsetGroupedListStyle())
+            .frame(height: 200)
+            
             Spacer()
 
             NavigationLink(destination: nextView()) {

@@ -9,53 +9,54 @@ struct DebtDetailView: View {
 
     var body: some View {
         VStack {
-            Text("Enter your debt details")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.top, 20)
-                .padding(.bottom, 10)
-
-            Text("Please enter the amount you owe and the due date for each type of debt.")
-                .font(.body)
-                .foregroundColor(.gray)
-                .padding(.horizontal, 20)
-                .multilineTextAlignment(.center)
-                .padding(.bottom, 20)
+            VStack(spacing: 10) {
+                Text("Enter your debt details")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.top, 20)
+                
+                Text("Please enter the amount you owe and the due date for each type of debt.")
+                    .font(.body)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 20)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.bottom, 20)
 
             List {
                 ForEach(budgetCategoryStore.categories.filter { $0.type == .debt && $0.isSelected }) { category in
-                    VStack(alignment: .leading) {
-                        Text("\(category.emoji) \(category.name)")
-                            .font(.headline)
-                            .padding(.bottom, 5)
-                        if category.isSelected {
-                            TextField("Amount", value: Binding(
-                                get: { category.amount ?? 0 },
-                                set: { newValue in
-                                    if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                        budgetCategoryStore.categories[index].amount = newValue
-                                    }
-                                }), formatter: NumberFormatter())
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding(.bottom, 10)
-                            DatePicker("Due Date", selection: Binding(
-                                get: { category.dueDate ?? Date() },
-                                set: { newValue in
-                                    if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                        budgetCategoryStore.categories[index].dueDate = newValue
-                                    }
-                                }),
-                                in: Date()..., // Only allow future dates
-                                displayedComponents: .date
-                            )
-                            .datePickerStyle(WheelDatePickerStyle())
-                            .labelsHidden()
-                            .padding(.bottom, 10)
-                            .onAppear {
-                                if category.dueDate == nil {
-                                    if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                        budgetCategoryStore.categories[index].dueDate = Date()
-                                    }
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("\(category.emoji) \(category.name)")
+                                .font(.headline)
+                            Spacer()
+                        }
+
+                        TextField("Amount", value: Binding(
+                            get: { category.amount ?? 0 },
+                            set: { newValue in
+                                if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                    budgetCategoryStore.categories[index].amount = newValue
+                                }
+                            }), formatter: NumberFormatter())
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        
+                        DatePicker("Due Date", selection: Binding(
+                            get: { category.dueDate ?? Date() },
+                            set: { newValue in
+                                if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                    budgetCategoryStore.categories[index].dueDate = newValue
+                                }
+                            }),
+                            in: Date()..., // Only allow future dates
+                            displayedComponents: .date
+                        )
+                        .datePickerStyle(WheelDatePickerStyle())
+                        .labelsHidden()
+                        .onAppear {
+                            if category.dueDate == nil {
+                                if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                    budgetCategoryStore.categories[index].dueDate = Date()
                                 }
                             }
                         }
@@ -63,6 +64,9 @@ struct DebtDetailView: View {
                     .padding(.vertical, 10)
                 }
             }
+            .listStyle(InsetGroupedListStyle())
+
+            Spacer()
 
             NavigationLink(destination: nextView()) {
                 Text("Next")
