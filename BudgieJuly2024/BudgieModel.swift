@@ -21,7 +21,7 @@ struct BudgieModel {
             let categoryAllocation = monthlyPaycheck * adjustedPercentage
             allocations[category.id] = categoryAllocation
 
-            let subTotalPercentage = category.subcategories.filter { $0.isSelected }.reduce(0) { $0 + $1.allocationPercentage }
+            let subTotalPercentage = category.subcategories.filter { $0.isSelected }.reduce(0, { $0 + $1.allocationPercentage })
             
             for subcategory in category.subcategories.filter({ $0.isSelected }) {
                 let subAdjustedPercentage = subcategory.allocationPercentage / subTotalPercentage

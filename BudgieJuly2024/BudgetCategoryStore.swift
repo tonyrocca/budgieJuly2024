@@ -35,11 +35,11 @@ struct BudgetCategory: Identifiable, Codable {
     var subcategories: [BudgetSubCategory]
     var description: String
     var type: CategoryType
-    var isSelected: Bool
     var amount: Double?
     var dueDate: Date?
+    var isSelected: Bool
 
-    init(id: UUID = UUID(), name: String, emoji: String, allocationPercentage: Double, subcategories: [BudgetSubCategory], description: String, type: CategoryType, isSelected: Bool = false, amount: Double? = nil, dueDate: Date? = nil) {
+    init(id: UUID = UUID(), name: String, emoji: String, allocationPercentage: Double, subcategories: [BudgetSubCategory], description: String, type: CategoryType, amount: Double? = nil, dueDate: Date? = nil, isSelected: Bool = false) {
         self.id = id
         self.name = name
         self.emoji = emoji
@@ -47,9 +47,9 @@ struct BudgetCategory: Identifiable, Codable {
         self.subcategories = subcategories
         self.description = description
         self.type = type
-        self.isSelected = isSelected
         self.amount = amount
         self.dueDate = dueDate
+        self.isSelected = isSelected
     }
 }
 
@@ -85,8 +85,7 @@ class BudgetCategoryStore: ObservableObject {
                 description: "Credit card debt",
                 type: .debt
             ),
-            // Add other debt categories similarly
-            // Existing categories
+            // Expense Categories
             BudgetCategory(
                 name: "Housing",
                 emoji: "🏠",
@@ -115,16 +114,61 @@ class BudgetCategoryStore: ObservableObject {
                 description: "Transportation related expenses",
                 type: .need
             ),
+            // Savings Categories
             BudgetCategory(
-                name: "Goals",
-                emoji: "🎯",
+                name: "Emergency Fund",
+                emoji: "💰",
                 allocationPercentage: 0.0,
-                subcategories: [
-                    BudgetSubCategory(name: "Emergency Fund", allocationPercentage: 0.0, description: "Savings for emergencies."),
-                    BudgetSubCategory(name: "Vacation", allocationPercentage: 0.0, description: "Savings for a vacation."),
-                    BudgetSubCategory(name: "New Car", allocationPercentage: 0.0, description: "Savings for a new car.")
-                ],
-                description: "Savings goals",
+                subcategories: [],
+                description: "Savings for emergencies",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Vacation",
+                emoji: "✈️",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for a vacation",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "New Car",
+                emoji: "🚗",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for a new car",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Home Renovation",
+                emoji: "🔨",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for home renovation",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Investment",
+                emoji: "📈",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for investments",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Wedding",
+                emoji: "💍",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for a wedding",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Education Fund",
+                emoji: "🎓",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for education",
                 type: .saving
             )
         ]
