@@ -65,7 +65,7 @@ struct ExpenseSubcategorySelectionView: View {
     @ViewBuilder
     private func nextView() -> some View {
         if hasSavingsGoals {
-            GoalSelectionView(income: $income, paymentFrequency: $paymentFrequency)
+            SavingsSelectionView(income: $income, paymentFrequency: $paymentFrequency)
                 .environmentObject(budgetCategoryStore)
         } else {
             ContentView(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)

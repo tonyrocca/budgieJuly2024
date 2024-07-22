@@ -75,7 +75,7 @@ struct CategoryQuestionView: View {
             ExpenseSelectionView(income: $income, paymentFrequency: $paymentFrequency, hasSavingsGoals: hasSavingsGoals)
                 .environmentObject(BudgetCategoryStore.shared)
         } else if hasSavingsGoals {
-            GoalSelectionView(income: $income, paymentFrequency: $paymentFrequency)
+            SavingsSelectionView(income: $income, paymentFrequency: $paymentFrequency)
                 .environmentObject(BudgetCategoryStore.shared)
         } else {
             ContentView(selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)
