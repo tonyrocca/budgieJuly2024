@@ -27,6 +27,11 @@ struct BudgieModel {
                 let subAdjustedPercentage = subcategory.allocationPercentage / subTotalPercentage
                 allocations[subcategory.id] = categoryAllocation * subAdjustedPercentage
             }
+
+            if category.type == .debt, let amount = category.amount, let dueDate = category.dueDate {
+                let monthlyDebtAllocation = category.calculateMonthlyDebtAllocation(from: Date(), to: dueDate, amount: amount)
+                allocations[category.id] = monthlyDebtAllocation
+            }
         }
     }
 
