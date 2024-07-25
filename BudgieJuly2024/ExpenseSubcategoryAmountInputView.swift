@@ -55,6 +55,7 @@ struct ExpenseSubcategoryAmountInputView: View {
                                             .background(Color(UIColor.systemGray6))
                                             .cornerRadius(8)
                                             .frame(width: 150)
+                                            .multilineTextAlignment(.trailing) // Ensure right alignment
                                     }
                                     .padding(.horizontal, 20)
                                 }

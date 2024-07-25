@@ -11,26 +11,31 @@ struct BudgieModel {
     }
 
     mutating func calculateAllocations(selectedCategories: [BudgetCategory]) {
-        let totalPercentage = selectedCategories.reduce(0) { $0 + $1.allocationPercentage }
         let monthlyPaycheck = paymentCadence.monthlyEquivalent(from: paycheckAmount)
 
         allocations.removeAll()
 
         for category in selectedCategories {
-            let adjustedPercentage = category.allocationPercentage / totalPercentage
-            let categoryAllocation = monthlyPaycheck * adjustedPercentage
-            allocations[category.id] = categoryAllocation
-
+            var categoryTotal: Double = 0.0
             let subTotalPercentage = category.subcategories.filter { $0.isSelected }.reduce(0, { $0 + $1.allocationPercentage })
             
             for subcategory in category.subcategories.filter({ $0.isSelected }) {
-                let subAdjustedPercentage = subcategory.allocationPercentage / subTotalPercentage
-                allocations[subcategory.id] = categoryAllocation * subAdjustedPercentage
+                if let amount = subcategory.amount {
+                    allocations[subcategory.id] = amount
+                    categoryTotal += amount
+                } else {
+                    let adjustedPercentage = subcategory.allocationPercentage / subTotalPercentage
+                    let subcategoryAllocation = monthlyPaycheck * adjustedPercentage
+                    allocations[subcategory.id] = subcategoryAllocation
+                    categoryTotal += subcategoryAllocation
+                }
             }
 
             if category.type == .debt, let amount = category.amount, let dueDate = category.dueDate {
-                let monthlyDebtAllocation = category.calculateMonthlyDebtAllocation(from: Date(), to: dueDate, amount: amount)
+                let monthlyDebtAllocation = calculateMonthlyDebtAllocation(from: Date(), to: dueDate, amount: amount)
                 allocations[category.id] = monthlyDebtAllocation
+            } else {
+                allocations[category.id] = categoryTotal
             }
         }
     }
@@ -55,5 +60,12 @@ struct BudgieModel {
             BudgetCategoryStore.shared.updateCategory(index: index, name: category.name, emoji: category.emoji, allocationPercentage: newPercentage, description: category.description, type: category.type)
         }
         calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
+    }
+
+    func calculateMonthlyDebtAllocation(from startDate: Date, to endDate: Date, amount: Double) -> Double {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.month], from: startDate, to: endDate)
+        let numberOfMonths = components.month ?? 0
+        return numberOfMonths > 0 ? amount / Double(numberOfMonths) : amount
     }
 }

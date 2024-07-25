@@ -1,5 +1,4 @@
 import SwiftUI
-import Combine
 
 struct ContentView: View {
     @StateObject private var budgetCategoryStore = BudgetCategoryStore.shared
@@ -99,7 +98,6 @@ struct ContentView: View {
             }
             .onAppear {
                 formatAndCalculatePaycheckAmount()
-                updateBudget()
             }
         }
     }
@@ -411,19 +409,6 @@ struct ContentView: View {
         budgieModel.paymentCadence = paymentCadence
         budgieModel.calculateAllocations(selectedCategories: selectedCategories)
         allocations = budgieModel.allocations
-    }
-
-    private func updateBudget() {
-        let currentDate = Date()
-        for category in budgetCategoryStore.categories where category.type == .debt {
-            if let dueDate = category.dueDate {
-                let monthlyAllocation = category.calculateMonthlyDebtAllocation(from: currentDate, to: dueDate, amount: category.amount ?? 0)
-                if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                    budgetCategoryStore.categories[index].amount = monthlyAllocation
-                }
-            }
-        }
-        calculateBudget()
     }
 }
 
