@@ -87,5 +87,6 @@ struct CategoryQuestionView: View {
 struct CategoryQuestionView_Previews: PreviewProvider {
     static var previews: some View {
         CategoryQuestionView(income: .constant("5000"), paymentFrequency: .constant(.monthly))
+            .environmentObject(BudgetCategoryStore.shared)
     }
 }

@@ -27,6 +27,8 @@
 		77BEB7122C4CCEDF0000AFB9 /* ExpenseSelctionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7112C4CCEDF0000AFB9 /* ExpenseSelctionView.swift */; };
 		77BEB7182C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7172C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift */; };
 		77BEB71A2C4E026F0000AFB9 /* SavingsSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7192C4E026F0000AFB9 /* SavingsSelectionView.swift */; };
+		77BEB7202C4F6D640000AFB9 /* ExpenseSubcategoryAmountInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB71F2C4F6D640000AFB9 /* ExpenseSubcategoryAmountInputView.swift */; };
+		77BEB7222C520A7C0000AFB9 /* CurrencyTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7212C520A7C0000AFB9 /* CurrencyTextField.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +72,8 @@
 		77BEB7112C4CCEDF0000AFB9 /* ExpenseSelctionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseSelctionView.swift; sourceTree = "<group>"; };
 		77BEB7172C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseSubcategorySelectionView.swift; sourceTree = "<group>"; };
 		77BEB7192C4E026F0000AFB9 /* SavingsSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsSelectionView.swift; sourceTree = "<group>"; };
+		77BEB71F2C4F6D640000AFB9 /* ExpenseSubcategoryAmountInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseSubcategoryAmountInputView.swift; sourceTree = "<group>"; };
+		77BEB7212C520A7C0000AFB9 /* CurrencyTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyTextField.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,12 +133,14 @@
 				7713A31D2C462F3900A0AFCE /* DebtDetailView.swift */,
 				77BEB7112C4CCEDF0000AFB9 /* ExpenseSelctionView.swift */,
 				77BEB7172C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift */,
+				77BEB71F2C4F6D640000AFB9 /* ExpenseSubcategoryAmountInputView.swift */,
 				77BEB7192C4E026F0000AFB9 /* SavingsSelectionView.swift */,
 				7713A2CE2C32005900A0AFCE /* ContentView.swift */,
 				7713A2FB2C3A28E500A0AFCE /* BudgetCategoryStore.swift */,
 				7713A3032C3A2A3000A0AFCE /* BudgieModel.swift */,
 				7713A2FD2C3A298800A0AFCE /* PaymentCadence.swift */,
 				7713A2D52C32005A00A0AFCE /* Persistence.swift */,
+				77BEB7212C520A7C0000AFB9 /* CurrencyTextField.swift */,
 				7713A2D72C32005A00A0AFCE /* BudgieJuly2024.xcdatamodeld */,
 				7713A2D22C32005A00A0AFCE /* Preview Content */,
 			);
@@ -297,10 +303,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				77BEB7182C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift in Sources */,
+				77BEB7202C4F6D640000AFB9 /* ExpenseSubcategoryAmountInputView.swift in Sources */,
 				77BEB71A2C4E026F0000AFB9 /* SavingsSelectionView.swift in Sources */,
 				77BEB70E2C4CCCB10000AFB9 /* CategoryQuestionView.swift in Sources */,
 				7713A2D62C32005A00A0AFCE /* Persistence.swift in Sources */,
 				7713A2CF2C32005900A0AFCE /* ContentView.swift in Sources */,
+				77BEB7222C520A7C0000AFB9 /* CurrencyTextField.swift in Sources */,
 				7713A3122C3BA70900A0AFCE /* PaymentInputView.swift in Sources */,
 				7713A31E2C462F3900A0AFCE /* DebtDetailView.swift in Sources */,
 				7713A3202C462F4B00A0AFCE /* DebtSelectionView.swift in Sources */,

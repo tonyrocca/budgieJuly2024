@@ -41,7 +41,8 @@ struct ExpenseSubcategorySelectionView: View {
 
             Spacer()
 
-            NavigationLink(destination: nextView()) {
+            NavigationLink(destination: ExpenseSubcategoryAmountInputView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: selectedCategories)
+                .environmentObject(budgetCategoryStore)) {
                 Text("Next")
                     .font(.headline)
                     .foregroundColor(.white)
@@ -60,17 +61,6 @@ struct ExpenseSubcategorySelectionView: View {
         }
         .navigationTitle("Select Subcategories")
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
-    }
-
-    @ViewBuilder
-    private func nextView() -> some View {
-        if hasSavingsGoals {
-            SavingsSelectionView(income: $income, paymentFrequency: $paymentFrequency)
-                .environmentObject(budgetCategoryStore)
-        } else {
-            ContentView(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)
-                .environmentObject(budgetCategoryStore)
-        }
     }
 }
 
