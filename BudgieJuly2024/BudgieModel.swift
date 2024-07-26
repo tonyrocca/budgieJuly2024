@@ -11,34 +11,28 @@ struct BudgieModel {
 
     mutating func calculateAllocations(selectedCategories: [BudgetCategory], isPerPaycheck: Bool) {
         let monthlyPaycheck = paymentCadence.monthlyEquivalent(from: paycheckAmount)
-        let conversionFactor = isPerPaycheck ? 1.0 / paymentCadence.numberOfPaychecksPerMonth : 1.0
 
         allocations.removeAll()
 
         for category in selectedCategories {
-            var categoryTotal: Double = 0.0
-            let subTotalPercentage = category.subcategories.filter { $0.isSelected }.reduce(0, { $0 + $1.allocationPercentage })
+            var categoryAllocation: Double = 0
 
             for subcategory in category.subcategories.filter({ $0.isSelected }) {
-                if let amount = subcategory.amount {
-                    let adjustedAmount = amount * conversionFactor
-                    allocations[subcategory.id] = adjustedAmount
-                    categoryTotal += adjustedAmount
+                if let subcategoryAmount = subcategory.amount {
+                    allocations[subcategory.id] = isPerPaycheck ? subcategoryAmount / paymentCadence.numberOfPaychecksPerMonth : subcategoryAmount
+                    categoryAllocation += subcategoryAmount
                 } else {
-                    let adjustedPercentage = subcategory.allocationPercentage / subTotalPercentage
-                    let subcategoryAllocation = monthlyPaycheck * adjustedPercentage
-                    allocations[subcategory.id] = subcategoryAllocation
-                    categoryTotal += subcategoryAllocation
+                    allocations[subcategory.id] = 0
                 }
             }
 
-            if category.type == .debt {
-                if let amount = category.amount, let dueDate = category.dueDate {
-                    let monthlyDebtAllocation = calculateMonthlyDebtAllocation(from: Date(), to: dueDate, amount: amount)
-                    allocations[category.id] = monthlyDebtAllocation * conversionFactor
-                }
+            if categoryAllocation > 0 {
+                allocations[category.id] = isPerPaycheck ? categoryAllocation / paymentCadence.numberOfPaychecksPerMonth : categoryAllocation
+            } else if category.type == .debt, let amount = category.amount, let dueDate = category.dueDate {
+                let monthlyDebtAllocation = category.calculateMonthlyDebtAllocation(from: Date(), to: dueDate, amount: amount)
+                allocations[category.id] = isPerPaycheck ? monthlyDebtAllocation / paymentCadence.numberOfPaychecksPerMonth : monthlyDebtAllocation
             } else {
-                allocations[category.id] = categoryTotal
+                allocations[category.id] = 0
             }
         }
     }
@@ -60,12 +54,5 @@ struct BudgieModel {
             BudgetCategoryStore.shared.updateCategory(index: index, name: category.name, emoji: category.emoji, allocationPercentage: newPercentage, description: category.description, type: category.type)
         }
         calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories, isPerPaycheck: false)
-    }
-
-    func calculateMonthlyDebtAllocation(from startDate: Date, to endDate: Date, amount: Double) -> Double {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.month], from: startDate, to: endDate)
-        let numberOfMonths = components.month ?? 0
-        return numberOfMonths > 0 ? amount / Double(numberOfMonths) : amount
     }
 }

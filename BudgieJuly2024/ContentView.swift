@@ -214,7 +214,7 @@ struct ContentView: View {
                         set: { newValue in
                             if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
                                 if let subIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-                                    budgetCategoryStore.categories[categoryIndex].subcategories[subIndex].allocationPercentage = newValue / totalMonthlyBudget
+                                    budgetCategoryStore.categories[categoryIndex].subcategories[subIndex].amount = newValue
                                     budgieModel.calculateAllocations(selectedCategories: selectedCategories, isPerPaycheck: selectedViewOption == .perPaycheck)
                                     allocations = budgieModel.allocations
                                 }
