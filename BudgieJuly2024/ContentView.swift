@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct ContentView: View {
     @StateObject private var budgetCategoryStore = BudgetCategoryStore.shared
@@ -214,7 +215,7 @@ struct ContentView: View {
                             if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
                                 if let subIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
                                     budgetCategoryStore.categories[categoryIndex].subcategories[subIndex].allocationPercentage = newValue / totalMonthlyBudget
-                                    budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+                                    budgieModel.calculateAllocations(selectedCategories: selectedCategories, isPerPaycheck: selectedViewOption == .perPaycheck)
                                     allocations = budgieModel.allocations
                                 }
                             }
@@ -228,7 +229,7 @@ struct ContentView: View {
                     Button(action: {
                         if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
                             budgetCategoryStore.deleteSubCategory(from: categoryIndex, subcategory: subcategory)
-                            budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+                            budgieModel.calculateAllocations(selectedCategories: selectedCategories, isPerPaycheck: selectedViewOption == .perPaycheck)
                             allocations = budgieModel.allocations
                         }
                     }) {
@@ -290,7 +291,7 @@ struct ContentView: View {
                         if let index = currentCategoryIndex {
                             budgetCategoryStore.addSubCategory(to: index, subcategory: subcategory)
                             showPredefinedSubcategorySelection = false
-                            budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+                            budgieModel.calculateAllocations(selectedCategories: selectedCategories, isPerPaycheck: selectedViewOption == .perPaycheck)
                             allocations = budgieModel.allocations
                         }
                     }) {
@@ -377,7 +378,7 @@ struct ContentView: View {
                     let newSubcategory = BudgetSubCategory(name: newSubcategoryName, allocationPercentage: amount / totalMonthlyBudget, description: newSubcategoryDescription)
                     budgetCategoryStore.addSubCategory(to: index, subcategory: newSubcategory)
                     showAddSubcategoryForm = false
-                    budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+                    budgieModel.calculateAllocations(selectedCategories: selectedCategories, isPerPaycheck: selectedViewOption == .perPaycheck)
                     allocations = budgieModel.allocations
                 }
             }) {
@@ -407,7 +408,7 @@ struct ContentView: View {
 
     private func calculateBudget() {
         budgieModel.paymentCadence = paymentCadence
-        budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+        budgieModel.calculateAllocations(selectedCategories: selectedCategories, isPerPaycheck: selectedViewOption == .perPaycheck)
         allocations = budgieModel.allocations
     }
 }
