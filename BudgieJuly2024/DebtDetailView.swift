@@ -52,23 +52,28 @@ struct DebtDetailView: View {
                                     set: { debtAmounts[category.id] = $0 }
                                 ))
                                 .frame(height: 44)
-                                .padding(.leading, 8)
-
-                                Button(action: {
-                                    if showDatePicker == category.id {
-                                        showDatePicker = nil
-                                    } else {
-                                        showDatePicker = category.id
-                                    }
-                                }) {
-                                    Image(systemName: "calendar")
-                                        .padding(.trailing, 16)
-                                }
+                                .padding(.horizontal, 8)
+                                .background(Color(UIColor.systemGray5))
+                                .cornerRadius(8)
                             }
-                            .background(Color(UIColor.systemGray5))
-                            .cornerRadius(8)
                             .padding(.horizontal, 16)
+
+                            HStack {
+                                Text("Due Date")
+                                    .font(.subheadline)
+                                    .padding(.leading, 16)
+                                Spacer()
+                                Text("\(selectedDates[category.id] ?? Date(), formatter: DateFormatter.mediumStyle)")
+                                    .font(.subheadline)
+                                    .padding(.horizontal, 8)
+                                    .background(Color(UIColor.systemGray5))
+                                    .cornerRadius(8)
+                            }
                             .padding(.bottom, 12)
+                            .padding(.horizontal, 16)
+                            .onTapGesture {
+                                showDatePicker = (showDatePicker == category.id) ? nil : category.id
+                            }
 
                             if showDatePicker == category.id {
                                 DatePicker(
@@ -140,6 +145,16 @@ struct DebtDetailView: View {
             return AnyView(ContentView(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)
                 .environmentObject(budgetCategoryStore))
         }
+    }
+}
+
+extension DateFormatter {
+    static var mediumStyle: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter
     }
 }
 

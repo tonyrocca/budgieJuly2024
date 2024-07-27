@@ -35,6 +35,8 @@ struct BudgieModel {
                 allocations[category.id] = 0
             }
         }
+        
+        adjustAllocationsToFitPaycheck(monthlyPaycheck: monthlyPaycheck)
     }
 
     func calculateMonthlyDebtAllocation(from startDate: Date, to endDate: Date, amount: Double) -> Double {
@@ -60,5 +62,16 @@ struct BudgieModel {
             BudgetCategoryStore.shared.updateCategory(index: index, name: category.name, emoji: category.emoji, allocationPercentage: newPercentage, description: category.description, type: category.type)
         }
         calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
+    }
+
+    private mutating func adjustAllocationsToFitPaycheck(monthlyPaycheck: Double) {
+        var totalAllocation = allocations.values.reduce(0, +)
+        
+        if totalAllocation > monthlyPaycheck {
+            let scaleFactor = monthlyPaycheck / totalAllocation
+            for (id, amount) in allocations {
+                allocations[id] = amount * scaleFactor
+            }
+        }
     }
 }
