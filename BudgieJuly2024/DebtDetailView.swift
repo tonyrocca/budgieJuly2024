@@ -37,63 +37,7 @@ struct DebtDetailView: View {
             ScrollView {
                 VStack(spacing: 12) {
                     ForEach(budgetCategoryStore.categories.filter { $0.type == .debt && $0.isSelected }) { category in
-                        VStack(spacing: 8) {
-                            HStack {
-                                Text("\(category.emoji) \(category.name)")
-                                    .font(.headline)
-                                Spacer()
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.top, 12)
-
-                            HStack {
-                                CurrencyTextField(value: Binding(
-                                    get: { debtAmounts[category.id] ?? 0.0 },
-                                    set: { debtAmounts[category.id] = $0 }
-                                ))
-                                .frame(height: 44)
-                                .padding(.horizontal, 8)
-                                .background(Color(UIColor.systemGray5))
-                                .cornerRadius(8)
-                            }
-                            .padding(.horizontal, 16)
-
-                            HStack {
-                                Text("Due Date")
-                                    .font(.subheadline)
-                                    .padding(.leading, 16)
-                                Spacer()
-                                Text("\(selectedDates[category.id] ?? Date(), formatter: DateFormatter.mediumStyle)")
-                                    .font(.subheadline)
-                                    .padding(.horizontal, 8)
-                                    .background(Color(UIColor.systemGray5))
-                                    .cornerRadius(8)
-                            }
-                            .padding(.bottom, 12)
-                            .padding(.horizontal, 16)
-                            .onTapGesture {
-                                showDatePicker = (showDatePicker == category.id) ? nil : category.id
-                            }
-
-                            if showDatePicker == category.id {
-                                DatePicker(
-                                    "Select Due Date",
-                                    selection: Binding(
-                                        get: { selectedDates[category.id] ?? Date() },
-                                        set: { selectedDates[category.id] = $0 }
-                                    ),
-                                    displayedComponents: [.date]
-                                )
-                                .datePickerStyle(GraphicalDatePickerStyle())
-                                .labelsHidden()
-                                .padding(.horizontal, 16)
-                                .padding(.bottom, 12)
-                            }
-                        }
-                        .background(Color.white)
-                        .cornerRadius(10)
-                        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 4)
-                        .padding(.horizontal, 16)
+                        DebtCategoryView(category: category, debtAmounts: $debtAmounts, selectedDates: $selectedDates, showDatePicker: $showDatePicker)
                     }
                 }
             }
@@ -116,21 +60,14 @@ struct DebtDetailView: View {
                     .shadow(radius: 5)
             }
             .padding(.bottom, 50)
+            .disabled(!isFormComplete())
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
         .onAppear {
-            for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
-                debtAmounts[category.id] = category.amount ?? 0.0
-                selectedDates[category.id] = category.dueDate ?? Date()
-            }
+            initializeFields()
         }
         .onDisappear {
-            for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
-                if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                    budgetCategoryStore.categories[index].amount = debtAmounts[category.id]
-                    budgetCategoryStore.categories[index].dueDate = selectedDates[category.id]
-                }
-            }
+            saveFields()
         }
     }
 
@@ -145,6 +82,96 @@ struct DebtDetailView: View {
             return AnyView(ContentView(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)
                 .environmentObject(budgetCategoryStore))
         }
+    }
+
+    private func isFormComplete() -> Bool {
+        return budgetCategoryStore.categories.filter { $0.type == .debt && $0.isSelected }.allSatisfy {
+            (debtAmounts[$0.id] ?? 0.0) > 0 && selectedDates[$0.id] != nil
+        }
+    }
+
+    private func initializeFields() {
+        for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
+            debtAmounts[category.id] = category.amount ?? 0.0
+            selectedDates[category.id] = category.dueDate ?? Date()
+        }
+    }
+
+    private func saveFields() {
+        for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
+            if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                budgetCategoryStore.categories[index].amount = debtAmounts[category.id]
+                budgetCategoryStore.categories[index].dueDate = selectedDates[category.id] ?? Date()
+            }
+        }
+    }
+}
+
+struct DebtCategoryView: View {
+    var category: BudgetCategory
+    @Binding var debtAmounts: [UUID: Double]
+    @Binding var selectedDates: [UUID: Date]
+    @Binding var showDatePicker: UUID?
+
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text("\(category.emoji) \(category.name)")
+                    .font(.headline)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+
+            HStack {
+                CurrencyTextField(value: Binding(
+                    get: { debtAmounts[category.id] ?? 0.0 },
+                    set: { debtAmounts[category.id] = $0 }
+                ))
+                .frame(height: 44)
+                .padding(.horizontal, 8)
+                .background(Color(UIColor.systemGray5))
+                .cornerRadius(8)
+            }
+            .padding(.horizontal, 16)
+
+            HStack {
+                Text("When is the debt due?")
+                    .font(.subheadline)
+                    .padding(.leading, 16)
+                Spacer()
+                Text(selectedDates[category.id]?.formatted(.dateTime.year().month().day()) ?? Date().formatted(.dateTime.year().month().day()))
+                    .font(.subheadline)
+                    .padding(.horizontal, 8)
+                    .background(Color(UIColor.systemGray5))
+                    .cornerRadius(8)
+            }
+            .padding(.bottom, 12)
+            .padding(.horizontal, 16)
+            .onTapGesture {
+                showDatePicker = (showDatePicker == category.id) ? nil : category.id
+            }
+
+            if showDatePicker == category.id {
+                DatePicker(
+                    "Select Due Date",
+                    selection: Binding(
+                        get: { selectedDates[category.id] ?? Date() },
+                        set: { selectedDates[category.id] = $0 }
+                    ),
+                    in: Date()...,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(GraphicalDatePickerStyle())
+                .labelsHidden()
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
+            }
+        }
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 4)
+        .padding(.horizontal, 16)
     }
 }
 
