@@ -7,7 +7,7 @@ struct DebtDetailView: View {
     var hasSavingsGoals: Bool
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
 
-    @State private var debtAmounts: [UUID: String] = [:]
+    @State private var debtAmounts: [UUID: Double] = [:]
     @State private var selectedDates: [UUID: Date] = [:]
     @State private var showDatePicker: UUID? = nil
 
@@ -28,6 +28,7 @@ struct DebtDetailView: View {
         formatter.locale = Locale.current
         formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 2
+        formatter.currencySymbol = "$"
         return formatter
     }()
 
@@ -56,8 +57,8 @@ struct DebtDetailView: View {
                             HStack {
                                 Text("$")
                                     .padding(.leading, 16)
-                                TextField("Enter your debt amount", text: Binding(
-                                    get: { debtAmounts[category.id] ?? "" },
+                                CurrencyTextField(value: Binding(
+                                    get: { debtAmounts[category.id] ?? 0.0 },
                                     set: { debtAmounts[category.id] = $0 }
                                 ))
                                 .textFieldStyle(PlainTextFieldStyle())
@@ -65,12 +66,9 @@ struct DebtDetailView: View {
                                 .background(Color(UIColor.systemGray5))
                                 .cornerRadius(8)
                                 .keyboardType(.decimalPad)
-                                .onChange(of: debtAmounts[category.id] ?? "") { newValue in
-                                    debtAmounts[category.id] = formatCurrencyInput(newValue)
-                                }
                                 .multilineTextAlignment(.trailing)
                                 .padding(.trailing, 16)
-                                
+
                                 Button(action: {
                                     if showDatePicker == category.id {
                                         showDatePicker = nil
@@ -126,16 +124,30 @@ struct DebtDetailView: View {
                     .shadow(radius: 5)
             }
             .padding(.bottom, 50)
+            .simultaneousGesture(TapGesture().onEnded {
+                saveDebtDetails()
+            })
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
+        .onAppear {
+            loadInitialValues()
+        }
     }
 
-    private func formatCurrencyInput(_ input: String) -> String {
-        let filtered = input.filter { "0123456789".contains($0) }
-        if let value = Double(filtered) {
-            return String(format: "%.2f", value / 100)
+    private func loadInitialValues() {
+        for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
+            debtAmounts[category.id] = category.amount ?? 0.0
+            selectedDates[category.id] = category.dueDate ?? Date()
         }
-        return ""
+    }
+
+    private func saveDebtDetails() {
+        for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
+            if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                budgetCategoryStore.categories[index].amount = debtAmounts[category.id]
+                budgetCategoryStore.categories[index].dueDate = selectedDates[category.id]
+            }
+        }
     }
 
     private func nextView() -> some View {

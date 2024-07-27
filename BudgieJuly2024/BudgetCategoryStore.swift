@@ -51,13 +51,6 @@ struct BudgetCategory: Identifiable, Codable {
         self.dueDate = dueDate
         self.isSelected = isSelected
     }
-    
-    func calculateMonthlyDebtAllocation(from startDate: Date, to dueDate: Date, amount: Double) -> Double {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.month], from: startDate, to: dueDate)
-        guard let months = components.month else { return 0.0 }
-        return amount / Double(months)
-    }
 }
 
 class BudgetCategoryStore: ObservableObject {
