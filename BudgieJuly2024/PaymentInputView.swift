@@ -2,7 +2,9 @@ import SwiftUI
 
 struct PaymentInputView: View {
     @State private var income: String = ""
-    @State private var paymentFrequency: PaymentCadence = .monthly
+    @State private var paymentFrequency: PaymentCadence?
+    @State private var showPaymentFrequency = false
+    @State private var showNextButton = false
 
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -33,6 +35,9 @@ struct PaymentInputView: View {
                     .keyboardType(.decimalPad)
                     .onChange(of: income) { newValue in
                         income = formatCurrencyInput(newValue)
+                        if !income.isEmpty {
+                            showPaymentFrequency = true
+                        }
                     }
                     .multilineTextAlignment(.trailing)
                     .padding(.trailing, 16)
@@ -41,54 +46,63 @@ struct PaymentInputView: View {
             .cornerRadius(8)
             .padding(.horizontal, 16)
 
-            Text("How often do you get paid?")
-                .font(.headline)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
+            if showPaymentFrequency {
+                Text("How often do you get paid?")
+                    .font(.headline)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
 
-            HStack {
-                Menu {
-                    Picker("Payment Frequency", selection: $paymentFrequency) {
-                        ForEach(PaymentCadence.allCases, id: \.self) { frequency in
-                            Text(frequency.rawValue.capitalized)
-                                .tag(frequency)
+                HStack {
+                    Menu {
+                        Picker("Payment Frequency", selection: $paymentFrequency) {
+                            Text("Select frequency")
+                                .tag(PaymentCadence?.none)
+                            ForEach(PaymentCadence.allCases, id: \.self) { frequency in
+                                Text(frequency.rawValue.capitalized)
+                                    .tag(PaymentCadence?.some(frequency))
+                            }
                         }
+                    } label: {
+                        HStack {
+                            Text(paymentFrequency?.rawValue.capitalized ?? "Select frequency")
+                                .foregroundColor(paymentFrequency == nil ? .gray : .black)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Image(systemName: "chevron.down")
+                                .foregroundColor(.black)
+                        }
+                        .padding(12)
+                        .background(Color(UIColor.systemGray5))
+                        .cornerRadius(8)
                     }
-                } label: {
-                    HStack {
-                        Text(paymentFrequency.rawValue.capitalized)
-                            .foregroundColor(.black)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        Image(systemName: "chevron.down")
-                            .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 16)
+                    .onChange(of: paymentFrequency) { newValue in
+                        showNextButton = newValue != nil
                     }
-                    .padding(12)
-                    .background(Color(UIColor.systemGray5))
-                    .cornerRadius(8)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 16)
             }
 
             Spacer()
 
-            NavigationLink(destination: CategoryQuestionView(income: .constant(income), paymentFrequency: $paymentFrequency)) {
-                Text("Next")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                       startPoint: .topLeading,
-                                       endPoint: .bottomTrailing)
-                    )
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    .shadow(radius: 5)
+            if showNextButton {
+                NavigationLink(destination: CategoryQuestionView(income: .constant(income), paymentFrequency: $paymentFrequency.unwrap(defaultValue: .monthly))) {
+                    Text("Next")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                           startPoint: .topLeading,
+                                           endPoint: .bottomTrailing)
+                        )
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                        .shadow(radius: 5)
+                }
+                .padding(.bottom, 50)
             }
-            .padding(.bottom, 50)
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
     }
@@ -105,5 +119,14 @@ struct PaymentInputView: View {
 struct PaymentInputView_Previews: PreviewProvider {
     static var previews: some View {
         PaymentInputView()
+    }
+}
+
+extension Binding {
+    func unwrap<T>(defaultValue: T) -> Binding<T> where Value == T? {
+        return Binding<T>(
+            get: { self.wrappedValue ?? defaultValue },
+            set: { self.wrappedValue = $0 }
+        )
     }
 }

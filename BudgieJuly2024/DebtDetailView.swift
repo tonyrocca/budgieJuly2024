@@ -22,16 +22,6 @@ struct DebtDetailView: View {
         self.years = Array(currentYear...currentYear + 10)
     }
 
-    private let currencyFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.locale = Locale.current
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 2
-        formatter.currencySymbol = "$"
-        return formatter
-    }()
-
     var body: some View {
         VStack(spacing: 16) {
             Text("Enter your debt details")
@@ -45,29 +35,24 @@ struct DebtDetailView: View {
                 .padding(.horizontal, 16)
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(spacing: 12) {
                     ForEach(budgetCategoryStore.categories.filter { $0.type == .debt && $0.isSelected }) { category in
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(spacing: 8) {
                             HStack {
                                 Text("\(category.emoji) \(category.name)")
                                     .font(.headline)
                                 Spacer()
                             }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 12)
 
                             HStack {
-                                Text("$")
-                                    .padding(.leading, 16)
                                 CurrencyTextField(value: Binding(
                                     get: { debtAmounts[category.id] ?? 0.0 },
                                     set: { debtAmounts[category.id] = $0 }
                                 ))
-                                .textFieldStyle(PlainTextFieldStyle())
-                                .padding(12)
-                                .background(Color(UIColor.systemGray5))
-                                .cornerRadius(8)
-                                .keyboardType(.decimalPad)
-                                .multilineTextAlignment(.trailing)
-                                .padding(.trailing, 16)
+                                .frame(height: 44)
+                                .padding(.leading, 8)
 
                                 Button(action: {
                                     if showDatePicker == category.id {
@@ -83,6 +68,7 @@ struct DebtDetailView: View {
                             .background(Color(UIColor.systemGray5))
                             .cornerRadius(8)
                             .padding(.horizontal, 16)
+                            .padding(.bottom, 12)
 
                             if showDatePicker == category.id {
                                 DatePicker(
@@ -96,12 +82,13 @@ struct DebtDetailView: View {
                                 .datePickerStyle(GraphicalDatePickerStyle())
                                 .labelsHidden()
                                 .padding(.horizontal, 16)
+                                .padding(.bottom, 12)
                             }
                         }
-                        .padding()
                         .background(Color.white)
-                        .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+                        .cornerRadius(10)
+                        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 4)
+                        .padding(.horizontal, 16)
                     }
                 }
             }
@@ -124,28 +111,20 @@ struct DebtDetailView: View {
                     .shadow(radius: 5)
             }
             .padding(.bottom, 50)
-            .simultaneousGesture(TapGesture().onEnded {
-                saveDebtDetails()
-            })
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
         .onAppear {
-            loadInitialValues()
+            for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
+                debtAmounts[category.id] = category.amount ?? 0.0
+                selectedDates[category.id] = category.dueDate ?? Date()
+            }
         }
-    }
-
-    private func loadInitialValues() {
-        for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
-            debtAmounts[category.id] = category.amount ?? 0.0
-            selectedDates[category.id] = category.dueDate ?? Date()
-        }
-    }
-
-    private func saveDebtDetails() {
-        for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
-            if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                budgetCategoryStore.categories[index].amount = debtAmounts[category.id]
-                budgetCategoryStore.categories[index].dueDate = selectedDates[category.id]
+        .onDisappear {
+            for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
+                if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                    budgetCategoryStore.categories[index].amount = debtAmounts[category.id]
+                    budgetCategoryStore.categories[index].dueDate = selectedDates[category.id]
+                }
             }
         }
     }
