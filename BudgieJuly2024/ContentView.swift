@@ -49,6 +49,22 @@ struct ContentView: View {
         return amount
     }
 
+    var budgetStatus: (String, Color) {
+        let totalAllocations = selectedCategories.reduce(0) { $0 + (allocations[$1.id] ?? 0) }
+        let difference = totalPerPaycheckBudget - totalAllocations
+        if difference >= 0 {
+            return ("You have a budget surplus of", .green)
+        } else {
+            return ("You have a budget deficit of", .red)
+        }
+    }
+
+    var budgetDifference: String {
+        let totalAllocations = selectedCategories.reduce(0) { $0 + (allocations[$1.id] ?? 0) }
+        let difference = totalPerPaycheckBudget - totalAllocations
+        return currencyFormatter.string(from: NSNumber(value: abs(difference)))!
+    }
+
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -63,9 +79,12 @@ struct ContentView: View {
 
                 ScrollView {
                     VStack(spacing: 12) {
-                        allocationListView()
+                        budgetStatusView()
                             .padding(.horizontal)
                             .padding(.top, 8)
+                        
+                        allocationListView()
+                            .padding(.horizontal)
                     }
                     .padding(.top, 16)
                 }
@@ -101,6 +120,22 @@ struct ContentView: View {
                 formatAndCalculatePaycheckAmount()
             }
         }
+    }
+
+    private func budgetStatusView() -> some View {
+        let (message, color) = budgetStatus
+        return HStack {
+            Text("\(message) ")
+                .font(.headline)
+                .foregroundColor(.black)
+            Text(budgetDifference)
+                .font(.headline)
+                .fontWeight(.bold)
+                .foregroundColor(color)
+        }
+        .padding()
+        .background(Color(UIColor.systemGray5))
+        .cornerRadius(10)
     }
 
     private func allocationListView() -> some View {
@@ -146,7 +181,7 @@ struct ContentView: View {
                     }
                 }) {
                     Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue) // Change to blue
+                        .foregroundColor(.blue)
                 }
             }
             .padding(.vertical, 6)
@@ -180,7 +215,7 @@ struct ContentView: View {
                     }
                 }) {
                     Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue) // Change to blue
+                        .foregroundColor(.blue)
                 }
             }
             .padding(.vertical, 6)
