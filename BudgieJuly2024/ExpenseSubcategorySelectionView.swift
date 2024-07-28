@@ -33,6 +33,7 @@ struct ExpenseSubcategorySelectionView: View {
                             )) {
                                 Text(subcategory.name)
                             }
+                            .toggleStyle(SwitchToggleStyle(tint: Color.blue)) // Updated to blue
                         }
                     }
                 }

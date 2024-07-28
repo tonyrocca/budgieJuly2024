@@ -30,6 +30,7 @@ struct SavingsSelectionView: View {
                             Text(category.name)
                         }
                     }
+                    .toggleStyle(SwitchToggleStyle(tint: Color.blue)) // Updated to blue
                 }
             }
             .listStyle(InsetGroupedListStyle())
