@@ -146,7 +146,7 @@ struct ContentView: View {
                     }
                 }) {
                     Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.green)
+                        .foregroundColor(.blue) // Change to blue
                 }
             }
             .padding(.vertical, 6)
@@ -180,7 +180,7 @@ struct ContentView: View {
                     }
                 }) {
                     Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.green)
+                        .foregroundColor(.blue) // Change to blue
                 }
             }
             .padding(.vertical, 6)
