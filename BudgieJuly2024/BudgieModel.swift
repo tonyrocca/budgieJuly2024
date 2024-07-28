@@ -31,18 +31,33 @@ struct BudgieModel {
             } else if category.type == .debt, let amount = category.amount, let dueDate = category.dueDate {
                 let monthlyDebtAllocation = calculateMonthlyDebtAllocation(from: Date(), to: dueDate, amount: amount)
                 allocations[category.id] = monthlyDebtAllocation
+            } else if category.type == .saving {
+                let savingsAmount = calculateSavingsAmount(for: category.name, monthlyPaycheck: monthlyPaycheck)
+                allocations[category.id] = savingsAmount
             } else {
                 allocations[category.id] = 0
             }
         }
-        
-        adjustAllocationsToFitPaycheck(monthlyPaycheck: monthlyPaycheck)
     }
 
     func calculateMonthlyDebtAllocation(from startDate: Date, to endDate: Date, amount: Double) -> Double {
         let calendar = Calendar.current
         let months = calendar.dateComponents([.month], from: startDate, to: endDate).month ?? 1
         return amount / Double(max(1, months))
+    }
+
+    func calculateSavingsAmount(for categoryName: String, monthlyPaycheck: Double) -> Double {
+        let savingsPercentages: [String: Double] = [
+            "Emergency Fund": 0.10,
+            "Vacation": 0.05,
+            "New Car": 0.05,
+            "Home Renovation": 0.07,
+            "Investment": 0.10,
+            "Wedding": 0.05,
+            "Education Fund": 0.05
+        ]
+
+        return monthlyPaycheck * (savingsPercentages[categoryName] ?? 0.05)
     }
 
     mutating func addCategory(_ category: BudgetCategory) {
@@ -62,16 +77,5 @@ struct BudgieModel {
             BudgetCategoryStore.shared.updateCategory(index: index, name: category.name, emoji: category.emoji, allocationPercentage: newPercentage, description: category.description, type: category.type)
         }
         calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
-    }
-
-    private mutating func adjustAllocationsToFitPaycheck(monthlyPaycheck: Double) {
-        var totalAllocation = allocations.values.reduce(0, +)
-        
-        if totalAllocation > monthlyPaycheck {
-            let scaleFactor = monthlyPaycheck / totalAllocation
-            for (id, amount) in allocations {
-                allocations[id] = amount * scaleFactor
-            }
-        }
     }
 }
