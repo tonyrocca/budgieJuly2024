@@ -9,7 +9,7 @@ struct CategoryQuestionView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Select each component that you want in your budget.")
+            Text("Please select the key sections you want to include in your budget.")
                 .font(.title2)
                 .fontWeight(.bold)
                 .padding(.top, 20)
@@ -24,7 +24,6 @@ struct CategoryQuestionView: View {
                     }
                 }
                 .toggleStyle(SwitchToggleStyle(tint: Color.blue))
-                .onChange(of: hasDebt) { _ in updateNextButtonVisibility() }
 
                 Toggle(isOn: $hasExpenses) {
                     HStack {
@@ -33,7 +32,6 @@ struct CategoryQuestionView: View {
                     }
                 }
                 .toggleStyle(SwitchToggleStyle(tint: Color.blue))
-                .onChange(of: hasExpenses) { _ in updateNextButtonVisibility() }
 
                 Toggle(isOn: $hasSavingsGoals) {
                     HStack {
@@ -42,33 +40,35 @@ struct CategoryQuestionView: View {
                     }
                 }
                 .toggleStyle(SwitchToggleStyle(tint: Color.blue))
-                .onChange(of: hasSavingsGoals) { _ in updateNextButtonVisibility() }
             }
             .listStyle(InsetGroupedListStyle())
             .frame(height: 200)
 
             Spacer()
 
-            if hasDebt || hasExpenses || hasSavingsGoals {
-                NavigationLink(destination: nextView()) {
-                    Text("Next")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                           startPoint: .topLeading,
-                                           endPoint: .bottomTrailing)
-                        )
-                        .cornerRadius(10)
-                        .padding(.horizontal)
-                        .shadow(radius: 5)
-                }
-                .padding(.bottom, 50)
+            NavigationLink(destination: nextView()) {
+                Text("Next")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                       startPoint: .topLeading,
+                                       endPoint: .bottomTrailing)
+                    )
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .shadow(radius: 5)
             }
+            .padding(.bottom, 50)
+            .disabled(!isAnyOptionSelected())
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
+    }
+
+    private func isAnyOptionSelected() -> Bool {
+        return hasDebt || hasExpenses || hasSavingsGoals
     }
 
     @ViewBuilder
@@ -86,10 +86,6 @@ struct CategoryQuestionView: View {
             ContentView(selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)
                 .environmentObject(BudgetCategoryStore.shared)
         }
-    }
-
-    private func updateNextButtonVisibility() {
-        // This method is a placeholder to trigger a state update when toggles are changed.
     }
 }
 

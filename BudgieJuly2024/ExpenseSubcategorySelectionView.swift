@@ -33,7 +33,6 @@ struct ExpenseSubcategorySelectionView: View {
                             )) {
                                 Text(subcategory.name)
                             }
-                            .toggleStyle(SwitchToggleStyle(tint: Color.blue)) // Updated to blue
                         }
                     }
                 }
@@ -42,7 +41,7 @@ struct ExpenseSubcategorySelectionView: View {
 
             Spacer()
 
-            NavigationLink(destination: ExpenseSubcategoryAmountInputView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: selectedCategories)
+            NavigationLink(destination: ExpenseSubcategoryAmountInputView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: selectedCategories, hasSavingsGoals: hasSavingsGoals)
                 .environmentObject(budgetCategoryStore)) {
                 Text("Next")
                     .font(.headline)

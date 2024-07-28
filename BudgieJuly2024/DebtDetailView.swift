@@ -175,16 +175,6 @@ struct DebtCategoryView: View {
     }
 }
 
-extension DateFormatter {
-    static var mediumStyle: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        return formatter
-    }
-}
-
 struct DebtDetailView_Previews: PreviewProvider {
     static var previews: some View {
         DebtDetailView(income: .constant("5000"), paymentFrequency: .constant(.monthly), hasExpenses: true, hasSavingsGoals: true)

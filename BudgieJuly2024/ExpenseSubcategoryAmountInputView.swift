@@ -5,6 +5,7 @@ struct ExpenseSubcategoryAmountInputView: View {
     @Binding var paymentFrequency: PaymentCadence
     var selectedCategories: [BudgetCategory]
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
+    var hasSavingsGoals: Bool
 
     var body: some View {
         VStack {
@@ -72,8 +73,7 @@ struct ExpenseSubcategoryAmountInputView: View {
             
             Spacer()
             
-            NavigationLink(destination: ContentView(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)
-                .environmentObject(budgetCategoryStore)) {
+            NavigationLink(destination: nextView()) {
                 Text("Next")
                     .font(.headline)
                     .foregroundColor(.white)
@@ -92,11 +92,22 @@ struct ExpenseSubcategoryAmountInputView: View {
         .navigationTitle("Enter Expense Amounts")
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
     }
+
+    @ViewBuilder
+    private func nextView() -> some View {
+        if hasSavingsGoals {
+            SavingsSelectionView(income: $income, paymentFrequency: $paymentFrequency)
+                .environmentObject(budgetCategoryStore)
+        } else {
+            ContentView(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)
+                .environmentObject(budgetCategoryStore)
+        }
+    }
 }
 
 struct ExpenseSubcategoryAmountInputView_Previews: PreviewProvider {
     static var previews: some View {
-        ExpenseSubcategoryAmountInputView(income: .constant("5000"), paymentFrequency: .constant(.monthly), selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected })
+        ExpenseSubcategoryAmountInputView(income: .constant("5000"), paymentFrequency: .constant(.monthly), selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected }, hasSavingsGoals: true)
             .environmentObject(BudgetCategoryStore.shared)
     }
 }
