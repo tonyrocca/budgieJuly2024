@@ -199,4 +199,11 @@ class BudgetCategoryStore: ObservableObject {
             categories[categoryIndex].subcategories.remove(at: subIndex)
         }
     }
+
+    func updateCategoryAmountAndDueDate(categoryId: UUID, amount: Double, dueDate: Date) {
+        if let index = categories.firstIndex(where: { $0.id == categoryId }) {
+            categories[index].amount = amount
+            categories[index].dueDate = dueDate
+        }
+    }
 }

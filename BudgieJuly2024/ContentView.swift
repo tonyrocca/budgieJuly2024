@@ -35,7 +35,7 @@ struct ContentView: View {
     init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String) {
         self._paymentCadence = State(initialValue: paymentFrequency)
         self._paycheckAmountText = State(initialValue: paycheckAmountText)
-        self._budgieModel = State(initialValue: BudgieModel(paycheckAmount: 0.0))
+        self._budgieModel = State(initialValue: BudgieModel(paycheckAmount: Double(paycheckAmountText) ?? 0.0))
         self.selectedCategories = selectedCategories
     }
 
@@ -82,7 +82,7 @@ struct ContentView: View {
                         budgetStatusView()
                             .padding(.horizontal)
                             .padding(.top, 8)
-                        
+
                         allocationListView()
                             .padding(.horizontal)
                     }
@@ -118,24 +118,28 @@ struct ContentView: View {
             }
             .onAppear {
                 formatAndCalculatePaycheckAmount()
+                calculateBudget()
             }
         }
     }
 
     private func budgetStatusView() -> some View {
         let (message, color) = budgetStatus
-        return HStack {
-            Text("\(message) ")
-                .font(.headline)
-                .foregroundColor(.black)
-            Text(budgetDifference)
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundColor(color)
+        return VStack {
+            HStack {
+                Text("\(message) ")
+                    .font(.headline)
+                    .foregroundColor(.black)
+                Text(budgetDifference)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(color)
+            }
+            .padding()
+            .background(Color(UIColor.systemGray5))
+            .cornerRadius(10)
         }
-        .padding()
-        .background(Color(UIColor.systemGray5))
-        .cornerRadius(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func allocationListView() -> some View {
@@ -154,6 +158,7 @@ struct ContentView: View {
             .padding()
             .background(Color(UIColor.systemGray5))
             .cornerRadius(10)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             ForEach(selectedCategories) { category in
                 VStack {
