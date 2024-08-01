@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		7713A2CD2C32005900A0AFCE /* BudgieJuly2024App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A2CC2C32005900A0AFCE /* BudgieJuly2024App.swift */; };
 		7713A2CF2C32005900A0AFCE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A2CE2C32005900A0AFCE /* ContentView.swift */; };
-		7713A2D12C32005A00A0AFCE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7713A2D02C32005A00A0AFCE /* Assets.xcassets */; };
 		7713A2D42C32005A00A0AFCE /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7713A2D32C32005A00A0AFCE /* Preview Assets.xcassets */; };
 		7713A2D62C32005A00A0AFCE /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A2D52C32005A00A0AFCE /* Persistence.swift */; };
 		7713A2D92C32005A00A0AFCE /* BudgieJuly2024.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 7713A2D72C32005A00A0AFCE /* BudgieJuly2024.xcdatamodeld */; };
@@ -23,6 +22,7 @@
 		7713A3182C462AA300A0AFCE /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A3172C462AA300A0AFCE /* WelcomeView.swift */; };
 		7713A31E2C462F3900A0AFCE /* DebtDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A31D2C462F3900A0AFCE /* DebtDetailView.swift */; };
 		7713A3202C462F4B00A0AFCE /* DebtSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A31F2C462F4B00A0AFCE /* DebtSelectionView.swift */; };
+		776125A72C5750E9001E5453 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7713A2D02C32005A00A0AFCE /* Assets.xcassets */; };
 		77BEB70E2C4CCCB10000AFB9 /* CategoryQuestionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB70D2C4CCCB10000AFB9 /* CategoryQuestionView.swift */; };
 		77BEB7122C4CCEDF0000AFB9 /* ExpenseSelctionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7112C4CCEDF0000AFB9 /* ExpenseSelctionView.swift */; };
 		77BEB7182C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7172C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift */; };
@@ -276,8 +276,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				776125A72C5750E9001E5453 /* Assets.xcassets in Resources */,
 				7713A2D42C32005A00A0AFCE /* Preview Assets.xcassets in Resources */,
-				7713A2D12C32005A00A0AFCE /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -494,8 +494,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tony.BudgieJuly2024;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tony.BudgieJuly2024v01;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -523,8 +523,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.tony.BudgieJuly2024;
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tony.BudgieJuly2024v01;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
