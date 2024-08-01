@@ -95,20 +95,25 @@ struct ContentView: View {
                     Button(action: {
                         showCategorySelection = true
                     }) {
-                        Image(systemName: "plus.circle.fill")
-                            .resizable()
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(.blue)
-                            .shadow(radius: 4)
+                        Text("Enhance")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(
+                                LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing)
+                            )
+                            .cornerRadius(10)
+                            .padding(.trailing, 16)
+                            .padding(.bottom, 16)
                     }
-                    .padding(.trailing, 16)
-                    .padding(.bottom, 16)
                 }
             }
             .navigationBarHidden(true)
             .environmentObject(budgetCategoryStore)
             .sheet(isPresented: $showCategorySelection) {
-                // Show category selection view or any other view when the user clicks "Add Categories"
+                // Show category selection view or any other view when the user clicks "Enhance"
             }
             .sheet(isPresented: $showPredefinedSubcategorySelection) {
                 predefinedSubcategorySelection()
