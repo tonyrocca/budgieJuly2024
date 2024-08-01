@@ -7,61 +7,131 @@ struct ExpenseSubcategorySelectionView: View {
     var selectedCategories: [BudgetCategory]
     var hasSavingsGoals: Bool
 
-    var body: some View {
-        VStack {
-            Text("Select the subcategories for your expenses.")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.top, 20)
-                .padding(.horizontal, 20)
-                .multilineTextAlignment(.center)
-                .padding(.bottom, 10)
+    @State private var showAddSubcategoryForm = false
+    @State private var newSubcategoryName = ""
+    @State private var currentCategoryID: UUID?
 
-            List {
-                ForEach(selectedCategories.filter { $0.type == .need }) { category in
-                    Section(header: Text("\(category.emoji) \(category.name)")) {
-                        ForEach(category.subcategories) { subcategory in
-                            Toggle(isOn: Binding(
-                                get: { subcategory.isSelected },
-                                set: { newValue in
-                                    if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                        if let subcategoryIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-                                            budgetCategoryStore.categories[categoryIndex].subcategories[subcategoryIndex].isSelected = newValue
+    var body: some View {
+        ZStack {
+            VStack {
+                Text("Select the subcategories for your expenses.")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.top, 20)
+                    .padding(.horizontal, 20)
+                    .multilineTextAlignment(.center)
+                    .padding(.bottom, 10)
+
+                List {
+                    ForEach(selectedCategories.filter { $0.type == .need }) { category in
+                        Section(header: Text("\(category.emoji) \(category.name.capitalized)").font(.headline)) {
+                            ForEach(category.subcategories) { subcategory in
+                                Toggle(isOn: Binding(
+                                    get: { subcategory.isSelected },
+                                    set: { newValue in
+                                        if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                            if let subcategoryIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
+                                                budgetCategoryStore.categories[categoryIndex].subcategories[subcategoryIndex].isSelected = newValue
+                                            }
                                         }
                                     }
+                                )) {
+                                    Text(subcategory.name)
                                 }
-                            )) {
-                                Text(subcategory.name)
+                                .toggleStyle(SwitchToggleStyle(tint: .blue)) // Change toggle color to blue
                             }
-                            .toggleStyle(SwitchToggleStyle(tint: .blue)) // Change toggle color to blue
+                            
+                            HStack {
+                                Text("Add Subcategory")
+                                    .font(.body)
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Button(action: {
+                                    withAnimation {
+                                        currentCategoryID = category.id
+                                        showAddSubcategoryForm = true
+                                    }
+                                }) {
+                                    Text("Add")
+                                        .font(.body)
+                                        .foregroundColor(.white)
+                                        .frame(width: 50, height: 30)  // Adjust to match the dimensions of the toggle button
+                                        .background(Color.blue)
+                                        .cornerRadius(15)  // Adjust to match the style of the toggle button
+                                }
+                            }
+                            .padding(.vertical, 6)
                         }
                     }
                 }
-            }
-            .listStyle(InsetGroupedListStyle())
+                .listStyle(InsetGroupedListStyle())
 
-            Spacer()
+                Spacer()
 
-            NavigationLink(destination: ExpenseSubcategoryAmountInputView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: selectedCategories, hasSavingsGoals: hasSavingsGoals)
-                .environmentObject(budgetCategoryStore)) {
-                Text("Next")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                       startPoint: .topLeading,
-                                       endPoint: .bottomTrailing)
-                    )
-                    .cornerRadius(10)
-                    .padding(.horizontal)
-                    .shadow(radius: 5)
+                NavigationLink(destination: ExpenseSubcategoryAmountInputView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: selectedCategories, hasSavingsGoals: hasSavingsGoals)
+                    .environmentObject(budgetCategoryStore)) {
+                    Text("Next")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                           startPoint: .topLeading,
+                                           endPoint: .bottomTrailing)
+                        )
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                        .shadow(radius: 5)
+                }
+                .padding(.bottom, 50)
             }
-            .padding(.bottom, 50)
+            .navigationTitle("Select Subcategories")
+            .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
+
+            if showAddSubcategoryForm {
+                Color.black.opacity(0.4)
+                    .edgesIgnoringSafeArea(.all)
+                VStack(spacing: 16) {
+                    Text("Add New Expense Subcategory")
+                        .font(.headline)
+                        .padding(.top, 16)
+
+                    TextField("Name", text: $newSubcategoryName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                        .background(Color(UIColor.systemGray6))
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+
+                    Button(action: {
+                        withAnimation {
+                            showAddSubcategoryForm = false
+                        }
+                        let newSubcategory = BudgetSubCategory(name: newSubcategoryName, allocationPercentage: 0.0, description: "")
+                        if let categoryID = currentCategoryID {
+                            budgetCategoryStore.addSubcategoryToCategory(newSubcategory, categoryID: categoryID)
+                        }
+                    }) {
+                        Text("Add")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .cornerRadius(10)
+                            .padding(.horizontal)
+                    }
+                    .padding(.bottom, 16)
+                }
+                .frame(width: 300, height: 200)
+                .background(Color.white)
+                .cornerRadius(20)
+                .shadow(radius: 20)
+                .transition(.move(edge: .bottom))
+                .zIndex(1)
+            }
         }
-        .navigationTitle("Select Subcategories")
-        .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
     }
 }
 

@@ -206,4 +206,10 @@ class BudgetCategoryStore: ObservableObject {
             categories[index].dueDate = dueDate
         }
     }
+
+    func addSubcategoryToCategory(_ subcategory: BudgetSubCategory, categoryID: UUID) {
+        if let index = categories.firstIndex(where: { $0.id == categoryID }) {
+            categories[index].subcategories.append(subcategory)
+        }
+    }
 }

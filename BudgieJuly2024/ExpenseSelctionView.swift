@@ -23,7 +23,7 @@ struct ExpenseSelectionView: View {
                             Text(category.name)
                         }
                     }
-                    .toggleStyle(SwitchToggleStyle(tint: Color.blue)) // Updated to blue
+                    .toggleStyle(SwitchToggleStyle(tint: Color.blue))
                 }
             }
 
