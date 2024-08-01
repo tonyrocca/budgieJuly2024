@@ -85,6 +85,30 @@ class BudgetCategoryStore: ObservableObject {
                 description: "Credit card debt",
                 type: .debt
             ),
+            BudgetCategory(
+                name: "Personal Loan",
+                emoji: "💰",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Personal loan debt",
+                type: .debt
+            ),
+            BudgetCategory(
+                name: "Auto Loan",
+                emoji: "🚗",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Auto loan debt",
+                type: .debt
+            ),
+            BudgetCategory(
+                name: "Mortgage",
+                emoji: "🏠",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Mortgage debt",
+                type: .debt
+            ),
             // Expense Categories
             BudgetCategory(
                 name: "Housing",
@@ -95,7 +119,9 @@ class BudgetCategoryStore: ObservableObject {
                     BudgetSubCategory(name: "Rent", allocationPercentage: 0.0, description: ""),
                     BudgetSubCategory(name: "Utilities", allocationPercentage: 0.0, description: ""),
                     BudgetSubCategory(name: "HOA Fee", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Home Maintenance", allocationPercentage: 0.0, description: "")
+                    BudgetSubCategory(name: "Home Maintenance", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Property Tax", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Home Insurance", allocationPercentage: 0.0, description: "")
                 ],
                 description: "Housing related expenses",
                 type: .need
@@ -109,9 +135,65 @@ class BudgetCategoryStore: ObservableObject {
                     BudgetSubCategory(name: "Public Transportation", allocationPercentage: 0.0, description: ""),
                     BudgetSubCategory(name: "Ride Share", allocationPercentage: 0.0, description: ""),
                     BudgetSubCategory(name: "Tolls", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Maintenance", allocationPercentage: 0.0, description: "")
+                    BudgetSubCategory(name: "Maintenance", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Fuel", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Car Insurance", allocationPercentage: 0.0, description: "")
                 ],
                 description: "Transportation related expenses",
+                type: .need
+            ),
+            BudgetCategory(
+                name: "Food",
+                emoji: "🍽️",
+                allocationPercentage: 0.0,
+                subcategories: [
+                    BudgetSubCategory(name: "Groceries", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Dining Out", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Snacks", allocationPercentage: 0.0, description: "")
+                ],
+                description: "Food related expenses",
+                type: .need
+            ),
+            BudgetCategory(
+                name: "Healthcare",
+                emoji: "🩺",
+                allocationPercentage: 0.0,
+                subcategories: [
+                    BudgetSubCategory(name: "Insurance Premiums", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Doctor Visits", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Medications", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Dental Care", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Vision Care", allocationPercentage: 0.0, description: "")
+                ],
+                description: "Healthcare related expenses",
+                type: .need
+            ),
+            BudgetCategory(
+                name: "Entertainment",
+                emoji: "🎬",
+                allocationPercentage: 0.0,
+                subcategories: [
+                    BudgetSubCategory(name: "Streaming Services", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Movies", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Concerts", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Games", allocationPercentage: 0.0, description: "")
+                ],
+                description: "Entertainment related expenses",
+                type: .want
+            ),
+            BudgetCategory(
+                name: "Utilities",
+                emoji: "💡",
+                allocationPercentage: 0.0,
+                subcategories: [
+                    BudgetSubCategory(name: "Electricity", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Water", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Gas", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Internet", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Cable", allocationPercentage: 0.0, description: ""),
+                    BudgetSubCategory(name: "Trash", allocationPercentage: 0.0, description: "")
+                ],
+                description: "Utility related expenses",
                 type: .need
             ),
             // Savings Categories
@@ -169,6 +251,30 @@ class BudgetCategoryStore: ObservableObject {
                 allocationPercentage: 0.0,
                 subcategories: [],
                 description: "Savings for education",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Retirement",
+                emoji: "🏖️",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for retirement",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "House Down Payment",
+                emoji: "🏠",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for a house down payment",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "College Fund",
+                emoji: "🎓",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for college",
                 type: .saving
             )
         ]
