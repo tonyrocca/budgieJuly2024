@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct PaymentInputView: View {
     @State private var income: String = ""
@@ -17,74 +18,82 @@ struct PaymentInputView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("How much do you make when you get paid?")
-                .font(.headline)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.top, 32)
-
-            HStack {
-                Text("$")
-                    .padding(.leading, 16)
-                TextField("Enter your income", text: $income)
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .padding(12)
-                    .background(Color(UIColor.systemGray5))
-                    .cornerRadius(8)
-                    .keyboardType(.decimalPad)
-                    .onChange(of: income) { newValue in
-                        income = formatCurrencyInput(newValue)
-                        if !income.isEmpty {
-                            showPaymentFrequency = true
-                        }
-                    }
-                    .multilineTextAlignment(.trailing)
-                    .padding(.trailing, 16)
-            }
-            .background(Color(UIColor.systemGray5))
-            .cornerRadius(8)
-            .padding(.horizontal, 16)
-
-            if showPaymentFrequency {
-                Text("How often do you get paid?")
-                    .font(.headline)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            // Header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Enter gross income")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.top, 16)
                     .padding(.horizontal, 16)
+                
+                Text("Please enter your gross income per paycheck and how often you get paid.")
+                    .font(.headline)
+                    .fontWeight(.regular)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 16)
+            }
 
+            // Income input
+            VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Menu {
-                        Picker("Payment Frequency", selection: $paymentFrequency) {
-                            Text("Select frequency")
-                                .tag(PaymentCadence?.none)
-                            ForEach(PaymentCadence.allCases, id: \.self) { frequency in
-                                Text(frequency.rawValue.capitalized)
-                                    .tag(PaymentCadence?.some(frequency))
-                            }
-                        }
-                    } label: {
-                        HStack {
-                            Text(paymentFrequency?.rawValue.capitalized ?? "Select frequency")
-                                .foregroundColor(paymentFrequency == nil ? .gray : .black)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Image(systemName: "chevron.down")
-                                .foregroundColor(.black)
-                        }
+                    Text("$")
+                        .padding(.leading, 16)
+                    TextField("Enter gross income per paycheck", text: $income)
+                        .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(UIColor.systemGray5))
                         .cornerRadius(8)
+                        .keyboardType(.decimalPad)
+                        .onChange(of: income) { newValue in
+                            income = formatCurrencyInput(newValue)
+                            if !income.isEmpty {
+                                showPaymentFrequency = true
+                            }
+                            checkShowNextButton()
+                        }
+                        .multilineTextAlignment(.trailing)
+                        .padding(.trailing, 16)
+                }
+                .background(Color(UIColor.systemGray5))
+                .cornerRadius(8)
+            }
+            .padding(.horizontal, 16)
+
+            // Payment frequency input
+            if showPaymentFrequency {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Menu {
+                            Picker("How often are you paid?", selection: $paymentFrequency) {
+                                ForEach(PaymentCadence.allCases, id: \.self) { frequency in
+                                    Text(frequency.rawValue.capitalized)
+                                        .tag(PaymentCadence?.some(frequency))
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Text(paymentFrequency?.rawValue.capitalized ?? "How often do you get paid?")
+                                    .foregroundColor(paymentFrequency == nil ? .gray : .black)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                Image(systemName: "chevron.down")
+                                    .foregroundColor(.black)
+                            }
+                            .padding(12)
+                            .background(Color(UIColor.systemGray5))
+                            .cornerRadius(8)
+                        }
+                        .frame(maxWidth: .infinity)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 16)
-                    .onChange(of: paymentFrequency) { newValue in
-                        showNextButton = newValue != nil
+                    .onChange(of: paymentFrequency) { _ in
+                        checkShowNextButton()
                     }
                 }
+                .padding(.horizontal, 16)
             }
 
             Spacer()
 
+            // Next button
             if showNextButton {
                 NavigationLink(destination: CategoryQuestionView(income: .constant(income), paymentFrequency: $paymentFrequency.unwrap(defaultValue: .monthly))) {
                     Text("Next")
@@ -113,6 +122,14 @@ struct PaymentInputView: View {
             return String(format: "%.2f", value / 100)
         }
         return ""
+    }
+
+    private func checkShowNextButton() {
+        if !income.isEmpty, paymentFrequency != nil {
+            showNextButton = true
+        } else {
+            showNextButton = false
+        }
     }
 }
 
