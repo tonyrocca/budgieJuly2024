@@ -9,18 +9,27 @@ struct CategoryQuestionView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Please select the key sections you want to include in your budget.")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.top, 20)
-                .padding(.horizontal, 20)
-                .multilineTextAlignment(.center)
+            // Header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Choose categories")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.top, 16)
+                    .padding(.horizontal, 16)
+                
+                Text("Select yes or no on categories you want your budget to manage.")
+                    .font(.headline)
+                    .fontWeight(.regular)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 16)
+            }
+            .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
 
             List {
                 Toggle(isOn: $hasDebt) {
                     HStack {
                         Text("💳")
-                        Text("Debt")
+                        Text("Do you have debt?")
                     }
                 }
                 .toggleStyle(SwitchToggleStyle(tint: Color.blue))
@@ -28,7 +37,7 @@ struct CategoryQuestionView: View {
                 Toggle(isOn: $hasExpenses) {
                     HStack {
                         Text("🏠")
-                        Text("Expenses")
+                        Text("Do you have expenses?")
                     }
                 }
                 .toggleStyle(SwitchToggleStyle(tint: Color.blue))
@@ -36,7 +45,7 @@ struct CategoryQuestionView: View {
                 Toggle(isOn: $hasSavingsGoals) {
                     HStack {
                         Text("💰")
-                        Text("Savings")
+                        Text("Do you have savings?")
                     }
                 }
                 .toggleStyle(SwitchToggleStyle(tint: Color.blue))
