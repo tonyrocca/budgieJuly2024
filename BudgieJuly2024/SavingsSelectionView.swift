@@ -6,14 +6,22 @@ struct SavingsSelectionView: View {
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
 
     var body: some View {
-        VStack {
-            Text("Select your savings goals.")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.top, 20)
-                .padding(.horizontal, 20)
-                .multilineTextAlignment(.center)
-                .padding(.bottom, 10)
+        VStack(spacing: 16) {
+            // Header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Select your savings goals")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.top, 16)
+                    .padding(.horizontal, 16)
+                
+                Text("Choose the savings goals you want to achieve.")
+                    .font(.headline)
+                    .fontWeight(.regular)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 16)
+            }
+            .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
 
             List {
                 ForEach(budgetCategoryStore.categories.filter { $0.type == .saving }) { category in
