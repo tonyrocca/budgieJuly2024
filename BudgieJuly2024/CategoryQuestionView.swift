@@ -16,11 +16,12 @@ struct CategoryQuestionView: View {
                     .fontWeight(.bold)
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
+                    .foregroundColor(.primary)
                 
                 Text("Select yes or no on categories you want your budget to manage.")
                     .font(.headline)
                     .fontWeight(.regular)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
             }
             .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView

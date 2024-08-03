@@ -31,11 +31,12 @@ struct DebtDetailView: View {
                     .fontWeight(.bold)
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
+                    .foregroundColor(.primary)
                 
                 Text("Enter your debt amount and when it is due.")
                     .font(.headline)
                     .fontWeight(.regular)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
             }
             .padding(.bottom, 16)  // Adjusted padding to create space between header and input card
@@ -124,6 +125,7 @@ struct DebtCategoryView: View {
             HStack {
                 Text("\(category.emoji) \(category.name)")
                     .font(.headline)
+                    .foregroundColor(.primary)
                 Spacer()
             }
             .padding(.horizontal, 16)
@@ -144,6 +146,7 @@ struct DebtCategoryView: View {
             HStack {
                 Text("When is the debt due?")
                     .font(.subheadline)
+                    .foregroundColor(.primary)
                     .padding(.leading, 16)
                 Spacer()
                 Text(selectedDates[category.id]?.formatted(.dateTime.year().month().day()) ?? Date().formatted(.dateTime.year().month().day()))
@@ -174,7 +177,7 @@ struct DebtCategoryView: View {
                 .padding(.bottom, 12)
             }
         }
-        .background(Color.white)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(10)
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 4)
         .padding(.horizontal, 16)

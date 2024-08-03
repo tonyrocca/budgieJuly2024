@@ -75,8 +75,9 @@ struct ContentView: View {
                         .fontWeight(.bold)
                         .padding(.top, 16)
                         .padding(.horizontal, 16)
+                        .foregroundColor(Color.primary)
                 }
-                .background(Color.white)
+                .background(Color(UIColor.systemBackground))
                 .zIndex(1)
 
                 ScrollView {
@@ -128,6 +129,7 @@ struct ContentView: View {
                 calculateBudget()
             }
         }
+        .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
     }
 
     private func budgetStatusView() -> some View {
@@ -136,14 +138,14 @@ struct ContentView: View {
             HStack {
                 Text("\(message) ")
                     .font(.headline)
-                    .foregroundColor(.black)
+                    .foregroundColor(Color.primary)
                 Text(budgetDifference)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(color)
             }
             .padding()
-            .background(Color(UIColor.systemGray5))
+            .background(Color(UIColor.secondarySystemBackground))
             .cornerRadius(10)
         }
         .frame(maxWidth: .infinity)
@@ -163,7 +165,7 @@ struct ContentView: View {
                     .foregroundColor(.primary)
             }
             .padding()
-            .background(Color(UIColor.systemGray5))
+            .background(Color(UIColor.secondarySystemBackground))
             .cornerRadius(10)
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -190,7 +192,7 @@ struct ContentView: View {
                 Spacer()
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")")
                     .font(.body)
-                    .foregroundColor(.black)
+                    .foregroundColor(Color.primary)
                 Button(action: {
                     withAnimation {
                         expandedCategoryIndex = expandedCategoryIndex == category.id ? nil : category.id
@@ -224,7 +226,7 @@ struct ContentView: View {
                 Spacer()
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[subcategory.id] ?? 0)) ?? "$0")")
                     .font(.body)
-                    .foregroundColor(.black)
+                    .foregroundColor(Color.primary)
                 Button(action: {
                     withAnimation {
                         expandedSubCategoryIndex = expandedSubCategoryIndex == subcategory.id ? nil : subcategory.id
@@ -241,7 +243,7 @@ struct ContentView: View {
                     Text("Description")
                         .font(.subheadline)
                         .bold()
-                        .foregroundColor(.black)
+                        .foregroundColor(Color.primary)
                     TextEditor(text: Binding(
                         get: { subcategory.description },
                         set: { newValue in
@@ -259,7 +261,7 @@ struct ContentView: View {
                     Text("Subcategory Amount")
                         .font(.subheadline)
                         .bold()
-                        .foregroundColor(.black)
+                        .foregroundColor(Color.primary)
                     TextField("Amount", value: Binding(
                         get: { allocations[subcategory.id] ?? 0.0 },
                         set: { newValue in

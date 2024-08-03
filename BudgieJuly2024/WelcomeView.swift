@@ -7,11 +7,13 @@ struct WelcomeView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .padding(.top, 16)
+                .foregroundColor(.primary)
 
             Text("Learn how to budget and achieve your financial goals.")
                 .font(.headline)
                 .padding(.horizontal, 16)
                 .multilineTextAlignment(.center)
+                .foregroundColor(.primary)
 
             Spacer()
 

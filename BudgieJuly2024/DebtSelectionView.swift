@@ -21,11 +21,12 @@ struct DebtSelectionView: View {
                         .fontWeight(.bold)
                         .padding(.top, 16)
                         .padding(.horizontal, 16)
+                        .foregroundColor(.primary)
                     
                     Text("Choose the debt you currently are paying off.")
                         .font(.headline)
                         .fontWeight(.regular)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                         .padding(.horizontal, 16)
                 }
                 .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
@@ -54,6 +55,7 @@ struct DebtSelectionView: View {
                                 Text(category.emoji)
                                 Text(category.name)
                             }
+                            .foregroundColor(.primary)
                         }
                     }
                     HStack {
@@ -62,6 +64,7 @@ struct DebtSelectionView: View {
                             Text("Add Category")
                                 .font(.body)
                         }
+                        .foregroundColor(.primary)
                         Spacer()
                         Button(action: {
                             withAnimation {
@@ -110,6 +113,7 @@ struct DebtSelectionView: View {
                     Text("Add New Debt Category")
                         .font(.headline)
                         .padding(.top, 16)
+                        .foregroundColor(.primary)
 
                     TextField("Name", text: $newDebtName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -146,7 +150,7 @@ struct DebtSelectionView: View {
                     .padding(.bottom, 16)
                 }
                 .frame(width: 300, height: 200)
-                .background(Color.white)
+                .background(Color(UIColor.systemBackground))
                 .cornerRadius(20)
                 .shadow(radius: 20)
                 .transition(.move(edge: .bottom))

@@ -14,11 +14,12 @@ struct SavingsSelectionView: View {
                     .fontWeight(.bold)
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
+                    .foregroundColor(.primary)
                 
                 Text("Choose the savings goals you want to achieve.")
                     .font(.headline)
                     .fontWeight(.regular)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
             }
             .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
@@ -37,6 +38,7 @@ struct SavingsSelectionView: View {
                             Text(category.emoji)
                             Text(category.name)
                         }
+                        .foregroundColor(.primary)
                     }
                     .toggleStyle(SwitchToggleStyle(tint: .blue)) // Change toggle color to blue
                 }

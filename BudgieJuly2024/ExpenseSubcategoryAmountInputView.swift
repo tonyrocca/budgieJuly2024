@@ -8,7 +8,7 @@ struct ExpenseSubcategoryAmountInputView: View {
     var hasSavingsGoals: Bool
 
     var body: some View {
-        VStack {
+        VStack(spacing: 16) {
             // Header
             VStack(alignment: .leading, spacing: 4) {
                 Text("Enter expense amounts")
@@ -16,11 +16,12 @@ struct ExpenseSubcategoryAmountInputView: View {
                     .fontWeight(.bold)
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
+                    .foregroundColor(.primary)
                 
                 Text("Please enter the amount you pay for each selected expense per month.")
                     .font(.headline)
                     .fontWeight(.regular)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
             }
             .padding(.bottom, 16)  // Adjusted padding to match PaymentInputView
@@ -65,7 +66,7 @@ struct ExpenseSubcategoryAmountInputView: View {
                                 }
                             }
                             .padding(.vertical, 10)
-                            .background(Color.white)
+                            .background(Color(UIColor.systemBackground))
                             .cornerRadius(10)
                             .padding(.horizontal, 10)
                         }

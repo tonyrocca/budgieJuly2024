@@ -15,11 +15,12 @@ struct ExpenseSelectionView: View {
                     .fontWeight(.bold)
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
+                    .foregroundColor(.primary)
                 
                 Text("Choose the expenses you currently have.")
                     .font(.headline)
                     .fontWeight(.regular)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
             }
             .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
@@ -38,6 +39,7 @@ struct ExpenseSelectionView: View {
                             Text(category.emoji)
                             Text(category.name)
                         }
+                        .foregroundColor(.primary)
                     }
                     .toggleStyle(SwitchToggleStyle(tint: Color.blue))
                 }

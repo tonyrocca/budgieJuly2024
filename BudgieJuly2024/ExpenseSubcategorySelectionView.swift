@@ -21,18 +21,19 @@ struct ExpenseSubcategorySelectionView: View {
                         .fontWeight(.bold)
                         .padding(.top, 16)
                         .padding(.horizontal, 16)
+                        .foregroundColor(.primary)
                     
                     Text("Choose the specific categories for your expenses.")
                         .font(.headline)
                         .fontWeight(.regular)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                         .padding(.horizontal, 16)
                 }
                 .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
 
                 List {
                     ForEach(selectedCategories.filter { $0.type == .need }) { category in
-                        Section(header: Text("\(category.emoji) \(category.name.capitalized)").font(.headline)) {
+                        Section(header: Text("\(category.emoji) \(category.name.capitalized)").font(.headline).foregroundColor(.primary)) {
                             ForEach(category.subcategories) { subcategory in
                                 Toggle(isOn: Binding(
                                     get: { subcategory.isSelected },
@@ -52,7 +53,7 @@ struct ExpenseSubcategorySelectionView: View {
                             HStack {
                                 Text("Add Subcategory")
                                     .font(.body)
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.primary)
                                 Spacer()
                                 Button(action: {
                                     withAnimation {
@@ -104,6 +105,7 @@ struct ExpenseSubcategorySelectionView: View {
                     Text("Add New Expense Subcategory")
                         .font(.headline)
                         .padding(.top, 16)
+                        .foregroundColor(.primary)
 
                     TextField("Name", text: $newSubcategoryName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -133,7 +135,7 @@ struct ExpenseSubcategorySelectionView: View {
                     .padding(.bottom, 16)
                 }
                 .frame(width: 300, height: 200)
-                .background(Color.white)
+                .background(Color(UIColor.systemBackground))
                 .cornerRadius(20)
                 .shadow(radius: 20)
                 .transition(.move(edge: .bottom))

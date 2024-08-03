@@ -25,11 +25,12 @@ struct PaymentInputView: View {
                     .fontWeight(.bold)
                     .padding(.top, 16)
                     .padding(.horizontal, 16)
-                
+                    .foregroundColor(.primary)
+
                 Text("Please enter your gross income per paycheck and how often you get paid.")
                     .font(.headline)
                     .fontWeight(.regular)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
             }
 
@@ -38,6 +39,7 @@ struct PaymentInputView: View {
                 HStack {
                     Text("$")
                         .padding(.leading, 16)
+                        .foregroundColor(.primary)
                     TextField("Enter gross income per paycheck", text: $income)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
@@ -73,10 +75,10 @@ struct PaymentInputView: View {
                         } label: {
                             HStack {
                                 Text(paymentFrequency?.rawValue.capitalized ?? "How often do you get paid?")
-                                    .foregroundColor(paymentFrequency == nil ? .gray : .black)
+                                    .foregroundColor(paymentFrequency == nil ? .secondary : .primary)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                 Image(systemName: "chevron.down")
-                                    .foregroundColor(.black)
+                                    .foregroundColor(.primary)
                             }
                             .padding(12)
                             .background(Color(UIColor.systemGray5))
