@@ -68,11 +68,13 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                VStack(spacing: 12) {
+                // Header
+                VStack(alignment: .leading, spacing: 4) {
                     Text("Your Personalized Budget")
                         .font(.title)
                         .fontWeight(.bold)
                         .padding(.top, 16)
+                        .padding(.horizontal, 16)
                 }
                 .background(Color.white)
                 .zIndex(1)
@@ -144,7 +146,7 @@ struct ContentView: View {
             .background(Color(UIColor.systemGray5))
             .cornerRadius(10)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
     }
 
     private func allocationListView() -> some View {
@@ -181,6 +183,10 @@ struct ContentView: View {
                 Text("\(category.emoji) \(category.name)")
                     .font(.body)
                     .fontWeight(.semibold)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(backgroundColor(for: category))
+                    .cornerRadius(8)
                 Spacer()
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")")
                     .font(.body)
@@ -455,6 +461,19 @@ struct ContentView: View {
         budgieModel.paymentCadence = paymentCadence
         budgieModel.calculateAllocations(selectedCategories: selectedCategories)
         allocations = budgieModel.allocations
+    }
+
+    private func backgroundColor(for category: BudgetCategory) -> Color {
+        switch category.type {
+        case .debt:
+            return Color.red.opacity(0.1)
+        case .need:
+            return Color.yellow.opacity(0.1)
+        case .saving:
+            return Color.green.opacity(0.1)
+        default:
+            return Color.clear
+        }
     }
 }
 
