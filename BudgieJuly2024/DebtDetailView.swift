@@ -24,15 +24,21 @@ struct DebtDetailView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Enter your debt details")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.top, 16)
-
-            Text("Enter your debt amount and when it is due.")
-                .font(.subheadline)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 16)
+            // Header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Enter debt details")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.top, 16)
+                    .padding(.horizontal, 16)
+                
+                Text("Enter your debt amount and when it is due.")
+                    .font(.headline)
+                    .fontWeight(.regular)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 16)
+            }
+            .padding(.bottom, 16)  // Adjusted padding to create space between header and input card
 
             ScrollView {
                 VStack(spacing: 12) {

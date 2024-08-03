@@ -13,14 +13,22 @@ struct DebtSelectionView: View {
 
     var body: some View {
         ZStack {
-            VStack {
-                Text("Select your debt categories.")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding(.top, 20)
-                    .padding(.horizontal, 20)
-                    .multilineTextAlignment(.center)
-                    .padding(.bottom, 10)
+            VStack(spacing: 16) {
+                // Header
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Select your debt categories")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .padding(.top, 16)
+                        .padding(.horizontal, 16)
+                    
+                    Text("Choose the debt you currently are paying off.")
+                        .font(.headline)
+                        .fontWeight(.regular)
+                        .foregroundColor(.gray)
+                        .padding(.horizontal, 16)
+                }
+                .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
 
                 List {
                     ForEach(budgetCategoryStore.categories.filter { $0.type == .debt }) { category in
