@@ -7,7 +7,23 @@ struct ExpenseSelectionView: View {
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
 
     var body: some View {
-        VStack {
+        VStack(spacing: 16) {
+            // Header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Select your expenses")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.top, 16)
+                    .padding(.horizontal, 16)
+                
+                Text("Choose the expenses you currently have.")
+                    .font(.headline)
+                    .fontWeight(.regular)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 16)
+            }
+            .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
+
             List {
                 ForEach(budgetCategoryStore.categories.filter { $0.type == .need }) { category in
                     Toggle(isOn: Binding(
@@ -27,6 +43,8 @@ struct ExpenseSelectionView: View {
                 }
             }
 
+            Spacer()
+
             NavigationLink(destination: ExpenseSubcategorySelectionView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, hasSavingsGoals: hasSavingsGoals)
                 .environmentObject(budgetCategoryStore)) {
                 Text("Next")
@@ -45,7 +63,7 @@ struct ExpenseSelectionView: View {
             }
             .padding(.bottom, 50)
         }
-        .navigationTitle("Select Expense Categories")
+        .navigationTitle("Select Expenses")
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
     }
 }

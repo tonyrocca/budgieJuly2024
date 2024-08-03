@@ -13,14 +13,22 @@ struct ExpenseSubcategorySelectionView: View {
 
     var body: some View {
         ZStack {
-            VStack {
-                Text("Select the subcategories for your expenses.")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding(.top, 20)
-                    .padding(.horizontal, 20)
-                    .multilineTextAlignment(.center)
-                    .padding(.bottom, 10)
+            VStack(spacing: 16) {
+                // Header
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Select expense subcategories")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .padding(.top, 16)
+                        .padding(.horizontal, 16)
+                    
+                    Text("Choose the specific categories for your expenses.")
+                        .font(.headline)
+                        .fontWeight(.regular)
+                        .foregroundColor(.gray)
+                        .padding(.horizontal, 16)
+                }
+                .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
 
                 List {
                     ForEach(selectedCategories.filter { $0.type == .need }) { category in

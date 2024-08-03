@@ -9,19 +9,22 @@ struct ExpenseSubcategoryAmountInputView: View {
 
     var body: some View {
         VStack {
-            Text("Enter your expense amounts")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.top, 30)
-                .foregroundColor(.primary)
-            
-            Text("Please enter the amount you pay for each selected subcategory per month.")
-                .font(.body)
-                .foregroundColor(.secondary)
-                .padding(.horizontal, 30)
-                .multilineTextAlignment(.center)
-                .padding(.bottom, 20)
-            
+            // Header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Enter expense amounts")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding(.top, 16)
+                    .padding(.horizontal, 16)
+                
+                Text("Please enter the amount you pay for each selected expense per month.")
+                    .font(.headline)
+                    .fontWeight(.regular)
+                    .foregroundColor(.gray)
+                    .padding(.horizontal, 16)
+            }
+            .padding(.bottom, 16)  // Adjusted padding to match PaymentInputView
+
             ScrollView {
                 VStack(spacing: 20) {
                     ForEach(selectedCategories) { category in
@@ -89,7 +92,6 @@ struct ExpenseSubcategoryAmountInputView: View {
             }
             .padding(.bottom, 50)
         }
-        .navigationTitle("Enter Expense Amounts")
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
     }
 
