@@ -13,7 +13,7 @@ struct ContentView: View {
     @State private var expandedSubCategoryIndex: UUID? = nil
     @State private var showCategorySelection = false
     @FocusState private var isInputFocused: Bool
-    @State private var selectedViewOption: BudgetViewOption = .totalMonthly
+    @State private var selectedViewOption: ViewOption = .yourBudget
 
     var selectedCategories: [BudgetCategory]
 
@@ -47,13 +47,31 @@ struct ContentView: View {
         NavigationView {
             VStack(spacing: 0) {
                 // Header
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(spacing: 4) {
                     Text("Your Personalized Budget")
                         .font(.title)
                         .fontWeight(.bold)
                         .padding(.top, 16)
                         .padding(.horizontal, 16)
                         .foregroundColor(Color.primary)
+
+                    // Toggle Buttons
+                    HStack(spacing: 0) {
+                        ToggleButton(label: "My Budget", isSelected: selectedViewOption == .yourBudget) {
+                            selectedViewOption = .yourBudget
+                        }
+                        ToggleButton(label: "Suggested", isSelected: selectedViewOption == .recommendedBudget) {
+                            selectedViewOption = .recommendedBudget
+                        }
+                        ToggleButton(label: "Summary", isSelected: selectedViewOption == .overview) {
+                            selectedViewOption = .overview
+                        }
+                    }
+                    .frame(height: 40)
+                    .background(Color(UIColor.systemGray5))
+                    .cornerRadius(10)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
                 }
                 .background(Color(UIColor.systemBackground))
                 .zIndex(1)
@@ -224,9 +242,30 @@ struct ContentView: View {
     }
 }
 
-enum BudgetViewOption: String {
-    case totalMonthly = "Total Monthly Budget"
-    case perPaycheck = "Per Paycheck View"
+struct ToggleButton: View {
+    var label: String
+    var isSelected: Bool
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(label)
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundColor(isSelected ? .white : .primary)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity)
+                .background(isSelected ? Color.blue : Color.clear)
+                .cornerRadius(isSelected ? 10 : 0)
+        }
+    }
+}
+
+enum ViewOption {
+    case yourBudget
+    case recommendedBudget
+    case overview
 }
 
 struct ContentView_Previews: PreviewProvider {
