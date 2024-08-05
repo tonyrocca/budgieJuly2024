@@ -12,12 +12,6 @@ struct ContentView: View {
     @State private var expandedCategoryIndex: UUID? = nil
     @State private var expandedSubCategoryIndex: UUID? = nil
     @State private var showCategorySelection = false
-    @State private var showPredefinedSubcategorySelection = false
-    @State private var showAddSubcategoryForm = false
-    @State private var newSubcategoryName = ""
-    @State private var newSubcategoryAmount = ""
-    @State private var newSubcategoryDescription = ""
-    @State private var currentCategoryIndex: Int?
     @FocusState private var isInputFocused: Bool
     @State private var selectedViewOption: BudgetViewOption = .totalMonthly
 
@@ -49,22 +43,6 @@ struct ContentView: View {
         return amount
     }
 
-    var budgetStatus: (String, Color) {
-        let totalAllocations = selectedCategories.reduce(0) { $0 + (allocations[$1.id] ?? 0) }
-        let difference = totalPerPaycheckBudget - totalAllocations
-        if difference >= 0 {
-            return ("You have a budget surplus of", .green)
-        } else {
-            return ("You have a budget deficit of", .red)
-        }
-    }
-
-    var budgetDifference: String {
-        let totalAllocations = selectedCategories.reduce(0) { $0 + (allocations[$1.id] ?? 0) }
-        let difference = totalPerPaycheckBudget - totalAllocations
-        return currencyFormatter.string(from: NSNumber(value: abs(difference)))!
-    }
-
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -82,10 +60,6 @@ struct ContentView: View {
 
                 ScrollView {
                     VStack(spacing: 12) {
-                        budgetStatusView()
-                            .padding(.horizontal)
-                            .padding(.top, 8)
-
                         allocationListView()
                             .padding(.horizontal)
                     }
@@ -118,37 +92,12 @@ struct ContentView: View {
             .sheet(isPresented: $showCategorySelection) {
                 // Show category selection view or any other view when the user clicks "Enhance"
             }
-            .sheet(isPresented: $showPredefinedSubcategorySelection) {
-                predefinedSubcategorySelection()
-            }
-            .sheet(isPresented: $showAddSubcategoryForm) {
-                addSubcategoryForm()
-            }
             .onAppear {
                 formatAndCalculatePaycheckAmount()
                 calculateBudget()
             }
         }
         .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
-    }
-
-    private func budgetStatusView() -> some View {
-        let (message, color) = budgetStatus
-        return VStack {
-            HStack {
-                Text("\(message) ")
-                    .font(.headline)
-                    .foregroundColor(Color.primary)
-                Text(budgetDifference)
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(color)
-            }
-            .padding()
-            .background(Color(UIColor.secondarySystemBackground))
-            .cornerRadius(10)
-        }
-        .frame(maxWidth: .infinity)
     }
 
     private func allocationListView() -> some View {
@@ -187,7 +136,6 @@ struct ContentView: View {
                     .fontWeight(.semibold)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 12)
-                    .background(backgroundColor(for: category))
                     .cornerRadius(8)
                 Spacer()
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")")
@@ -206,10 +154,14 @@ struct ContentView: View {
 
             if expandedCategoryIndex == category.id {
                 VStack(alignment: .leading, spacing: 8) {
+                    Text(category.description)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .padding(.bottom, 8)
+
                     ForEach(category.subcategories.filter { $0.isSelected }) { subcategory in
                         subcategoryView(for: subcategory, in: category)
                     }
-                    addSubcategoryButton(for: category)
                 }
                 .padding()
                 .background(Color(UIColor.systemGray6))
@@ -240,209 +192,15 @@ struct ContentView: View {
 
             if expandedSubCategoryIndex == subcategory.id {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Description")
-                        .font(.subheadline)
-                        .bold()
-                        .foregroundColor(Color.primary)
-                    TextEditor(text: Binding(
-                        get: { subcategory.description },
-                        set: { newValue in
-                            if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                if let subIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-                                    budgetCategoryStore.categories[categoryIndex].subcategories[subIndex].description = newValue
-                                }
-                            }
-                        }
-                    ))
-                    .frame(height: 60)
-                    .background(Color(UIColor.systemGray5))
-                    .cornerRadius(8)
-
-                    Text("Subcategory Amount")
-                        .font(.subheadline)
-                        .bold()
-                        .foregroundColor(Color.primary)
-                    TextField("Amount", value: Binding(
-                        get: { allocations[subcategory.id] ?? 0.0 },
-                        set: { newValue in
-                            if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                if let subIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-                                    budgetCategoryStore.categories[categoryIndex].subcategories[subIndex].allocationPercentage = newValue / totalMonthlyBudget
-                                    budgieModel.calculateAllocations(selectedCategories: selectedCategories)
-                                    allocations = budgieModel.allocations
-                                }
-                            }
-                        }
-                    ), formatter: currencyFormatter)
-                    .keyboardType(.decimalPad)
-                    .padding(8)
-                    .background(Color(UIColor.systemGray5))
-                    .cornerRadius(8)
-
-                    Button(action: {
-                        if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                            budgetCategoryStore.deleteSubCategory(from: categoryIndex, subcategory: subcategory)
-                            budgieModel.calculateAllocations(selectedCategories: selectedCategories)
-                            allocations = budgieModel.allocations
-                        }
-                    }) {
-                        HStack {
-                            Image(systemName: "trash.fill")
-                                .foregroundColor(.red)
-                            Text("Delete Subcategory")
-                                .foregroundColor(.red)
-                                .font(.headline)
-                        }
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .background(Color(UIColor.systemGray5))
-                        .cornerRadius(8)
-                        .padding(.horizontal)
-                    }
-                    .buttonStyle(PlainButtonStyle())
+                    Text(subcategory.description)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .padding(.bottom, 8)
                 }
                 .padding()
                 .background(Color(UIColor.systemGray6))
                 .cornerRadius(10)
             }
-        }
-    }
-
-    private func addSubcategoryButton(for category: BudgetCategory) -> some View {
-        Button(action: {
-            if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                currentCategoryIndex = categoryIndex
-                showPredefinedSubcategorySelection = true
-            }
-        }) {
-            HStack {
-                Image(systemName: "plus.circle.fill")
-                    .foregroundColor(.blue)
-                Text("Add Subcategory")
-                    .foregroundColor(.blue)
-                    .font(.headline)
-            }
-            .padding(.vertical, 8)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .background(Color(UIColor.systemGray5))
-            .cornerRadius(8)
-            .padding(.horizontal)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-
-    private func predefinedSubcategorySelection() -> some View {
-        VStack {
-            Text("Select Subcategory")
-                .font(.title2)
-                .bold()
-                .padding()
-
-            List {
-                ForEach(availableSubcategories()) { subcategory in
-                    Button(action: {
-                        if let index = currentCategoryIndex {
-                            budgetCategoryStore.addSubCategory(to: index, subcategory: subcategory)
-                            showPredefinedSubcategorySelection = false
-                            budgieModel.calculateAllocations(selectedCategories: selectedCategories)
-                            allocations = budgieModel.allocations
-                        }
-                    }) {
-                        HStack {
-                            Text(subcategory.name)
-                            Spacer()
-                        }
-                    }
-                }
-
-                Button(action: {
-                    showAddSubcategoryForm = true
-                }) {
-                    HStack {
-                        Text("Build Your Own")
-                        Spacer()
-                    }
-                }
-            }
-            .listStyle(InsetGroupedListStyle())
-        }
-    }
-
-    private func availableSubcategories() -> [BudgetSubCategory] {
-        if let categoryIndex = currentCategoryIndex {
-            let existingSubcategoryNames = Set(budgetCategoryStore.categories[categoryIndex].subcategories.map { $0.name })
-            let allSubcategories = predefinedSubcategories(for: budgetCategoryStore.categories[categoryIndex].name)
-            return allSubcategories.filter { !existingSubcategoryNames.contains($0.name) }
-        }
-        return []
-    }
-
-    private func predefinedSubcategories(for categoryName: String) -> [BudgetSubCategory] {
-        switch categoryName {
-        case "Housing":
-            return [
-                BudgetSubCategory(name: "Mortgage", allocationPercentage: 0.0, description: ""),
-                BudgetSubCategory(name: "Rent", allocationPercentage: 0.0, description: ""),
-                BudgetSubCategory(name: "Utilities", allocationPercentage: 0.0, description: ""),
-                BudgetSubCategory(name: "HOA Fee", allocationPercentage: 0.0, description: ""),
-                BudgetSubCategory(name: "Home Maintenance", allocationPercentage: 0.0, description: "")
-            ]
-        case "Transportation":
-            return [
-                BudgetSubCategory(name: "Car Payment", allocationPercentage: 0.0, description: ""),
-                BudgetSubCategory(name: "Public Transportation", allocationPercentage: 0.0, description: ""),
-                BudgetSubCategory(name: "Ride Share", allocationPercentage: 0.0, description: ""),
-                BudgetSubCategory(name: "Tolls", allocationPercentage: 0.0, description: ""),
-                BudgetSubCategory(name: "Maintenance", allocationPercentage: 0.0, description: "")
-            ]
-        case "Goals":
-            return [
-                BudgetSubCategory(name: "Emergency Fund", allocationPercentage: 0.0, description: "Savings for emergencies."),
-                BudgetSubCategory(name: "Vacation", allocationPercentage: 0.0, description: "Savings for a vacation."),
-                BudgetSubCategory(name: "New Car", allocationPercentage: 0.0, description: "Savings for a new car.")
-            ]
-        default:
-            return []
-        }
-    }
-
-    private func addSubcategoryForm() -> some View {
-        VStack {
-            Text("Add New Subcategory")
-                .font(.title2)
-                .bold()
-                .padding()
-
-            TextField("Name", text: $newSubcategoryName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-
-            TextField("Amount", text: $newSubcategoryAmount)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-
-            TextField("Description", text: $newSubcategoryDescription)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-
-            Button(action: {
-                if let index = currentCategoryIndex {
-                    let amount = Double(newSubcategoryAmount) ?? 0.0
-                    let newSubcategory = BudgetSubCategory(name: newSubcategoryName, allocationPercentage: amount / totalMonthlyBudget, description: newSubcategoryDescription)
-                    budgetCategoryStore.addSubCategory(to: index, subcategory: newSubcategory)
-                    showAddSubcategoryForm = false
-                    budgieModel.calculateAllocations(selectedCategories: selectedCategories)
-                    allocations = budgieModel.allocations
-                }
-            }) {
-                Text("Add")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(10)
-            }
-            .padding()
         }
     }
 
@@ -463,19 +221,6 @@ struct ContentView: View {
         budgieModel.paymentCadence = paymentCadence
         budgieModel.calculateAllocations(selectedCategories: selectedCategories)
         allocations = budgieModel.allocations
-    }
-
-    private func backgroundColor(for category: BudgetCategory) -> Color {
-        switch category.type {
-        case .debt:
-            return Color.red.opacity(0.1)
-        case .need:
-            return Color.yellow.opacity(0.1)
-        case .saving:
-            return Color.green.opacity(0.1)
-        default:
-            return Color.clear
-        }
     }
 }
 

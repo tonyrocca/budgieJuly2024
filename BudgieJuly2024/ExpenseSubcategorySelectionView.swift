@@ -16,20 +16,19 @@ struct ExpenseSubcategorySelectionView: View {
             VStack(spacing: 16) {
                 // Header
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Select expense subcategories")
+                    Text("Select subcategories")
                         .font(.title)
                         .fontWeight(.bold)
-                        .padding(.top, 16)
-                        .padding(.horizontal, 16)
                         .foregroundColor(.primary)
                     
                     Text("Choose the specific categories for your expenses.")
                         .font(.headline)
                         .fontWeight(.regular)
                         .foregroundColor(.secondary)
-                        .padding(.horizontal, 16)
                 }
-                .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
+                .padding(.top, 16)
+                .padding(.horizontal, 16)
+                .padding(.bottom, -16) // Adjusted padding to match PaymentInputView
 
                 List {
                     ForEach(selectedCategories.filter { $0.type == .need }) { category in
@@ -74,6 +73,8 @@ struct ExpenseSubcategorySelectionView: View {
                     }
                 }
                 .listStyle(InsetGroupedListStyle())
+                .frame(maxWidth: .infinity) // Ensure the frame takes the full width
+                .padding(.horizontal, 16)
 
                 Spacer()
 
@@ -95,7 +96,6 @@ struct ExpenseSubcategorySelectionView: View {
                 }
                 .padding(.bottom, 50)
             }
-            .navigationTitle("Select Subcategories")
             .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
 
             if showAddSubcategoryForm {

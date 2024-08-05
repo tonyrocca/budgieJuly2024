@@ -11,8 +11,8 @@ struct PaymentInputView: View {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.locale = Locale.current
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 2
+        formatter.maximumFractionDigits = 0  // Ensures no cents are displayed
+        formatter.minimumFractionDigits = 0  // Ensures no cents are displayed
         return formatter
     }()
 
@@ -45,7 +45,7 @@ struct PaymentInputView: View {
                         .padding(12)
                         .background(Color(UIColor.systemGray5))
                         .cornerRadius(8)
-                        .keyboardType(.decimalPad)
+                        .keyboardType(.numberPad)
                         .onChange(of: income) { newValue in
                             income = formatCurrencyInput(newValue)
                             if !income.isEmpty {
@@ -121,7 +121,7 @@ struct PaymentInputView: View {
     private func formatCurrencyInput(_ input: String) -> String {
         let filtered = input.filter { "0123456789".contains($0) }
         if let value = Double(filtered) {
-            return String(format: "%.2f", value / 100)
+            return String(format: "%.0f", value)
         }
         return ""
     }

@@ -54,7 +54,17 @@ struct BudgieModel {
             "Home Renovation": 0.07,
             "Investment": 0.10,
             "Wedding": 0.05,
-            "Education Fund": 0.05
+            "Education Fund": 0.05,
+            "Retirement": 0.10,
+            "House Down Payment": 0.10,
+            "College Fund": 0.10,
+            "Emergency Savings": 0.10,
+            "Travel Fund": 0.05,
+            "Gadgets": 0.05,
+            "Fitness": 0.05,
+            "Charity": 0.05,
+            "Business Investment": 0.10,
+            "Clothing Fund": 0.05
         ]
 
         return monthlyPaycheck * (savingsPercentages[categoryName] ?? 0.05)

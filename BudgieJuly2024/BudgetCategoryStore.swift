@@ -66,7 +66,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🎓",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Student loan debt",
+                description: "Money borrowed to pay for education expenses. Example: Federal student loans.",
                 type: .debt
             ),
             BudgetCategory(
@@ -74,7 +74,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🏥",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Medical debt",
+                description: "Debt incurred from medical expenses. Example: Hospital bills.",
                 type: .debt
             ),
             BudgetCategory(
@@ -82,7 +82,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "💳",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Credit card debt",
+                description: "Unpaid balance on credit cards. Example: Purchases made with a credit card.",
                 type: .debt
             ),
             BudgetCategory(
@@ -90,23 +90,23 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "💰",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Personal loan debt",
+                description: "Loan taken for personal expenses. Example: Loan from a bank for home improvements.",
                 type: .debt
             ),
             BudgetCategory(
-                name: "Auto Loan",
-                emoji: "🚗",
+                name: "Small Business Loan",
+                emoji: "🏢",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Auto loan debt",
+                description: "Loan to start or expand a small business. Example: SBA loans.",
                 type: .debt
             ),
             BudgetCategory(
-                name: "Mortgage",
-                emoji: "🏠",
+                name: "Tax Debt",
+                emoji: "💸",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Mortgage debt",
+                description: "Unpaid taxes owed to the government. Example: Income tax debt.",
                 type: .debt
             ),
             // Expense Categories
@@ -115,13 +115,12 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🏠",
                 allocationPercentage: 0.0,
                 subcategories: [
-                    BudgetSubCategory(name: "Mortgage", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Rent", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Utilities", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "HOA Fee", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Home Maintenance", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Property Tax", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Home Insurance", allocationPercentage: 0.0, description: "")
+                    BudgetSubCategory(name: "Rent", allocationPercentage: 0.0, description: "Monthly payment for living space. Example: Apartment rent."),
+                    BudgetSubCategory(name: "Utilities", allocationPercentage: 0.0, description: "Basic services for the home. Example: Electricity and water bills."),
+                    BudgetSubCategory(name: "HOA Fee", allocationPercentage: 0.0, description: "Monthly or annual fee for homeowners association. Example: Fees for condo amenities."),
+                    BudgetSubCategory(name: "Home Maintenance", allocationPercentage: 0.0, description: "Upkeep and repairs for the home. Example: Fixing a leaky roof."),
+                    BudgetSubCategory(name: "Property Tax", allocationPercentage: 0.0, description: "Annual tax on property ownership. Example: County property tax."),
+                    BudgetSubCategory(name: "Home Insurance", allocationPercentage: 0.0, description: "Insurance coverage for the home. Example: Homeowners insurance policy.")
                 ],
                 description: "Housing related expenses",
                 type: .need
@@ -131,13 +130,13 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🚗",
                 allocationPercentage: 0.0,
                 subcategories: [
-                    BudgetSubCategory(name: "Car Payment", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Public Transportation", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Ride Share", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Tolls", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Maintenance", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Fuel", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Car Insurance", allocationPercentage: 0.0, description: "")
+                    BudgetSubCategory(name: "Car Payment", allocationPercentage: 0.0, description: "Monthly payment for car loan. Example: Loan payment for a new car."),
+                    BudgetSubCategory(name: "Public Transportation", allocationPercentage: 0.0, description: "Cost of using public transit. Example: Monthly metro pass."),
+                    BudgetSubCategory(name: "Ride Share", allocationPercentage: 0.0, description: "Expenses for ride-sharing services. Example: Uber or Lyft rides."),
+                    BudgetSubCategory(name: "Tolls", allocationPercentage: 0.0, description: "Fees for using toll roads. Example: Toll charges on highways."),
+                    BudgetSubCategory(name: "Maintenance", allocationPercentage: 0.0, description: "Upkeep for the vehicle. Example: Oil changes and tire rotations."),
+                    BudgetSubCategory(name: "Fuel", allocationPercentage: 0.0, description: "Cost of gasoline. Example: Monthly fuel expenses."),
+                    BudgetSubCategory(name: "Car Insurance", allocationPercentage: 0.0, description: "Insurance coverage for the vehicle. Example: Auto insurance policy.")
                 ],
                 description: "Transportation related expenses",
                 type: .need
@@ -147,9 +146,9 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🍽️",
                 allocationPercentage: 0.0,
                 subcategories: [
-                    BudgetSubCategory(name: "Groceries", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Dining Out", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Snacks", allocationPercentage: 0.0, description: "")
+                    BudgetSubCategory(name: "Groceries", allocationPercentage: 0.0, description: "Food and supplies for home. Example: Weekly grocery shopping."),
+                    BudgetSubCategory(name: "Dining Out", allocationPercentage: 0.0, description: "Meals eaten at restaurants. Example: Dinner at a local restaurant."),
+                    BudgetSubCategory(name: "Snacks", allocationPercentage: 0.0, description: "Quick bites and snacks. Example: Afternoon snacks and treats.")
                 ],
                 description: "Food related expenses",
                 type: .need
@@ -159,42 +158,57 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🩺",
                 allocationPercentage: 0.0,
                 subcategories: [
-                    BudgetSubCategory(name: "Insurance Premiums", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Doctor Visits", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Medications", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Dental Care", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Vision Care", allocationPercentage: 0.0, description: "")
+                    BudgetSubCategory(name: "Insurance Premiums", allocationPercentage: 0.0, description: "Monthly cost for health insurance. Example: Employer health insurance premium."),
+                    BudgetSubCategory(name: "Doctor Visits", allocationPercentage: 0.0, description: "Cost of medical consultations. Example: Annual check-up with a doctor."),
+                    BudgetSubCategory(name: "Medications", allocationPercentage: 0.0, description: "Prescription and over-the-counter drugs. Example: Monthly prescription refills."),
+                    BudgetSubCategory(name: "Dental Care", allocationPercentage: 0.0, description: "Expenses for dental health. Example: Bi-annual dental cleaning."),
+                    BudgetSubCategory(name: "Vision Care", allocationPercentage: 0.0, description: "Cost of eye care and glasses. Example: Annual eye exam and new glasses.")
                 ],
                 description: "Healthcare related expenses",
                 type: .need
-            ),
-            BudgetCategory(
-                name: "Entertainment",
-                emoji: "🎬",
-                allocationPercentage: 0.0,
-                subcategories: [
-                    BudgetSubCategory(name: "Streaming Services", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Movies", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Concerts", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Games", allocationPercentage: 0.0, description: "")
-                ],
-                description: "Entertainment related expenses",
-                type: .want
             ),
             BudgetCategory(
                 name: "Utilities",
                 emoji: "💡",
                 allocationPercentage: 0.0,
                 subcategories: [
-                    BudgetSubCategory(name: "Electricity", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Water", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Gas", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Internet", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Cable", allocationPercentage: 0.0, description: ""),
-                    BudgetSubCategory(name: "Trash", allocationPercentage: 0.0, description: "")
+                    BudgetSubCategory(name: "Electricity", allocationPercentage: 0.0, description: "Monthly electric bill. Example: Power bill for home."),
+                    BudgetSubCategory(name: "Water", allocationPercentage: 0.0, description: "Monthly water bill. Example: City water services."),
+                    BudgetSubCategory(name: "Gas", allocationPercentage: 0.0, description: "Monthly gas bill. Example: Natural gas heating."),
+                    BudgetSubCategory(name: "Internet", allocationPercentage: 0.0, description: "Monthly cost for internet. Example: High-speed internet service."),
+                    BudgetSubCategory(name: "Cable", allocationPercentage: 0.0, description: "Monthly cable TV bill. Example: Cable television subscription."),
+                    BudgetSubCategory(name: "Trash", allocationPercentage: 0.0, description: "Monthly trash collection fee. Example: Waste management services.")
                 ],
                 description: "Utility related expenses",
                 type: .need
+            ),
+            BudgetCategory(
+                name: "Pets",
+                emoji: "🐶",
+                allocationPercentage: 0.0,
+                subcategories: [
+                    BudgetSubCategory(name: "Food", allocationPercentage: 0.0, description: "Monthly cost of pet food. Example: Dog food and treats."),
+                    BudgetSubCategory(name: "Vet Visits", allocationPercentage: 0.0, description: "Cost of veterinary care. Example: Annual vet check-up."),
+                    BudgetSubCategory(name: "Medications", allocationPercentage: 0.0, description: "Cost of pet medications. Example: Monthly flea treatment."),
+                    BudgetSubCategory(name: "Grooming", allocationPercentage: 0.0, description: "Expenses for pet grooming. Example: Dog grooming services."),
+                    BudgetSubCategory(name: "Toys", allocationPercentage: 0.0, description: "Cost of pet toys and accessories. Example: New toys and bedding."),
+                    BudgetSubCategory(name: "Pet Insurance", allocationPercentage: 0.0, description: "Monthly cost for pet insurance. Example: Insurance policy for pets.")
+                ],
+                description: "Pet related expenses",
+                type: .need
+            ),
+            BudgetCategory(
+                name: "Subscriptions",
+                emoji: "📺",
+                allocationPercentage: 0.0,
+                subcategories: [
+                    BudgetSubCategory(name: "Streaming Services", allocationPercentage: 0.0, description: "Monthly fee for streaming. Example: Netflix subscription."),
+                    BudgetSubCategory(name: "Music Services", allocationPercentage: 0.0, description: "Monthly fee for music streaming. Example: Spotify subscription."),
+                    BudgetSubCategory(name: "Magazines", allocationPercentage: 0.0, description: "Subscription cost for magazines. Example: Monthly magazine subscription."),
+                    BudgetSubCategory(name: "Apps", allocationPercentage: 0.0, description: "Cost for app subscriptions. Example: Premium app services.")
+                ],
+                description: "Subscription related expenses",
+                type: .want
             ),
             // Savings Categories
             BudgetCategory(
@@ -202,7 +216,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "💰",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Savings for emergencies",
+                description: "Savings for unexpected expenses. Example: Medical emergencies or car repairs.",
                 type: .saving
             ),
             BudgetCategory(
@@ -210,7 +224,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "✈️",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Savings for a vacation",
+                description: "Savings for trips and holidays. Example: Annual family vacation.",
                 type: .saving
             ),
             BudgetCategory(
@@ -218,7 +232,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🚗",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Savings for a new car",
+                description: "Savings for purchasing a new vehicle. Example: Down payment for a new car.",
                 type: .saving
             ),
             BudgetCategory(
@@ -226,7 +240,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🔨",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Savings for home renovation",
+                description: "Savings for home improvement projects. Example: Kitchen remodel or new roof.",
                 type: .saving
             ),
             BudgetCategory(
@@ -234,7 +248,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "📈",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Savings for investments",
+                description: "Savings for investment opportunities. Example: Stocks, bonds, or real estate.",
                 type: .saving
             ),
             BudgetCategory(
@@ -242,7 +256,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "💍",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Savings for a wedding",
+                description: "Savings for wedding expenses. Example: Venue, catering, and attire.",
                 type: .saving
             ),
             BudgetCategory(
@@ -250,7 +264,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🎓",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Savings for education",
+                description: "Savings for educational expenses. Example: College tuition and fees.",
                 type: .saving
             ),
             BudgetCategory(
@@ -258,7 +272,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🏖️",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Savings for retirement",
+                description: "Savings for retirement. Example: 401(k) or IRA contributions.",
                 type: .saving
             ),
             BudgetCategory(
@@ -266,7 +280,7 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🏠",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Savings for a house down payment",
+                description: "Savings for a down payment on a house. Example: 20% down payment for a new home.",
                 type: .saving
             ),
             BudgetCategory(
@@ -274,7 +288,63 @@ class BudgetCategoryStore: ObservableObject {
                 emoji: "🎓",
                 allocationPercentage: 0.0,
                 subcategories: [],
-                description: "Savings for college",
+                description: "Savings for future college expenses. Example: 529 plan contributions.",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Emergency Savings",
+                emoji: "🚨",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for unexpected emergencies. Example: Medical emergencies or urgent repairs.",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Travel Fund",
+                emoji: "🌍",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for travel and adventures. Example: International trips or weekend getaways.",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Gadgets",
+                emoji: "📱",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for gadgets and electronics. Example: New smartphone or laptop.",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Fitness",
+                emoji: "💪",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for fitness and health expenses. Example: Gym membership or fitness equipment.",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Charity",
+                emoji: "🎁",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for charitable donations. Example: Donations to non-profits or causes.",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Business Investment",
+                emoji: "🏢",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for business investments. Example: Funding a startup or expanding a business.",
+                type: .saving
+            ),
+            BudgetCategory(
+                name: "Clothing Fund",
+                emoji: "👗",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Savings for clothing and accessories. Example: Seasonal wardrobe updates.",
                 type: .saving
             )
         ]
