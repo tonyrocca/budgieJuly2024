@@ -6,7 +6,6 @@ struct ExpenseSubcategorySelectionView: View {
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
     var selectedCategories: [BudgetCategory]
     var hasSavingsGoals: Bool
-
     @State private var showAddSubcategoryForm = false
     @State private var newSubcategoryName = ""
     @State private var currentCategoryID: UUID?
@@ -20,7 +19,7 @@ struct ExpenseSubcategorySelectionView: View {
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
-                    
+
                     Text("Choose the specific categories for your expenses.")
                         .font(.headline)
                         .fontWeight(.regular)
@@ -28,7 +27,7 @@ struct ExpenseSubcategorySelectionView: View {
                 }
                 .padding(.top, 16)
                 .padding(.horizontal, 16)
-                .padding(.bottom, -16) // Adjusted padding to match PaymentInputView
+                .padding(.bottom, -16)
 
                 List {
                     ForEach(selectedCategories.filter { $0.type == .need }) { category in
@@ -46,7 +45,7 @@ struct ExpenseSubcategorySelectionView: View {
                                 )) {
                                     Text(subcategory.name)
                                 }
-                                .toggleStyle(SwitchToggleStyle(tint: .blue)) // Change toggle color to blue
+                                .toggleStyle(SwitchToggleStyle(tint: .blue))
                             }
                             
                             HStack {
@@ -63,9 +62,9 @@ struct ExpenseSubcategorySelectionView: View {
                                     Text("Add")
                                         .font(.body)
                                         .foregroundColor(.white)
-                                        .frame(width: 50, height: 30)  // Adjust to match the dimensions of the toggle button
+                                        .frame(width: 50, height: 30)
                                         .background(Color.blue)
-                                        .cornerRadius(15)  // Adjust to match the style of the toggle button
+                                        .cornerRadius(15)
                                 }
                             }
                             .padding(.vertical, 6)
@@ -73,7 +72,7 @@ struct ExpenseSubcategorySelectionView: View {
                     }
                 }
                 .listStyle(InsetGroupedListStyle())
-                .frame(maxWidth: .infinity) // Ensure the frame takes the full width
+                .frame(height: 200)
                 .padding(.horizontal, 16)
 
                 Spacer()

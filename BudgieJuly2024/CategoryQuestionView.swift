@@ -52,7 +52,8 @@ struct CategoryQuestionView: View {
                 .toggleStyle(SwitchToggleStyle(tint: Color.blue))
             }
             .listStyle(InsetGroupedListStyle())
-            .frame(height: 200)
+            .frame(maxWidth: .infinity) // Ensure the frame takes the full width
+            .padding(.horizontal, 16)
 
             Spacer()
 

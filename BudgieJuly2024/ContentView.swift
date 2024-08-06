@@ -59,7 +59,7 @@ struct ContentView: View {
 
                         // Toggle Buttons
                         HStack(spacing: 0) {
-                            ToggleButton(label: "Yours", isSelected: selectedViewOption == .yourBudget) {
+                            ToggleButton(label: "Personal", isSelected: selectedViewOption == .yourBudget) {
                                 selectedViewOption = .yourBudget
                             }
                             ToggleButton(label: "Suggested", isSelected: selectedViewOption == .recommendedBudget) {

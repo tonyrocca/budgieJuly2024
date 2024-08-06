@@ -44,6 +44,7 @@ struct ExpenseSelectionView: View {
                     .toggleStyle(SwitchToggleStyle(tint: Color.blue))
                 }
             }
+            .listStyle(InsetGroupedListStyle())
 
             Spacer()
 
@@ -65,7 +66,6 @@ struct ExpenseSelectionView: View {
             }
             .padding(.bottom, 50)
         }
-        .navigationTitle("Select Expenses")
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
     }
 }

@@ -24,7 +24,7 @@ struct ExpenseSubcategoryAmountInputView: View {
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
             }
-            .padding(.bottom, 16)  // Adjusted padding to match PaymentInputView
+            .padding(.bottom, -16)
 
             ScrollView {
                 VStack(spacing: 20) {

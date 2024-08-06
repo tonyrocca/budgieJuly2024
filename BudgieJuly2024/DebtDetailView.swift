@@ -33,7 +33,7 @@ struct DebtDetailView: View {
                     .padding(.horizontal, 16)
                     .foregroundColor(.primary)
                 
-                Text("Enter your debt amount and when it is due.")
+                Text("Enter your total debt amount owed and when it is due.")
                     .font(.headline)
                     .fontWeight(.regular)
                     .foregroundColor(.secondary)
