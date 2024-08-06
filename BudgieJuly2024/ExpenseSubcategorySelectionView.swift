@@ -20,60 +20,68 @@ struct ExpenseSubcategorySelectionView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.primary)
 
-                    Text("Choose the specific categories for your expenses.")
+                    Text("Choose the specific expenses that you want to include in your budget.")
                         .font(.headline)
                         .fontWeight(.regular)
                         .foregroundColor(.secondary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 16)
+                .padding(.bottom, 8)
                 .padding(.horizontal, 16)
-                .padding(.bottom, -16)
 
-                List {
-                    ForEach(selectedCategories.filter { $0.type == .need }) { category in
-                        Section(header: Text("\(category.emoji) \(category.name.capitalized)").font(.headline).foregroundColor(.primary)) {
-                            ForEach(category.subcategories) { subcategory in
-                                Toggle(isOn: Binding(
-                                    get: { subcategory.isSelected },
-                                    set: { newValue in
-                                        if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                            if let subcategoryIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
+                // Subcategories
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ForEach(selectedCategories.filter { $0.type == .need }) { category in
+                            VStack(spacing: 0) {
+                                HStack {
+                                    Text(category.emoji)
+                                    Text(category.name)
+                                        .font(.headline)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 16)
+                                .background(Color(UIColor.secondarySystemBackground))
+
+                                ForEach(category.subcategories) { subcategory in
+                                    ToggleRow(isOn: Binding(
+                                        get: { subcategory.isSelected },
+                                        set: { newValue in
+                                            if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }),
+                                               let subcategoryIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
                                                 budgetCategoryStore.categories[categoryIndex].subcategories[subcategoryIndex].isSelected = newValue
                                             }
                                         }
+                                    ), icon: "", text: subcategory.name)
+                                    
+                                    if subcategory.id != category.subcategories.last?.id {
+                                        Divider()
                                     }
-                                )) {
-                                    Text(subcategory.name)
                                 }
-                                .toggleStyle(SwitchToggleStyle(tint: .blue))
-                            }
-                            
-                            HStack {
-                                Text("Add Subcategory")
-                                    .font(.body)
-                                    .foregroundColor(.primary)
-                                Spacer()
+
                                 Button(action: {
-                                    withAnimation {
-                                        currentCategoryID = category.id
-                                        showAddSubcategoryForm = true
-                                    }
+                                    currentCategoryID = category.id
+                                    showAddSubcategoryForm = true
                                 }) {
-                                    Text("Add")
-                                        .font(.body)
-                                        .foregroundColor(.white)
-                                        .frame(width: 50, height: 30)
-                                        .background(Color.blue)
-                                        .cornerRadius(15)
+                                    HStack {
+                                        Text("Add Subcategory")
+                                            .foregroundColor(.blue)
+                                        Spacer()
+                                        Text("Add")
+                                            .foregroundColor(.blue)
+                                    }
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 16)
                                 }
                             }
-                            .padding(.vertical, 6)
                         }
                     }
+                    .background(Color.white)
+                    .cornerRadius(10)
+                    .padding(.horizontal, 16)
                 }
-                .listStyle(InsetGroupedListStyle())
-                .frame(height: 200)
-                .padding(.horizontal, 16)
 
                 Spacer()
 
@@ -90,16 +98,21 @@ struct ExpenseSubcategorySelectionView: View {
                                            endPoint: .bottomTrailing)
                         )
                         .cornerRadius(10)
-                        .padding(.horizontal)
                         .shadow(radius: 5)
                 }
+                .padding(.horizontal, 16)
                 .padding(.bottom, 50)
+                .disabled(selectedCategories.filter { $0.type == .need }.allSatisfy { $0.subcategories.filter { $0.isSelected }.isEmpty })
             }
             .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
 
             if showAddSubcategoryForm {
                 Color.black.opacity(0.4)
                     .edgesIgnoringSafeArea(.all)
+                    .onTapGesture {
+                        showAddSubcategoryForm = false
+                    }
+
                 VStack(spacing: 16) {
                     Text("Add New Expense Subcategory")
                         .font(.headline)
@@ -113,15 +126,7 @@ struct ExpenseSubcategorySelectionView: View {
                         .cornerRadius(10)
                         .padding(.horizontal)
 
-                    Button(action: {
-                        withAnimation {
-                            showAddSubcategoryForm = false
-                        }
-                        let newSubcategory = BudgetSubCategory(name: newSubcategoryName, allocationPercentage: 0.0, description: "")
-                        if let categoryID = currentCategoryID {
-                            budgetCategoryStore.addSubcategoryToCategory(newSubcategory, categoryID: categoryID)
-                        }
-                    }) {
+                    Button(action: addSubcategory) {
                         Text("Add")
                             .font(.headline)
                             .foregroundColor(.white)
@@ -138,9 +143,18 @@ struct ExpenseSubcategorySelectionView: View {
                 .cornerRadius(20)
                 .shadow(radius: 20)
                 .transition(.move(edge: .bottom))
-                .zIndex(1)
             }
         }
+    }
+
+    private func addSubcategory() {
+        let newSubcategory = BudgetSubCategory(name: newSubcategoryName, allocationPercentage: 0.0, description: "")
+        if let categoryID = currentCategoryID,
+           let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == categoryID }) {
+            budgetCategoryStore.categories[categoryIndex].subcategories.append(newSubcategory)
+        }
+        showAddSubcategoryForm = false
+        newSubcategoryName = ""
     }
 }
 

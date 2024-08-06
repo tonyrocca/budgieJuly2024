@@ -13,38 +13,38 @@ struct ExpenseSelectionView: View {
                 Text("Select your expenses")
                     .font(.title)
                     .fontWeight(.bold)
-                    .padding(.top, 16)
-                    .padding(.horizontal, 16)
                     .foregroundColor(.primary)
                 
                 Text("Choose the expenses you currently have.")
                     .font(.headline)
                     .fontWeight(.regular)
                     .foregroundColor(.secondary)
-                    .padding(.horizontal, 16)
             }
-            .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
+            .padding(.top, 16)
+            .padding(.bottom, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
 
-            List {
-                ForEach(budgetCategoryStore.categories.filter { $0.type == .need }) { category in
-                    Toggle(isOn: Binding(
+            // Expenses
+            VStack(spacing: 0) {
+                ForEach(budgetCategoryStore.categories.filter { $0.type == .need }, id: \.id) { category in
+                    ToggleRow(isOn: Binding(
                         get: { category.isSelected },
                         set: { newValue in
                             if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
                                 budgetCategoryStore.categories[index].isSelected = newValue
                             }
                         }
-                    )) {
-                        HStack {
-                            Text(category.emoji)
-                            Text(category.name)
-                        }
-                        .foregroundColor(.primary)
+                    ), icon: category.emoji, text: category.name)
+                    
+                    if category.id != budgetCategoryStore.categories.filter({ $0.type == .need }).last?.id {
+                        Divider()
                     }
-                    .toggleStyle(SwitchToggleStyle(tint: Color.blue))
                 }
             }
-            .listStyle(InsetGroupedListStyle())
+            .background(Color.white)
+            .cornerRadius(10)
+            .padding(.horizontal, 16)
 
             Spacer()
 
@@ -61,10 +61,11 @@ struct ExpenseSelectionView: View {
                                        endPoint: .bottomTrailing)
                     )
                     .cornerRadius(10)
-                    .padding(.horizontal)
                     .shadow(radius: 5)
             }
+            .padding(.horizontal, 16)
             .padding(.bottom, 50)
+            .disabled(budgetCategoryStore.categories.filter { $0.type == .need && $0.isSelected }.isEmpty)
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
     }
