@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var showCategorySelection = false
     @FocusState private var isInputFocused: Bool
     @State private var selectedViewOption: ViewOption = .yourBudget
+    @State private var isActionButtonPressed = false
 
     var selectedCategories: [BudgetCategory]
 
@@ -44,78 +45,122 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                // Header
-                VStack(spacing: 4) {
-                    Text("Your Personalized Budget")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .padding(.top, 16)
+        ZStack {
+            NavigationView {
+                VStack(spacing: 0) {
+                    VStack(spacing: 4) {
+                        // Header
+                        Text("Your Personalized Budget")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .padding(.top, 16)
+                            .padding(.horizontal, 16)
+                            .foregroundColor(Color.primary)
+
+                        // Toggle Buttons
+                        HStack(spacing: 0) {
+                            ToggleButton(label: "Yours", isSelected: selectedViewOption == .yourBudget) {
+                                selectedViewOption = .yourBudget
+                            }
+                            ToggleButton(label: "Suggested", isSelected: selectedViewOption == .recommendedBudget) {
+                                selectedViewOption = .recommendedBudget
+                            }
+                            ToggleButton(label: "Summary", isSelected: selectedViewOption == .overview) {
+                                selectedViewOption = .overview
+                            }
+                        }
+                        .frame(height: 40)
+                        .background(Color(UIColor.systemGray5))
+                        .cornerRadius(10)
                         .padding(.horizontal, 16)
-                        .foregroundColor(Color.primary)
-
-                    // Toggle Buttons
-                    HStack(spacing: 0) {
-                        ToggleButton(label: "My Budget", isSelected: selectedViewOption == .yourBudget) {
-                            selectedViewOption = .yourBudget
-                        }
-                        ToggleButton(label: "Suggested", isSelected: selectedViewOption == .recommendedBudget) {
-                            selectedViewOption = .recommendedBudget
-                        }
-                        ToggleButton(label: "Summary", isSelected: selectedViewOption == .overview) {
-                            selectedViewOption = .overview
-                        }
+                        .padding(.top, 8)
                     }
-                    .frame(height: 40)
-                    .background(Color(UIColor.systemGray5))
-                    .cornerRadius(10)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-                }
-                .background(Color(UIColor.systemBackground))
-                .zIndex(1)
+                    .background(Color(UIColor.systemBackground))
+                    .zIndex(1)
 
-                ScrollView {
-                    VStack(spacing: 12) {
-                        allocationListView()
-                            .padding(.horizontal)
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            allocationListView()
+                                .padding(.horizontal)
+                        }
+                        .padding(.top, 16)
                     }
-                    .padding(.top, 16)
-                }
-                .background(Color.clear)
+                    .background(Color.clear)
 
-                HStack {
+                    HStack {
+                        Spacer()
+                    }
+                }
+                .navigationBarItems(trailing: EmptyView())
+                .navigationBarTitleDisplayMode(.inline)
+                .environmentObject(budgetCategoryStore)
+                .sheet(isPresented: $showCategorySelection) {
+                    // Show category selection view or any other view when the user clicks "Enhance"
+                }
+                .onAppear {
+                    formatAndCalculatePaycheckAmount()
+                    calculateBudget()
+                }
+            }
+            .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
+
+            if isActionButtonPressed {
+                Color.white.opacity(0.8).edgesIgnoringSafeArea(.all)
+                VStack {
                     Spacer()
-                    Button(action: {
-                        showCategorySelection = true
-                    }) {
-                        Text("Enhance")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(
-                                LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                               startPoint: .topLeading,
-                                               endPoint: .bottomTrailing)
+                    VStack(alignment: .trailing, spacing: 8) {
+                        ActionButton(icon: "sparkles", label: "Enhance") {
+                            // Action for enhance
+                        }
+                        ActionButton(icon: "person.crop.circle", label: "Profile") {
+                            // Action for profile
+                        }
+                        ActionButton(icon: "pencil", label: "Edit") {
+                            // Action for edit
+                        }
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 56, height: 56)
+                            .overlay(
+                                Image(systemName: "xmark")
+                                    .resizable()
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(.white)
                             )
-                            .cornerRadius(10)
-                            .padding(.trailing, 16)
-                            .padding(.bottom, 16)
+                            .onTapGesture {
+                                withAnimation {
+                                    isActionButtonPressed.toggle()
+                                }
+                            }
+                    }
+                    .padding(.bottom, 40)
+                    .padding(.trailing, 20)
+                }
+            } else {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 56, height: 56)
+                            .overlay(
+                                Image(systemName: "plus")
+                                    .resizable()
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(.white)
+                            )
+                            .onTapGesture {
+                                withAnimation {
+                                    isActionButtonPressed.toggle()
+                                }
+                            }
+                            .padding(.bottom, 40)
+                            .padding(.trailing, 20)
                     }
                 }
-            }
-            .navigationBarHidden(true)
-            .environmentObject(budgetCategoryStore)
-            .sheet(isPresented: $showCategorySelection) {
-                // Show category selection view or any other view when the user clicks "Enhance"
-            }
-            .onAppear {
-                formatAndCalculatePaycheckAmount()
-                calculateBudget()
             }
         }
-        .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
     }
 
     private func allocationListView() -> some View {
@@ -258,6 +303,34 @@ struct ToggleButton: View {
                 .frame(maxWidth: .infinity)
                 .background(isSelected ? Color.blue : Color.clear)
                 .cornerRadius(isSelected ? 10 : 0)
+        }
+    }
+}
+
+struct ActionButton: View {
+    var icon: String
+    var label: String
+    var action: () -> Void
+
+    var body: some View {
+        HStack {
+            Spacer()
+            Button(action: action) {
+                HStack {
+                    Image(systemName: icon)
+                        .resizable()
+                        .frame(width: 24, height: 24)
+                        .foregroundColor(.blue)
+                    Text(label)
+                        .font(.body)
+                        .foregroundColor(.black)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(radius: 5)
+            }
         }
     }
 }
