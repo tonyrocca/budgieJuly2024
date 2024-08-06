@@ -15,44 +15,26 @@ struct CategoryQuestionView: View {
                     .font(.title)
                     .fontWeight(.bold)
                     .padding(.top, 16)
-                    .padding(.horizontal, 16)
                     .foregroundColor(.primary)
                 
                 Text("Select yes or no on categories you want your budget to manage.")
                     .font(.headline)
                     .fontWeight(.regular)
                     .foregroundColor(.secondary)
-                    .padding(.horizontal, 16)
             }
-            .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
 
-            List {
-                Toggle(isOn: $hasDebt) {
-                    HStack {
-                        Text("💳")
-                        Text("Do you have debt?")
-                    }
-                }
-                .toggleStyle(SwitchToggleStyle(tint: Color.blue))
-
-                Toggle(isOn: $hasExpenses) {
-                    HStack {
-                        Text("🏠")
-                        Text("Do you have expenses?")
-                    }
-                }
-                .toggleStyle(SwitchToggleStyle(tint: Color.blue))
-
-                Toggle(isOn: $hasSavingsGoals) {
-                    HStack {
-                        Text("💰")
-                        Text("Do you have savings?")
-                    }
-                }
-                .toggleStyle(SwitchToggleStyle(tint: Color.blue))
+            // Categories
+            VStack(spacing: 0) {
+                ToggleRow(isOn: $hasDebt, icon: "💳", text: "Do you have debt?")
+                Divider()
+                ToggleRow(isOn: $hasExpenses, icon: "🏠", text: "Do you have expenses?")
+                Divider()
+                ToggleRow(isOn: $hasSavingsGoals, icon: "💰", text: "Do you have savings?")
             }
-            .listStyle(InsetGroupedListStyle())
-            .frame(maxWidth: .infinity) // Ensure the frame takes the full width
+            .background(Color.white)
+            .cornerRadius(10)
             .padding(.horizontal, 16)
 
             Spacer()
@@ -69,13 +51,31 @@ struct CategoryQuestionView: View {
                                        endPoint: .bottomTrailing)
                     )
                     .cornerRadius(10)
-                    .padding(.horizontal)
                     .shadow(radius: 5)
             }
+            .padding(.horizontal, 16)
             .padding(.bottom, 50)
             .disabled(!isAnyOptionSelected())
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
+    }
+
+    struct ToggleRow: View {
+        @Binding var isOn: Bool
+        let icon: String
+        let text: String
+        
+        var body: some View {
+            Toggle(isOn: $isOn) {
+                HStack {
+                    Text(icon)
+                    Text(text)
+                }
+            }
+            .toggleStyle(SwitchToggleStyle(tint: Color.blue))
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+        }
     }
 
     private func isAnyOptionSelected() -> Bool {

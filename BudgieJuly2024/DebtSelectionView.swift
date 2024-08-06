@@ -28,7 +28,7 @@ struct DebtSelectionView: View {
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
             }
-            .padding(.bottom, -16)
+            .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
 
             List {
                 ForEach(budgetCategoryStore.categories.filter { $0.type == .debt }) { category in
@@ -81,7 +81,8 @@ struct DebtSelectionView: View {
                 .padding(.vertical, 6)
             }
             .listStyle(InsetGroupedListStyle())
-            .frame(height: 200)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 16)
 
             Spacer()
 
