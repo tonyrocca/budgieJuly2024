@@ -19,20 +19,20 @@ struct DebtSelectionView: View {
                     .font(.title)
                     .fontWeight(.bold)
                     .padding(.top, 16)
-                    .padding(.horizontal, 16)
                     .foregroundColor(.primary)
 
                 Text("Choose the debt you currently are paying off.")
                     .font(.headline)
                     .fontWeight(.regular)
                     .foregroundColor(.secondary)
-                    .padding(.horizontal, 16)
             }
-            .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
 
-            List {
+            // Categories
+            VStack(spacing: 0) {
                 ForEach(budgetCategoryStore.categories.filter { $0.type == .debt }) { category in
-                    Toggle(isOn: Binding(
+                    ToggleRow(isOn: Binding(
                         get: { selectedDebtCategories.contains(category.id) },
                         set: { newValue in
                             if newValue {
@@ -49,39 +49,30 @@ struct DebtSelectionView: View {
                                 }
                             }
                         }
-                    )) {
-                        HStack {
-                            Text(category.emoji)
-                            Text(category.name)
-                        }
-                        .foregroundColor(.primary)
+                    ), icon: category.emoji, text: category.name)
+                    if category.id != budgetCategoryStore.categories.filter({ $0.type == .debt }).last?.id {
+                        Divider()
                     }
                 }
-                HStack {
+                Button(action: {
+                    withAnimation {
+                        showAddDebtForm = true
+                    }
+                }) {
                     HStack {
                         Text("🔧")
                         Text("Add Category")
-                            .font(.body)
-                    }
-                    .foregroundColor(.primary)
-                    Spacer()
-                    Button(action: {
-                        withAnimation {
-                            showAddDebtForm = true
-                        }
-                    }) {
+                            .foregroundColor(.primary)
+                        Spacer()
                         Text("Add")
-                            .font(.body)
-                            .foregroundColor(.white)
-                            .frame(width: 50, height: 30)
-                            .background(Color.blue)
-                            .cornerRadius(15)
+                            .foregroundColor(.blue)
                     }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
                 }
-                .padding(.vertical, 6)
             }
-            .listStyle(InsetGroupedListStyle())
-            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .cornerRadius(10)
             .padding(.horizontal, 16)
 
             Spacer()
@@ -99,9 +90,9 @@ struct DebtSelectionView: View {
                                        endPoint: .bottomTrailing)
                     )
                     .cornerRadius(10)
-                    .padding(.horizontal)
                     .shadow(radius: 5)
             }
+            .padding(.horizontal, 16)
             .padding(.bottom, 50)
             .disabled(selectedDebtCategories.isEmpty)
         }
@@ -109,6 +100,24 @@ struct DebtSelectionView: View {
         .sheet(isPresented: $showAddDebtForm) {
             AddDebtCategoryView(isPresented: $showAddDebtForm, newDebtName: $newDebtName, budgetCategoryStore: budgetCategoryStore, selectedDebtCategories: $selectedDebtCategories)
         }
+    }
+}
+
+struct ToggleRow: View {
+    @Binding var isOn: Bool
+    let icon: String
+    let text: String
+    
+    var body: some View {
+        Toggle(isOn: $isOn) {
+            HStack {
+                Text(icon)
+                Text(text)
+            }
+        }
+        .toggleStyle(SwitchToggleStyle(tint: Color.blue))
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
     }
 }
 

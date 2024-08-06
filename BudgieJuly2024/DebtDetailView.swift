@@ -30,23 +30,29 @@ struct DebtDetailView: View {
                     .font(.title)
                     .fontWeight(.bold)
                     .padding(.top, 16)
-                    .padding(.horizontal, 16)
                     .foregroundColor(.primary)
                 
                 Text("Enter your total debt amount owed and when it is due.")
                     .font(.headline)
                     .fontWeight(.regular)
                     .foregroundColor(.secondary)
-                    .padding(.horizontal, 16)
             }
-            .padding(.bottom, 16)  // Adjusted padding to create space between header and input card
+            .padding(.horizontal, 16)
+            .padding(.bottom, 8)
 
+            // Debt Categories
             ScrollView {
-                VStack(spacing: 12) {
+                VStack(spacing: 0) {
                     ForEach(budgetCategoryStore.categories.filter { $0.type == .debt && $0.isSelected }) { category in
                         DebtCategoryView(category: category, debtAmounts: $debtAmounts, selectedDates: $selectedDates, showDatePicker: $showDatePicker)
+                        if category.id != budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }).last?.id {
+                            Divider()
+                        }
                     }
                 }
+                .background(Color.white)
+                .cornerRadius(10)
+                .padding(.horizontal, 16)
             }
 
             Spacer()
@@ -63,9 +69,9 @@ struct DebtDetailView: View {
                                        endPoint: .bottomTrailing)
                     )
                     .cornerRadius(10)
-                    .padding(.horizontal)
                     .shadow(radius: 5)
             }
+            .padding(.horizontal, 16)
             .padding(.bottom, 50)
             .disabled(!isFormComplete())
         }
@@ -121,42 +127,30 @@ struct DebtCategoryView: View {
     @Binding var showDatePicker: UUID?
 
     var body: some View {
-        VStack(spacing: 8) {
-            HStack {
-                Text("\(category.emoji) \(category.name)")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
+        VStack(alignment: .leading, spacing: 8) {
+            Text("\(category.emoji) \(category.name)")
+                .font(.headline)
+                .foregroundColor(.primary)
 
-            HStack {
-                CurrencyTextField(value: Binding(
-                    get: { debtAmounts[category.id] ?? 0.0 },
-                    set: { debtAmounts[category.id] = $0 }
-                ))
-                .frame(height: 44)
-                .padding(.horizontal, 8)
-                .background(Color(UIColor.systemGray5))
-                .cornerRadius(8)
-            }
-            .padding(.horizontal, 16)
+            CurrencyTextField(value: Binding(
+                get: { debtAmounts[category.id] ?? 0.0 },
+                set: { debtAmounts[category.id] = $0 }
+            ))
+            .frame(height: 44)
+            .background(Color(UIColor.systemGray6))
+            .cornerRadius(8)
 
             HStack {
                 Text("When is the debt due?")
                     .font(.subheadline)
                     .foregroundColor(.primary)
-                    .padding(.leading, 16)
                 Spacer()
                 Text(selectedDates[category.id]?.formatted(.dateTime.year().month().day()) ?? Date().formatted(.dateTime.year().month().day()))
                     .font(.subheadline)
                     .padding(.horizontal, 8)
-                    .background(Color(UIColor.systemGray5))
+                    .background(Color(UIColor.systemGray6))
                     .cornerRadius(8)
             }
-            .padding(.bottom, 12)
-            .padding(.horizontal, 16)
             .onTapGesture {
                 showDatePicker = (showDatePicker == category.id) ? nil : category.id
             }
@@ -173,13 +167,9 @@ struct DebtCategoryView: View {
                 )
                 .datePickerStyle(GraphicalDatePickerStyle())
                 .labelsHidden()
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
             }
         }
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(10)
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 4)
+        .padding(.vertical, 12)
         .padding(.horizontal, 16)
     }
 }
