@@ -49,7 +49,6 @@ struct ContentView: View {
             NavigationView {
                 VStack(spacing: 0) {
                     VStack(spacing: 4) {
-                        // Header
                         Text("Your Personalized Budget")
                             .font(.title)
                             .fontWeight(.bold)
@@ -57,7 +56,6 @@ struct ContentView: View {
                             .padding(.horizontal, 16)
                             .foregroundColor(Color.primary)
 
-                        // Updated Toggle Buttons
                         HStack(spacing: 0) {
                             ForEach(ViewOption.allCases, id: \.self) { option in
                                 ToggleButton(
@@ -87,15 +85,12 @@ struct ContentView: View {
                     ScrollView {
                         VStack(spacing: 12) {
                             allocationListView()
-                                .padding(.horizontal)
                         }
                         .padding(.top, 16)
                     }
                     .background(Color.clear)
 
-                    HStack {
-                        Spacer()
-                    }
+                    Spacer()
                 }
                 .navigationBarItems(trailing: EmptyView())
                 .navigationBarTitleDisplayMode(.inline)
@@ -111,58 +106,62 @@ struct ContentView: View {
             .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
 
             if isActionButtonPressed {
-                Color.white.opacity(0.8).edgesIgnoringSafeArea(.all)
+                Color.black.opacity(0.5).edgesIgnoringSafeArea(.all)
                 VStack {
                     Spacer()
-                    VStack(alignment: .trailing, spacing: 8) {
-                        ActionButton(icon: "sparkles", label: "Enhance") {
-                            // Action for enhance
-                        }
-                        ActionButton(icon: "person.crop.circle", label: "Profile") {
-                            // Action for profile
-                        }
-                        ActionButton(icon: "pencil", label: "Edit") {
-                            // Action for edit
-                        }
-                        Circle()
-                            .fill(Color.blue)
-                            .frame(width: 56, height: 56)
-                            .overlay(
-                                Image(systemName: "xmark")
-                                    .resizable()
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(.white)
-                            )
-                            .onTapGesture {
-                                withAnimation {
-                                    isActionButtonPressed.toggle()
-                                }
+                    HStack {
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 16) {
+                            ActionButton(icon: "bolt.fill", label: "Enhance") {
+                                // Action for enhance
                             }
+                            ActionButton(icon: "person.crop.circle.fill", label: "Profile") {
+                                // Action for profile
+                            }
+                            ActionButton(icon: "pencil", label: "Edit") {
+                                // Action for edit
+                            }
+                        }
                     }
-                    .padding(.bottom, 40)
                     .padding(.trailing, 20)
+                    
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            withAnimation {
+                                isActionButtonPressed.toggle()
+                            }
+                        }) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 60, height: 60)
+                                .background(Color.blue)
+                                .clipShape(Circle())
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 40)
+                    }
                 }
             } else {
                 VStack {
                     Spacer()
                     HStack {
                         Spacer()
-                        Circle()
-                            .fill(Color.blue)
-                            .frame(width: 56, height: 56)
-                            .overlay(
-                                Image(systemName: "plus")
-                                    .resizable()
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(.white)
-                            )
-                            .onTapGesture {
-                                withAnimation {
-                                    isActionButtonPressed.toggle()
-                                }
+                        Button(action: {
+                            withAnimation {
+                                isActionButtonPressed.toggle()
                             }
-                            .padding(.bottom, 40)
-                            .padding(.trailing, 20)
+                        }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 60, height: 60)
+                                .background(Color.blue)
+                                .clipShape(Circle())
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 40)
                     }
                 }
             }
@@ -185,16 +184,17 @@ struct ContentView: View {
             .padding()
             .background(Color(UIColor.secondarySystemBackground))
             .cornerRadius(10)
-            .frame(maxWidth: .infinity, alignment: .leading)
 
             ForEach(selectedCategories) { category in
-                VStack {
-                    categoryView(category)
+                categoryView(category)
+                if category.id != selectedCategories.last?.id {
+                    Divider()
                 }
-                Divider()
             }
         }
-        .padding()
+        .padding(.horizontal)
+        .background(Color.white)
+        .cornerRadius(10)
     }
 
     private func categoryView(_ category: BudgetCategory) -> some View {
@@ -203,23 +203,19 @@ struct ContentView: View {
                 Text("\(category.emoji) \(category.name)")
                     .font(.body)
                     .fontWeight(.semibold)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
-                    .cornerRadius(8)
                 Spacer()
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")")
                     .font(.body)
                     .foregroundColor(Color.primary)
-                Button(action: {
-                    withAnimation {
-                        expandedCategoryIndex = expandedCategoryIndex == category.id ? nil : category.id
-                    }
-                }) {
-                    Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue)
+                Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
+                    .foregroundColor(.blue)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation {
+                    expandedCategoryIndex = expandedCategoryIndex == category.id ? nil : category.id
                 }
             }
-            .padding(.vertical, 6)
 
             if expandedCategoryIndex == category.id {
                 VStack(alignment: .leading, spacing: 8) {
@@ -232,11 +228,10 @@ struct ContentView: View {
                         subcategoryView(for: subcategory, in: category)
                     }
                 }
-                .padding()
-                .background(Color(UIColor.systemGray6))
-                .cornerRadius(10)
+                .padding(.top, 8)
             }
         }
+        .padding(.vertical, 8)
     }
 
     private func subcategoryView(for subcategory: BudgetSubCategory, in category: BudgetCategory) -> some View {
@@ -248,29 +243,22 @@ struct ContentView: View {
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[subcategory.id] ?? 0)) ?? "$0")")
                     .font(.body)
                     .foregroundColor(Color.primary)
-                Button(action: {
-                    withAnimation {
-                        expandedSubCategoryIndex = expandedSubCategoryIndex == subcategory.id ? nil : subcategory.id
-                    }
-                }) {
-                    Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation {
+                    expandedSubCategoryIndex = expandedSubCategoryIndex == subcategory.id ? nil : subcategory.id
                 }
             }
-            .padding(.vertical, 6)
 
             if expandedSubCategoryIndex == subcategory.id {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(subcategory.description)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .padding(.bottom, 8)
-                }
-                .padding()
-                .background(Color(UIColor.systemGray6))
-                .cornerRadius(10)
+                Text(subcategory.description)
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .padding(.top, 4)
             }
         }
+        .padding(.leading, 16)
     }
 
     private func formatAndCalculatePaycheckAmount() {
@@ -316,24 +304,22 @@ struct ActionButton: View {
     var action: () -> Void
 
     var body: some View {
-        HStack {
-            Spacer()
-            Button(action: action) {
-                HStack {
-                    Image(systemName: icon)
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                        .foregroundColor(.blue)
-                    Text(label)
-                        .font(.body)
-                        .foregroundColor(.black)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.white)
-                .cornerRadius(10)
-                .shadow(radius: 5)
+        Button(action: action) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(.white)
+                    .frame(width: 30, height: 30)
+                    .background(Color.blue)
+                    .clipShape(Circle())
+                Text(label)
+                    .foregroundColor(.primary)
+                    .font(.system(size: 18, weight: .medium))
+                Spacer()
             }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(Color.white)
+            .cornerRadius(30)
         }
     }
 }
