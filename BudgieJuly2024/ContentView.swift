@@ -57,23 +57,29 @@ struct ContentView: View {
                             .padding(.horizontal, 16)
                             .foregroundColor(Color.primary)
 
-                        // Toggle Buttons
+                        // Updated Toggle Buttons
                         HStack(spacing: 0) {
-                            ToggleButton(label: "Actual", isSelected: selectedViewOption == .yourBudget) {
-                                selectedViewOption = .yourBudget
-                            }
-                            ToggleButton(label: "Recommended", isSelected: selectedViewOption == .recommendedBudget) {
-                                selectedViewOption = .recommendedBudget
-                            }
-                            ToggleButton(label: "Summary", isSelected: selectedViewOption == .overview) {
-                                selectedViewOption = .overview
+                            ForEach(ViewOption.allCases, id: \.self) { option in
+                                ToggleButton(
+                                    label: option.title,
+                                    isSelected: selectedViewOption == option,
+                                    action: { selectedViewOption = option }
+                                )
                             }
                         }
-                        .frame(height: 40)
-                        .background(Color(UIColor.systemGray5))
-                        .cornerRadius(10)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 8)
+                        .background(Color(UIColor.systemBackground))
+                        .overlay(
+                            GeometryReader { geometry in
+                                VStack {
+                                    Spacer()
+                                    Rectangle()
+                                        .fill(Color.blue)
+                                        .frame(width: geometry.size.width / CGFloat(ViewOption.allCases.count), height: 2)
+                                        .offset(x: geometry.size.width / CGFloat(ViewOption.allCases.count) * CGFloat(selectedViewOption.index))
+                                }
+                            }
+                        )
+                        .animation(.easeInOut, value: selectedViewOption)
                     }
                     .background(Color(UIColor.systemBackground))
                     .zIndex(1)
@@ -295,14 +301,11 @@ struct ToggleButton: View {
     var body: some View {
         Button(action: action) {
             Text(label)
-                .font(.caption)
-                .fontWeight(.bold)
-                .foregroundColor(isSelected ? .white : .primary)
-                .padding(.vertical, 10)
-                .padding(.horizontal, 16)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(isSelected ? .blue : .gray)
+                .padding(.vertical, 12)
                 .frame(maxWidth: .infinity)
-                .background(isSelected ? Color.blue : Color.clear)
-                .cornerRadius(isSelected ? 10 : 0)
         }
     }
 }
@@ -335,10 +338,26 @@ struct ActionButton: View {
     }
 }
 
-enum ViewOption {
+enum ViewOption: CaseIterable {
     case yourBudget
     case recommendedBudget
     case overview
+
+    var title: String {
+        switch self {
+        case .yourBudget: return "Actual"
+        case .recommendedBudget: return "Recommended"
+        case .overview: return "Summary"
+        }
+    }
+
+    var index: Int {
+        switch self {
+        case .yourBudget: return 0
+        case .recommendedBudget: return 1
+        case .overview: return 2
+        }
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
