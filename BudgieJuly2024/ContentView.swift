@@ -106,12 +106,14 @@ struct ContentView: View {
             .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
 
             if isActionButtonPressed {
-                Color.black.opacity(0.5).edgesIgnoringSafeArea(.all)
-                VStack {
-                    Spacer()
-                    HStack {
+                ZStack {
+                    Color.black.opacity(0.5)
+                        .edgesIgnoringSafeArea(.all)
+                        .blur(radius: 10)
+                    
+                    VStack {
                         Spacer()
-                        VStack(alignment: .trailing, spacing: 16) {
+                        VStack(spacing: 16) {
                             ActionButton(icon: "bolt.fill", label: "Enhance") {
                                 // Action for enhance
                             }
@@ -122,11 +124,8 @@ struct ContentView: View {
                                 // Action for edit
                             }
                         }
-                    }
-                    .padding(.trailing, 20)
-                    
-                    HStack {
-                        Spacer()
+                        .padding(.horizontal, 20)
+                        
                         Button(action: {
                             withAnimation {
                                 isActionButtonPressed.toggle()
@@ -139,10 +138,12 @@ struct ContentView: View {
                                 .background(Color.blue)
                                 .clipShape(Circle())
                         }
-                        .padding(.trailing, 20)
+                        .padding(.top, 16)
                         .padding(.bottom, 40)
                     }
+                    .transition(.move(edge: .bottom))
                 }
+                .transition(.opacity)
             } else {
                 VStack {
                     Spacer()
@@ -224,8 +225,12 @@ struct ContentView: View {
                         .foregroundColor(.secondary)
                         .padding(.bottom, 8)
 
-                    ForEach(category.subcategories.filter { $0.isSelected }) { subcategory in
-                        subcategoryView(for: subcategory, in: category)
+                    if category.type == .saving {
+                        savingsView(for: category)
+                    } else {
+                        ForEach(category.subcategories.filter { $0.isSelected }) { subcategory in
+                            subcategoryView(for: subcategory, in: category)
+                        }
                     }
                 }
                 .padding(.top, 8)
@@ -257,6 +262,18 @@ struct ContentView: View {
                     .foregroundColor(.secondary)
                     .padding(.top, 4)
             }
+        }
+        .padding(.leading, 16)
+    }
+
+    private func savingsView(for category: BudgetCategory) -> some View {
+        HStack {
+            Text("Current monthly savings")
+                .font(.body)
+            Spacer()
+            Text("\(currencyFormatter.string(from: NSNumber(value: category.amount ?? 0)) ?? "$0")")
+                .font(.body)
+                .foregroundColor(Color.primary)
         }
         .padding(.leading, 16)
     }
@@ -306,15 +323,15 @@ struct ActionButton: View {
     var body: some View {
         Button(action: action) {
             HStack {
+                Text(label)
+                    .foregroundColor(.primary)
+                    .font(.system(size: 18, weight: .medium))
+                Spacer()
                 Image(systemName: icon)
                     .foregroundColor(.white)
                     .frame(width: 30, height: 30)
                     .background(Color.blue)
                     .clipShape(Circle())
-                Text(label)
-                    .foregroundColor(.primary)
-                    .font(.system(size: 18, weight: .medium))
-                Spacer()
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 16)

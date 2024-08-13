@@ -308,84 +308,90 @@ class BudgetCategoryStore: ObservableObject {
                 type: .saving
             ),
             BudgetCategory(
-                name: "Gadgets",
-                emoji: "📱",
-                allocationPercentage: 0.0,
-                subcategories: [],
-                description: "Savings for gadgets and electronics. Example: New smartphone or laptop.",
-                type: .saving
-            ),
-            BudgetCategory(
-                name: "Fitness",
-                emoji: "💪",
-                allocationPercentage: 0.0,
-                subcategories: [],
-                description: "Savings for fitness and health expenses. Example: Gym membership or fitness equipment.",
-                type: .saving
-            ),
-            BudgetCategory(
-                name: "Charity",
-                emoji: "🎁",
-                allocationPercentage: 0.0,
-                subcategories: [],
-                description: "Savings for charitable donations. Example: Donations to non-profits or causes.",
-                type: .saving
-            ),
-            BudgetCategory(
-                name: "Business Investment",
-                emoji: "🏢",
-                allocationPercentage: 0.0,
-                subcategories: [],
-                description: "Savings for business investments. Example: Funding a startup or expanding a business.",
-                type: .saving
-            ),
-            BudgetCategory(
-                name: "Clothing Fund",
-                emoji: "👗",
-                allocationPercentage: 0.0,
-                subcategories: [],
-                description: "Savings for clothing and accessories. Example: Seasonal wardrobe updates.",
-                type: .saving
-            )
-        ]
-    }
+                            name: "Gadgets",
+                            emoji: "📱",
+                            allocationPercentage: 0.0,
+                            subcategories: [],
+                            description: "Savings for gadgets and electronics. Example: New smartphone or laptop.",
+                            type: .saving
+                        ),
+                        BudgetCategory(
+                            name: "Fitness",
+                            emoji: "💪",
+                            allocationPercentage: 0.0,
+                            subcategories: [],
+                            description: "Savings for fitness and health expenses. Example: Gym membership or fitness equipment.",
+                            type: .saving
+                        ),
+                        BudgetCategory(
+                            name: "Charity",
+                            emoji: "🎁",
+                            allocationPercentage: 0.0,
+                            subcategories: [],
+                            description: "Savings for charitable donations. Example: Donations to non-profits or causes.",
+                            type: .saving
+                        ),
+                        BudgetCategory(
+                            name: "Business Investment",
+                            emoji: "🏢",
+                            allocationPercentage: 0.0,
+                            subcategories: [],
+                            description: "Savings for business investments. Example: Funding a startup or expanding a business.",
+                            type: .saving
+                        ),
+                        BudgetCategory(
+                            name: "Clothing Fund",
+                            emoji: "👗",
+                            allocationPercentage: 0.0,
+                            subcategories: [],
+                            description: "Savings for clothing and accessories. Example: Seasonal wardrobe updates.",
+                            type: .saving
+                        )
+                    ]
+                }
 
-    func addCategory(_ category: BudgetCategory) {
-        categories.append(category)
-    }
+                func addCategory(_ category: BudgetCategory) {
+                    categories.append(category)
+                }
 
-    func deleteCategory(at index: Int) {
-        categories.remove(at: index)
-    }
+                func deleteCategory(at index: Int) {
+                    categories.remove(at: index)
+                }
 
-    func updateCategory(index: Int, name: String, emoji: String, allocationPercentage: Double, description: String, type: CategoryType) {
-        categories[index].name = name
-        categories[index].emoji = emoji
-        categories[index].allocationPercentage = allocationPercentage
-        categories[index].description = description
-        categories[index].type = type
-    }
+                func updateCategory(index: Int, name: String, emoji: String, allocationPercentage: Double, description: String, type: CategoryType) {
+                    categories[index].name = name
+                    categories[index].emoji = emoji
+                    categories[index].allocationPercentage = allocationPercentage
+                    categories[index].description = description
+                    categories[index].type = type
+                }
 
-    func addSubCategory(to categoryIndex: Int, subcategory: BudgetSubCategory) {
-        categories[categoryIndex].subcategories.append(subcategory)
-    }
+                func addSubCategory(to categoryIndex: Int, subcategory: BudgetSubCategory) {
+                    categories[categoryIndex].subcategories.append(subcategory)
+                }
 
-    func deleteSubCategory(from categoryIndex: Int, subcategory: BudgetSubCategory) {
-        if let subIndex = categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-            categories[categoryIndex].subcategories.remove(at: subIndex)
-        }
-    }
+                func deleteSubCategory(from categoryIndex: Int, subcategory: BudgetSubCategory) {
+                    if let subIndex = categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
+                        categories[categoryIndex].subcategories.remove(at: subIndex)
+                    }
+                }
 
-    func updateCategoryAmountAndDueDate(categoryId: UUID, amount: Double, dueDate: Date) {
-        if let index = categories.firstIndex(where: { $0.id == categoryId }) {
-            categories[index].amount = amount
-            categories[index].dueDate = dueDate
-        }
-    }
+                func updateCategoryAmountAndDueDate(categoryId: UUID, amount: Double, dueDate: Date) {
+                    if let index = categories.firstIndex(where: { $0.id == categoryId }) {
+                        categories[index].amount = amount
+                        categories[index].dueDate = dueDate
+                    }
+                }
 
-    func addSubcategoryToCategory(_ subcategory: BudgetSubCategory, categoryID: UUID) {
-        if let index = categories.firstIndex(where: { $0.id == categoryID }) {
-            categories[index].subcategories.append(subcategory)
-        }
-    }
-}
+                func addSubcategoryToCategory(_ subcategory: BudgetSubCategory, categoryID: UUID) {
+                    if let index = categories.firstIndex(where: { $0.id == categoryID }) {
+                        categories[index].subcategories.append(subcategory)
+                    }
+                }
+
+                func updateCategoryAmount(_ category: BudgetCategory, amount: Double) {
+                    if let index = categories.firstIndex(where: { $0.id == category.id }) {
+                        categories[index].amount = amount
+                    }
+                }
+            }

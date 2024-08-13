@@ -24,6 +24,7 @@
 		7713A3202C462F4B00A0AFCE /* DebtSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A31F2C462F4B00A0AFCE /* DebtSelectionView.swift */; };
 		776125A72C5750E9001E5453 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7713A2D02C32005A00A0AFCE /* Assets.xcassets */; };
 		776125A92C6047F1001E5453 /* RecommendedBudgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776125A82C6047F1001E5453 /* RecommendedBudgetView.swift */; };
+		776125AB2C6B1A4D001E5453 /* SavingsAmountInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776125AA2C6B1A4D001E5453 /* SavingsAmountInputView.swift */; };
 		77BEB70E2C4CCCB10000AFB9 /* CategoryQuestionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB70D2C4CCCB10000AFB9 /* CategoryQuestionView.swift */; };
 		77BEB7122C4CCEDF0000AFB9 /* ExpenseSelctionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7112C4CCEDF0000AFB9 /* ExpenseSelctionView.swift */; };
 		77BEB7182C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7172C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift */; };
@@ -70,6 +71,7 @@
 		7713A31D2C462F3900A0AFCE /* DebtDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebtDetailView.swift; sourceTree = "<group>"; };
 		7713A31F2C462F4B00A0AFCE /* DebtSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebtSelectionView.swift; sourceTree = "<group>"; };
 		776125A82C6047F1001E5453 /* RecommendedBudgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendedBudgetView.swift; sourceTree = "<group>"; };
+		776125AA2C6B1A4D001E5453 /* SavingsAmountInputView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsAmountInputView.swift; sourceTree = "<group>"; };
 		77BEB70D2C4CCCB10000AFB9 /* CategoryQuestionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryQuestionView.swift; sourceTree = "<group>"; };
 		77BEB7112C4CCEDF0000AFB9 /* ExpenseSelctionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseSelctionView.swift; sourceTree = "<group>"; };
 		77BEB7172C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseSubcategorySelectionView.swift; sourceTree = "<group>"; };
@@ -137,6 +139,7 @@
 				77BEB7172C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift */,
 				77BEB71F2C4F6D640000AFB9 /* ExpenseSubcategoryAmountInputView.swift */,
 				77BEB7192C4E026F0000AFB9 /* SavingsSelectionView.swift */,
+				776125AA2C6B1A4D001E5453 /* SavingsAmountInputView.swift */,
 				7713A2CE2C32005900A0AFCE /* ContentView.swift */,
 				776125A82C6047F1001E5453 /* RecommendedBudgetView.swift */,
 				7713A2FB2C3A28E500A0AFCE /* BudgetCategoryStore.swift */,
@@ -322,6 +325,7 @@
 				7713A2D92C32005A00A0AFCE /* BudgieJuly2024.xcdatamodeld in Sources */,
 				7713A3042C3A2A3000A0AFCE /* BudgieModel.swift in Sources */,
 				7713A2FE2C3A298800A0AFCE /* PaymentCadence.swift in Sources */,
+				776125AB2C6B1A4D001E5453 /* SavingsAmountInputView.swift in Sources */,
 				7713A2FC2C3A28E500A0AFCE /* BudgetCategoryStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -484,7 +488,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"BudgieJuly2024/Preview Content\"";
 				DEVELOPMENT_TEAM = GV224J94S3;
 				ENABLE_PREVIEWS = YES;
@@ -513,7 +517,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"BudgieJuly2024/Preview Content\"";
 				DEVELOPMENT_TEAM = GV224J94S3;
 				ENABLE_PREVIEWS = YES;

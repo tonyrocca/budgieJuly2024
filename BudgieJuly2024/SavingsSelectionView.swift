@@ -22,7 +22,7 @@ struct SavingsSelectionView: View {
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
             }
-            .padding(.bottom, -16)  // Adjusted padding to match PaymentInputView
+            .padding(.bottom, -16)
 
             List {
                 ForEach(budgetCategoryStore.categories.filter { $0.type == .saving }) { category in
@@ -40,14 +40,14 @@ struct SavingsSelectionView: View {
                         }
                         .foregroundColor(.primary)
                     }
-                    .toggleStyle(SwitchToggleStyle(tint: .blue)) // Change toggle color to blue
+                    .toggleStyle(SwitchToggleStyle(tint: .blue))
                 }
             }
             .listStyle(InsetGroupedListStyle())
 
             Spacer()
 
-            NavigationLink(destination: ContentView(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)
+            NavigationLink(destination: SavingsAmountInputView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected })
                 .environmentObject(budgetCategoryStore)) {
                 Text("Next")
                     .font(.headline)
@@ -64,6 +64,7 @@ struct SavingsSelectionView: View {
                     .shadow(radius: 5)
             }
             .padding(.bottom, 50)
+            .disabled(budgetCategoryStore.categories.filter { $0.type == .saving && $0.isSelected }.isEmpty)
         }
         .navigationTitle("Select Savings Goals")
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))

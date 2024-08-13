@@ -17,12 +17,16 @@ struct BudgieModel {
         for category in selectedCategories {
             var categoryAllocation: Double = 0
 
-            for subcategory in category.subcategories.filter({ $0.isSelected }) {
-                if let subcategoryAmount = subcategory.amount {
-                    allocations[subcategory.id] = subcategoryAmount
-                    categoryAllocation += subcategoryAmount
-                } else {
-                    allocations[subcategory.id] = 0
+            if category.type == .saving {
+                categoryAllocation = category.amount ?? 0
+            } else {
+                for subcategory in category.subcategories.filter({ $0.isSelected }) {
+                    if let subcategoryAmount = subcategory.amount {
+                        allocations[subcategory.id] = subcategoryAmount
+                        categoryAllocation += subcategoryAmount
+                    } else {
+                        allocations[subcategory.id] = 0
+                    }
                 }
             }
 
