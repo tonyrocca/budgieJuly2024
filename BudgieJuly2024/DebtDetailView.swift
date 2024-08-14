@@ -7,19 +7,18 @@ struct DebtDetailView: View {
     var hasSavingsGoals: Bool
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
 
-    @State private var debtAmounts: [UUID: Double] = [:]
+    @State private var debtAmounts: [UUID: String] = [:]
     @State private var selectedDates: [UUID: Date] = [:]
     @State private var showDatePicker: UUID? = nil
 
-    private let currentYear = Calendar.current.component(.year, from: Date())
-    private var years: [Int]
-
-    init(income: Binding<String>, paymentFrequency: Binding<PaymentCadence>, hasExpenses: Bool, hasSavingsGoals: Bool) {
-        self._income = income
-        self._paymentFrequency = paymentFrequency
-        self.hasExpenses = hasExpenses
-        self.hasSavingsGoals = hasSavingsGoals
-        self.years = Array(currentYear...currentYear + 10)
+    private let currentDate = Date()
+    private var dateRange: ClosedRange<Date> {
+        let calendar = Calendar.current
+        let startComponents = calendar.dateComponents([.year, .month], from: currentDate)
+        guard let start = calendar.date(from: startComponents) else { return currentDate...currentDate }
+        let endComponents = DateComponents(year: startComponents.year! + 10, month: 12)
+        guard let end = calendar.date(from: endComponents) else { return currentDate...currentDate }
+        return start...end
     }
 
     var body: some View {
@@ -44,7 +43,16 @@ struct DebtDetailView: View {
             ScrollView {
                 VStack(spacing: 0) {
                     ForEach(budgetCategoryStore.categories.filter { $0.type == .debt && $0.isSelected }) { category in
-                        DebtCategoryView(category: category, debtAmounts: $debtAmounts, selectedDates: $selectedDates, showDatePicker: $showDatePicker)
+                        DebtCategoryView(
+                            category: category,
+                            debtAmount: binding(for: category.id),
+                            selectedDate: Binding(
+                                get: { self.selectedDates[category.id] ?? self.defaultDate() },
+                                set: { self.selectedDates[category.id] = $0 }
+                            ),
+                            showDatePicker: $showDatePicker,
+                            dateRange: dateRange
+                        )
                         if category.id != budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }).last?.id {
                             Divider()
                         }
@@ -84,6 +92,20 @@ struct DebtDetailView: View {
         }
     }
 
+    private func binding(for id: UUID) -> Binding<String> {
+        return Binding(
+            get: { self.debtAmounts[id] ?? "" },
+            set: { self.debtAmounts[id] = $0 }
+        )
+    }
+
+    private func defaultDate() -> Date {
+        let calendar = Calendar.current
+        var components = calendar.dateComponents([.year, .month], from: currentDate)
+        components.month! += 1
+        return calendar.date(from: components) ?? currentDate
+    }
+
     private func nextView() -> some View {
         if hasExpenses {
             return AnyView(ExpenseSelectionView(income: $income, paymentFrequency: $paymentFrequency, hasSavingsGoals: hasSavingsGoals)
@@ -99,22 +121,27 @@ struct DebtDetailView: View {
 
     private func isFormComplete() -> Bool {
         return budgetCategoryStore.categories.filter { $0.type == .debt && $0.isSelected }.allSatisfy {
-            (debtAmounts[$0.id] ?? 0.0) > 0 && selectedDates[$0.id] != nil
+            let amount = debtAmounts[$0.id] ?? ""
+            return !amount.isEmpty && Double(amount) ?? 0 > 0 && selectedDates[$0.id] != nil
         }
     }
 
     private func initializeFields() {
         for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
-            debtAmounts[category.id] = category.amount ?? 0.0
-            selectedDates[category.id] = category.dueDate ?? Date()
+            if let amount = category.amount {
+                debtAmounts[category.id] = String(format: "%.0f", amount)
+            } else {
+                debtAmounts[category.id] = ""
+            }
+            selectedDates[category.id] = category.dueDate ?? defaultDate()
         }
     }
 
     private func saveFields() {
         for category in budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }) {
             if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                budgetCategoryStore.categories[index].amount = debtAmounts[category.id]
-                budgetCategoryStore.categories[index].dueDate = selectedDates[category.id] ?? Date()
+                budgetCategoryStore.categories[index].amount = Double(debtAmounts[category.id] ?? "0")
+                budgetCategoryStore.categories[index].dueDate = selectedDates[category.id] ?? defaultDate()
             }
         }
     }
@@ -122,55 +149,140 @@ struct DebtDetailView: View {
 
 struct DebtCategoryView: View {
     var category: BudgetCategory
-    @Binding var debtAmounts: [UUID: Double]
-    @Binding var selectedDates: [UUID: Date]
+    @Binding var debtAmount: String
+    @Binding var selectedDate: Date
     @Binding var showDatePicker: UUID?
+    var dateRange: ClosedRange<Date>
+
+    @State private var selectedMonth: Int
+    @State private var selectedYear: Int
+
+    private let inputBackgroundColor = Color(UIColor.systemGray6) // Lighter gray color
+    private let calendarIcon = Image(systemName: "calendar")
+
+    init(category: BudgetCategory, debtAmount: Binding<String>, selectedDate: Binding<Date>, showDatePicker: Binding<UUID?>, dateRange: ClosedRange<Date>) {
+        self.category = category
+        self._debtAmount = debtAmount
+        self._selectedDate = selectedDate
+        self._showDatePicker = showDatePicker
+        self.dateRange = dateRange
+
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.month, .year], from: selectedDate.wrappedValue)
+        _selectedMonth = State(initialValue: components.month ?? 1)
+        _selectedYear = State(initialValue: components.year ?? calendar.component(.year, from: Date()))
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("\(category.emoji) \(category.name)")
                 .font(.headline)
                 .foregroundColor(.primary)
 
-            CurrencyTextField(value: Binding(
-                get: { debtAmounts[category.id] ?? 0.0 },
-                set: { debtAmounts[category.id] = $0 }
-            ))
-            .frame(height: 44)
-            .background(Color(UIColor.systemGray6))
+            HStack {
+                Text("$")
+                    .foregroundColor(.primary)
+                TextField("Enter debt amount", text: $debtAmount)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                    .onChange(of: debtAmount) { newValue in
+                        debtAmount = formatCurrencyInput(newValue)
+                    }
+            }
+            .padding(12)
+            .background(inputBackgroundColor)
             .cornerRadius(8)
 
-            HStack {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("When is the debt due?")
                     .font(.subheadline)
                     .foregroundColor(.primary)
-                Spacer()
-                Text(selectedDates[category.id]?.formatted(.dateTime.year().month().day()) ?? Date().formatted(.dateTime.year().month().day()))
-                    .font(.subheadline)
-                    .padding(.horizontal, 8)
-                    .background(Color(UIColor.systemGray6))
-                    .cornerRadius(8)
-            }
-            .onTapGesture {
-                showDatePicker = (showDatePicker == category.id) ? nil : category.id
+                
+                HStack {
+                    Text("\(monthName(selectedMonth)) \(String(selectedYear))")
+                    Spacer()
+                    calendarIcon
+                }
+                .font(.subheadline)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(inputBackgroundColor)
+                .cornerRadius(8)
+                .onTapGesture {
+                    showDatePicker = (showDatePicker == category.id) ? nil : category.id
+                }
             }
 
             if showDatePicker == category.id {
-                DatePicker(
-                    "Select Due Date",
-                    selection: Binding(
-                        get: { selectedDates[category.id] ?? Date() },
-                        set: { selectedDates[category.id] = $0 }
-                    ),
-                    in: Date()...,
-                    displayedComponents: [.date]
-                )
-                .datePickerStyle(GraphicalDatePickerStyle())
-                .labelsHidden()
+                VStack(spacing: 0) {
+                    HStack(spacing: 0) {
+                        Picker("Month", selection: $selectedMonth) {
+                            ForEach(1...12, id: \.self) { month in
+                                Text(monthName(month)).tag(month)
+                            }
+                        }
+                        .pickerStyle(WheelPickerStyle())
+                        .frame(height: 150)
+                        .clipped()
+
+                        Picker("Year", selection: $selectedYear) {
+                            ForEach(Calendar.current.component(.year, from: dateRange.lowerBound)...Calendar.current.component(.year, from: dateRange.upperBound), id: \.self) { year in
+                                Text(String(year)).tag(year)
+                            }
+                        }
+                        .pickerStyle(WheelPickerStyle())
+                        .frame(height: 150)
+                        .clipped()
+                    }
+                    .onChange(of: selectedMonth) { _ in updateSelectedDate() }
+                    .onChange(of: selectedYear) { _ in updateSelectedDate() }
+
+                    Button(action: {
+                        showDatePicker = nil
+                    }) {
+                        Text("Done")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
+                }
+                .padding(.vertical, 16)
+                .background(inputBackgroundColor)
+                .cornerRadius(12)
             }
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 16)
+    }
+
+    private func formatCurrencyInput(_ input: String) -> String {
+        let filtered = input.filter { "0123456789".contains($0) }
+        if let value = Double(filtered) {
+            return String(format: "%.0f", value)
+        }
+        return ""
+    }
+
+    private func monthName(_ month: Int) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMMM"
+        return dateFormatter.monthSymbols[month - 1]
+    }
+
+    private func updateSelectedDate() {
+        var dateComponents = DateComponents()
+        dateComponents.year = selectedYear
+        dateComponents.month = selectedMonth
+        dateComponents.day = 1
+        if let newDate = Calendar.current.date(from: dateComponents) {
+            selectedDate = newDate
+        }
     }
 }
 
