@@ -7,6 +7,8 @@ struct ExpenseSubcategoryAmountInputView: View {
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
     var hasSavingsGoals: Bool
 
+    private let inputBackgroundColor = Color(UIColor.systemGray6)
+
     var body: some View {
         VStack(spacing: 16) {
             // Header
@@ -48,18 +50,25 @@ struct ExpenseSubcategoryAmountInputView: View {
                                     
                                     Spacer()
                                     
-                                    CurrencyTextField(value: Binding(
-                                        get: { subcategory.amount ?? 0 },
-                                        set: { newValue in
-                                            if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }),
-                                               let subIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-                                                budgetCategoryStore.categories[categoryIndex].subcategories[subIndex].amount = newValue
+                                    HStack {
+                                        Text("$")
+                                            .foregroundColor(.primary)
+                                        TextField("0", text: Binding(
+                                            get: { String(format: "%.0f", subcategory.amount ?? 0) },
+                                            set: { newValue in
+                                                if let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }),
+                                                   let subIndex = budgetCategoryStore.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
+                                                    budgetCategoryStore.categories[categoryIndex].subcategories[subIndex].amount = Double(newValue) ?? 0
+                                                }
                                             }
-                                        }))
-                                        .frame(width: 120)
-                                        .padding(8)
-                                        .background(Color(UIColor.systemGray6))
-                                        .cornerRadius(8)
+                                        ))
+                                        .keyboardType(.numberPad)
+                                        .multilineTextAlignment(.trailing)
+                                    }
+                                    .padding(8)
+                                    .frame(width: 100)
+                                    .background(inputBackgroundColor)
+                                    .cornerRadius(8)
                                 }
                                 .padding(.vertical, 8)
                                 .padding(.horizontal, 16)

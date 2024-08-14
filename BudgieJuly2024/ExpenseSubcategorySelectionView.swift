@@ -10,6 +10,8 @@ struct ExpenseSubcategorySelectionView: View {
     @State private var newSubcategoryName = ""
     @State private var currentCategoryID: UUID?
 
+    private let lightGrayColor = Color(UIColor.systemGray6)
+
     var body: some View {
         ZStack {
             VStack(spacing: 16) {
@@ -32,7 +34,7 @@ struct ExpenseSubcategorySelectionView: View {
 
                 // Subcategories
                 ScrollView {
-                    VStack(spacing: 0) {
+                    VStack(spacing: 16) {
                         ForEach(selectedCategories.filter { $0.type == .need }) { category in
                             VStack(spacing: 0) {
                                 HStack {
@@ -41,7 +43,7 @@ struct ExpenseSubcategorySelectionView: View {
                                         .font(.headline)
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 8)
+                                .padding(.vertical, 12)
                                 .padding(.horizontal, 16)
                                 .background(Color(UIColor.secondarySystemBackground))
 
@@ -66,20 +68,25 @@ struct ExpenseSubcategorySelectionView: View {
                                     showAddSubcategoryForm = true
                                 }) {
                                     HStack {
+                                        Image(systemName: "plus.circle.fill")
+                                            .foregroundColor(.blue)
                                         Text("Add Subcategory")
                                             .foregroundColor(.blue)
-                                        Spacer()
-                                        Text("Add")
-                                            .foregroundColor(.blue)
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
                                     }
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 16)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 10)
+                                    .background(lightGrayColor)
+                                    .cornerRadius(8)
                                 }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
                             }
+                            .background(Color.white)
+                            .cornerRadius(10)
                         }
                     }
-                    .background(Color.white)
-                    .cornerRadius(10)
                     .padding(.horizontal, 16)
                 }
 
@@ -113,17 +120,14 @@ struct ExpenseSubcategorySelectionView: View {
                         showAddSubcategoryForm = false
                     }
 
-                VStack(spacing: 16) {
+                VStack(spacing: 20) {
                     Text("Add New Expense Subcategory")
                         .font(.headline)
-                        .padding(.top, 16)
+                        .padding(.top, 20)
                         .foregroundColor(.primary)
 
-                    TextField("Name", text: $newSubcategoryName)
+                    TextField("Subcategory Name", text: $newSubcategoryName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding()
-                        .background(Color(UIColor.systemGray6))
-                        .cornerRadius(10)
                         .padding(.horizontal)
 
                     Button(action: addSubcategory) {
@@ -132,11 +136,16 @@ struct ExpenseSubcategorySelectionView: View {
                             .foregroundColor(.white)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.blue)
+                            .background(
+                                LinearGradient(gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing)
+                            )
                             .cornerRadius(10)
-                            .padding(.horizontal)
                     }
-                    .padding(.bottom, 16)
+                    .padding(.horizontal)
+                    .opacity(newSubcategoryName.isEmpty ? 0.6 : 1.0)
+                    .disabled(newSubcategoryName.isEmpty)
                 }
                 .frame(width: 300, height: 200)
                 .background(Color(UIColor.systemBackground))
