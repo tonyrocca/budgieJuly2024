@@ -48,40 +48,10 @@ struct ContentView: View {
         ZStack {
             NavigationView {
                 VStack(spacing: 0) {
-                    VStack(spacing: 4) {
-                        Text("Your Personalized Budget")
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .padding(.top, 16)
-                            .padding(.horizontal, 16)
-                            .foregroundColor(Color.primary)
-
-                        HStack(spacing: 0) {
-                            ForEach(ViewOption.allCases, id: \.self) { option in
-                                ToggleButton(
-                                    label: option.title,
-                                    isSelected: selectedViewOption == option,
-                                    action: { selectedViewOption = option }
-                                )
-                            }
-                        }
-                        .background(Color(UIColor.systemBackground))
-                        .overlay(
-                            GeometryReader { geometry in
-                                VStack {
-                                    Spacer()
-                                    Rectangle()
-                                        .fill(Color.blue)
-                                        .frame(width: geometry.size.width / CGFloat(ViewOption.allCases.count), height: 2)
-                                        .offset(x: geometry.size.width / CGFloat(ViewOption.allCases.count) * CGFloat(selectedViewOption.index))
-                                }
-                            }
-                        )
-                        .animation(.easeInOut, value: selectedViewOption)
-                    }
-                    .background(Color(UIColor.systemBackground))
-                    .zIndex(1)
-
+                    viewOptionsPicker()
+                        .padding(.top, 16)
+                        .padding(.horizontal, 16)
+                    
                     ScrollView {
                         VStack(spacing: 12) {
                             allocationListView()
@@ -106,236 +76,209 @@ struct ContentView: View {
             .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
 
             if isActionButtonPressed {
-                ZStack {
-                    Color.black.opacity(0.5)
-                        .edgesIgnoringSafeArea(.all)
-                        .blur(radius: 10)
-                    
-                    VStack {
-                        Spacer()
-                        VStack(spacing: 16) {
-                            ActionButton(icon: "bolt.fill", label: "Enhance") {
-                                // Action for enhance
-                            }
-                            ActionButton(icon: "person.crop.circle.fill", label: "Profile") {
-                                // Action for profile
-                            }
-                            ActionButton(icon: "pencil", label: "Edit") {
-                                // Action for edit
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        
-                        Button(action: {
-                            withAnimation {
-                                isActionButtonPressed.toggle()
-                            }
-                        }) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: 60, height: 60)
-                                .background(Color.blue)
-                                .clipShape(Circle())
-                        }
-                        .padding(.top, 16)
-                        .padding(.bottom, 40)
-                    }
-                    .transition(.move(edge: .bottom))
-                }
-                .transition(.opacity)
+                actionButtonsOverlay()
             } else {
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            withAnimation {
-                                isActionButtonPressed.toggle()
-                            }
-                        }) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: 60, height: 60)
-                                .background(Color.blue)
-                                .clipShape(Circle())
-                        }
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 40)
-                    }
-                }
+                floatingActionButton()
             }
         }
     }
 
-    private func allocationListView() -> some View {
-            VStack(spacing: 16) {
-                HStack {
-                    Text("Paycheck Total")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                    Spacer()
-                    Text("\(currencyFormatter.string(from: NSNumber(value: totalPerPaycheckBudget)) ?? "$0")")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                }
-                .padding()
-                .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(10)
-
-                VStack(spacing: 0) {
-                    ForEach(selectedCategories) { category in
-                        categoryView(category)
-                        if category.id != selectedCategories.last?.id {
-                            Divider()
-                        }
-                    }
-                }
-                .background(Color.white)
-                .cornerRadius(10)
+    private func viewOptionsPicker() -> some View {
+        Picker("View Option", selection: $selectedViewOption) {
+            ForEach(ViewOption.allCases, id: \.self) { option in
+                Text(option.title).tag(option)
             }
-            .padding(.horizontal)
         }
+        .pickerStyle(SegmentedPickerStyle())
+    }
 
-    private func categoryView(_ category: BudgetCategory) -> some View {
+    private func allocationListView() -> some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Paycheck Total")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                Spacer()
+                Text("\(currencyFormatter.string(from: NSNumber(value: totalPerPaycheckBudget)) ?? "$0")")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+            }
+            .padding()
+            .background(Color(UIColor.secondarySystemBackground))
+            .cornerRadius(10)
+
             VStack(spacing: 0) {
-                HStack {
-                    Text("\(category.emoji) \(category.name)")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    Spacer()
-                    Text("\(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")")
-                        .font(.headline)
-                        .foregroundColor(Color.primary)
-                    Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue)
-                }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    withAnimation {
-                        expandedCategoryIndex = expandedCategoryIndex == category.id ? nil : category.id
+                ForEach(selectedCategories) { category in
+                    categoryView(category)
+                    if category.id != selectedCategories.last?.id {
+                        Divider()
                     }
-                }
-
-                if expandedCategoryIndex == category.id {
-                    VStack(alignment: .leading, spacing: 8) {
-                        if category.type == .saving || category.type == .debt {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Description")
-                                    .font(.body)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.primary)
-                                
-                                Text(category.description)
-                                    .font(.body)
-                                    .foregroundColor(.secondary)
-                                    .padding(12)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(Color(UIColor.secondarySystemBackground))
-                                    .cornerRadius(8)
-                            }
-                        }
-                        
-                        if category.type == .need || category.type == .want {
-                            ForEach(category.subcategories.filter { $0.isSelected }) { subcategory in
-                                subcategoryView(for: subcategory, in: category)
-                            }
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 12)
                 }
             }
             .background(Color.white)
             .cornerRadius(10)
         }
+        .padding(.horizontal)
+    }
 
-        private func subcategoryView(for subcategory: BudgetSubCategory, in category: BudgetCategory) -> some View {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Text(subcategory.name)
-                        .font(.body)
-                    Spacer()
-                    Text("\(currencyFormatter.string(from: NSNumber(value: allocations[subcategory.id] ?? 0)) ?? "$0")")
-                        .font(.body)
-                        .foregroundColor(Color.primary)
-                    Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue)
-                }
-                .padding(.vertical, 8)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    withAnimation {
-                        expandedSubCategoryIndex = expandedSubCategoryIndex == subcategory.id ? nil : subcategory.id
-                    }
-                }
-
-                if expandedSubCategoryIndex == subcategory.id {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Description")
-                            .font(.body)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                        
-                        Text(subcategory.description)
-                            .font(.body)
-                            .foregroundColor(.secondary)
-                            .padding(12)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(Color(UIColor.secondarySystemBackground))
-                            .cornerRadius(8)
-                    }
-                    .padding(.top, 8)
+    private func categoryView(_ category: BudgetCategory) -> some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("\(category.emoji) \(category.name)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                Spacer()
+                Text("\(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")")
+                    .font(.headline)
+                    .foregroundColor(Color.primary)
+                Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
+                    .foregroundColor(.blue)
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation {
+                    expandedCategoryIndex = expandedCategoryIndex == category.id ? nil : category.id
                 }
             }
-        }
 
-        private func savingsView(for category: BudgetCategory) -> some View {
-            VStack(alignment: .leading, spacing: 12) {
+            if expandedCategoryIndex == category.id {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Current Monthly Savings")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    HStack {
-                        Text("\(currencyFormatter.string(from: NSNumber(value: category.amount ?? 0)) ?? "$0")")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        Spacer()
-                        Button(action: {
-                            // Action to edit savings amount
-                        }) {
-                            Image(systemName: "pencil")
-                                .foregroundColor(.blue)
+                    if category.type == .saving || category.type == .debt {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Description")
+                                .font(.body)
+                                .fontWeight(.bold)
+                                .foregroundColor(.primary)
+                            
+                            Text(category.description)
+                                .font(.body)
+                                .foregroundColor(.secondary)
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color(UIColor.secondarySystemBackground))
+                                .cornerRadius(8)
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(UIColor.tertiarySystemBackground))
-                    .cornerRadius(8)
-                }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Recommended Allocation")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
                     
-                    Text("Not yet calculated")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color(UIColor.tertiarySystemBackground))
-                        .cornerRadius(8)
+                    if category.type == .need || category.type == .want {
+                        ForEach(category.subcategories.filter { $0.isSelected }) { subcategory in
+                            subcategoryView(for: subcategory, in: category)
+                        }
+                    }
                 }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
             }
         }
+    }
+
+    private func subcategoryView(for subcategory: BudgetSubCategory, in category: BudgetCategory) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text(subcategory.name)
+                    .font(.body)
+                Spacer()
+                Text("\(currencyFormatter.string(from: NSNumber(value: allocations[subcategory.id] ?? 0)) ?? "$0")")
+                    .font(.body)
+                    .foregroundColor(Color.primary)
+                Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
+                    .foregroundColor(.blue)
+            }
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation {
+                    expandedSubCategoryIndex = expandedSubCategoryIndex == subcategory.id ? nil : subcategory.id
+                }
+            }
+
+            if expandedSubCategoryIndex == subcategory.id {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Description")
+                        .font(.body)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                    
+                    Text(subcategory.description)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .padding(12)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .cornerRadius(8)
+                }
+                .padding(.top, 8)
+            }
+        }
+    }
+
+    private func actionButtonsOverlay() -> some View {
+        ZStack {
+            Color.black.opacity(0.5)
+                .edgesIgnoringSafeArea(.all)
+                .blur(radius: 10)
+            
+            VStack {
+                Spacer()
+                VStack(spacing: 16) {
+                    ActionButton(icon: "bolt.fill", label: "Enhance") {
+                        // Action for enhance
+                    }
+                    ActionButton(icon: "person.crop.circle.fill", label: "Profile") {
+                        // Action for profile
+                    }
+                    ActionButton(icon: "pencil", label: "Edit") {
+                        // Action for edit
+                    }
+                }
+                .padding(.horizontal, 20)
+                
+                Button(action: {
+                    withAnimation {
+                        isActionButtonPressed.toggle()
+                    }
+                }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 60, height: 60)
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                }
+                .padding(.top, 16)
+                .padding(.bottom, 40)
+            }
+            .transition(.move(edge: .bottom))
+        }
+        .transition(.opacity)
+    }
+
+    private func floatingActionButton() -> some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                Button(action: {
+                    withAnimation {
+                        isActionButtonPressed.toggle()
+                    }
+                }) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 60, height: 60)
+                        .background(Color.blue)
+                        .clipShape(Circle())
+                }
+                .padding(.trailing, 20)
+                .padding(.bottom, 40)
+            }
+        }
+    }
 
     private func formatAndCalculatePaycheckAmount() {
         let filteredText = paycheckAmountText.filter { "0123456789.".contains($0) }
@@ -354,23 +297,6 @@ struct ContentView: View {
         budgieModel.paymentCadence = paymentCadence
         budgieModel.calculateAllocations(selectedCategories: selectedCategories)
         allocations = budgieModel.allocations
-    }
-}
-
-struct ToggleButton: View {
-    var label: String
-    var isSelected: Bool
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(label)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(isSelected ? .blue : .gray)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity)
-        }
     }
 }
 
@@ -400,26 +326,12 @@ struct ActionButton: View {
     }
 }
 
-enum ViewOption: CaseIterable {
-    case yourBudget
-    case recommendedBudget
-    case overview
+enum ViewOption: String, CaseIterable {
+    case yourBudget = "Actual"
+    case recommendedBudget = "Recommended"
+    case overview = "Summary"
 
-    var title: String {
-        switch self {
-        case .yourBudget: return "Actual"
-        case .recommendedBudget: return "Recommended"
-        case .overview: return "Summary"
-        }
-    }
-
-    var index: Int {
-        switch self {
-        case .yourBudget: return 0
-        case .recommendedBudget: return 1
-        case .overview: return 2
-        }
-    }
+    var title: String { rawValue }
 }
 
 struct ContentView_Previews: PreviewProvider {
