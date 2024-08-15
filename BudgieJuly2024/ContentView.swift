@@ -1,5 +1,4 @@
 import SwiftUI
-import Combine
 
 struct ContentView: View {
     @StateObject private var budgetCategoryStore = BudgetCategoryStore.shared
@@ -12,11 +11,13 @@ struct ContentView: View {
     @State private var expandedCategoryIndex: UUID? = nil
     @State private var expandedSubCategoryIndex: UUID? = nil
     @State private var showCategorySelection = false
+    @State private var showImproveBudgetPopup = false
+    @State private var isSurplus = false
     @FocusState private var isInputFocused: Bool
     @State private var selectedViewOption: ViewOption = .yourBudget
     @State private var showPopup = false
 
-    var selectedCategories: [BudgetCategory]
+    @State private var selectedCategories: [BudgetCategory]
 
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -31,7 +32,7 @@ struct ContentView: View {
         self._paymentCadence = State(initialValue: paymentFrequency)
         self._paycheckAmountText = State(initialValue: paycheckAmountText)
         self._budgieModel = State(initialValue: BudgieModel(paycheckAmount: Double(paycheckAmountText) ?? 0.0))
-        self.selectedCategories = selectedCategories
+        self._selectedCategories = State(initialValue: selectedCategories)
     }
 
     var totalMonthlyBudget: Double {
@@ -81,8 +82,8 @@ struct ContentView: View {
                         .fill(Color.white.opacity(0.01))
                         .background(
                             Rectangle()
-                                .fill(Color.white.opacity(0.8)) // Adjusted opacity
-                                .blur(radius: 3) // Reduced blur radius
+                                .fill(Color.white.opacity(0.6))
+                                .blur(radius: 3)
                         )
                         .edgesIgnoringSafeArea(.all)
                         .onTapGesture {
@@ -95,11 +96,16 @@ struct ContentView: View {
                         Spacer()
                         HStack {
                             Spacer()
-                            PopupMenu(isShowing: $showPopup)
+                            PopupMenu(isShowing: $showPopup, onImproveBudget: {
+                                withAnimation {
+                                    showImproveBudgetPopup = true
+                                    isSurplus = budgieModel.paycheckAmount > totalMonthlyBudget
+                                }
+                            })
                                 .transition(.scale)
                         }
                         .padding(.trailing, 20)
-                        .padding(.bottom, 80) // Adjust this value to position the popup above the action button
+                        .padding(.bottom, 80)
                     }
                 }
             }
@@ -110,19 +116,29 @@ struct ContentView: View {
                     Spacer()
                     Button(action: {
                         withAnimation {
-                            showPopup.toggle()
+                            showImproveBudgetPopup.toggle()
+                            isSurplus = budgieModel.paycheckAmount > totalMonthlyBudget
                         }
                     }) {
-                        Image(systemName: "plus")
+                        Image(systemName: "sparkles")
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.white)
                             .frame(width: 60, height: 60)
-                            .background(Color.blue)
+                            .background(
+                                LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                               startPoint: .topLeading,
+                                               endPoint: .bottomTrailing)
+                            )
                             .clipShape(Circle())
+                            .shadow(radius: 5)
                     }
                     .padding(.trailing, 20)
                     .padding(.bottom, 40)
                 }
+            }
+
+            if showImproveBudgetPopup {
+                ImproveBudgetPopup(isShowing: $showImproveBudgetPopup, selectedCategories: $selectedCategories, budgieModel: $budgieModel, isSurplus: isSurplus, budgetCategoryStore: budgetCategoryStore)
             }
         }
     }
@@ -282,12 +298,11 @@ struct ContentView: View {
 
 struct PopupMenu: View {
     @Binding var isShowing: Bool
+    var onImproveBudget: () -> Void
     
     var body: some View {
         VStack(spacing: 0) {
-            PopupButton(title: "Improve Budget") {
-                // Action for Improve Budget
-            }
+            PopupButton(title: "Improve Budget", action: onImproveBudget)
             
             Divider()
             

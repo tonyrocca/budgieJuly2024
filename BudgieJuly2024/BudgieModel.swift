@@ -74,6 +74,22 @@ struct BudgieModel {
         return monthlyPaycheck * (savingsPercentages[categoryName] ?? 0.05)
     }
 
+    func generateRecommendations(forSurplus surplus: Bool, selectedCategories: [BudgetCategory]) -> [BudgetCategory] {
+        if surplus {
+            // Recommend categories not in the current budget
+            return BudgetCategoryStore.shared.categories.filter { category in
+                !selectedCategories.contains { $0.id == category.id }
+            }
+        } else {
+            // Recommend categories to reduce or remove based on their delta from the recommended amount
+            return selectedCategories.sorted { (a, b) -> Bool in
+                let aAmount = allocations[a.id] ?? 0
+                let bAmount = allocations[b.id] ?? 0
+                return (aAmount / (a.amount ?? 1)) > (bAmount / (b.amount ?? 1))
+            }
+        }
+    }
+
     mutating func addCategory(_ category: BudgetCategory) {
         BudgetCategoryStore.shared.addCategory(category)
         calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
