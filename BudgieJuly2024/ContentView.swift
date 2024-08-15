@@ -14,7 +14,7 @@ struct ContentView: View {
     @State private var showCategorySelection = false
     @FocusState private var isInputFocused: Bool
     @State private var selectedViewOption: ViewOption = .yourBudget
-    @State private var isActionButtonPressed = false
+    @State private var showPopup = false
 
     var selectedCategories: [BudgetCategory]
 
@@ -75,10 +75,54 @@ struct ContentView: View {
             }
             .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
 
-            if isActionButtonPressed {
-                actionButtonsOverlay()
-            } else {
-                floatingActionButton()
+            if showPopup {
+                ZStack {
+                    Rectangle()
+                        .fill(Color.white.opacity(0.01))
+                        .background(
+                            Rectangle()
+                                .fill(Color.white.opacity(0.8)) // Adjusted opacity
+                                .blur(radius: 3) // Reduced blur radius
+                        )
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            withAnimation {
+                                showPopup = false
+                            }
+                        }
+                    
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            PopupMenu(isShowing: $showPopup)
+                                .transition(.scale)
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 80) // Adjust this value to position the popup above the action button
+                    }
+                }
+            }
+
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        withAnimation {
+                            showPopup.toggle()
+                        }
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 60, height: 60)
+                            .background(Color.blue)
+                            .clipShape(Circle())
+                    }
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 40)
+                }
             }
         }
     }
@@ -216,70 +260,6 @@ struct ContentView: View {
         }
     }
 
-    private func actionButtonsOverlay() -> some View {
-        ZStack {
-            Color.black.opacity(0.5)
-                .edgesIgnoringSafeArea(.all)
-                .blur(radius: 10)
-            
-            VStack {
-                Spacer()
-                VStack(spacing: 16) {
-                    ActionButton(icon: "bolt.fill", label: "Enhance") {
-                        // Action for enhance
-                    }
-                    ActionButton(icon: "person.crop.circle.fill", label: "Profile") {
-                        // Action for profile
-                    }
-                    ActionButton(icon: "pencil", label: "Edit") {
-                        // Action for edit
-                    }
-                }
-                .padding(.horizontal, 20)
-                
-                Button(action: {
-                    withAnimation {
-                        isActionButtonPressed.toggle()
-                    }
-                }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 60, height: 60)
-                        .background(Color.blue)
-                        .clipShape(Circle())
-                }
-                .padding(.top, 16)
-                .padding(.bottom, 40)
-            }
-            .transition(.move(edge: .bottom))
-        }
-        .transition(.opacity)
-    }
-
-    private func floatingActionButton() -> some View {
-        VStack {
-            Spacer()
-            HStack {
-                Spacer()
-                Button(action: {
-                    withAnimation {
-                        isActionButtonPressed.toggle()
-                    }
-                }) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 60, height: 60)
-                        .background(Color.blue)
-                        .clipShape(Circle())
-                }
-                .padding(.trailing, 20)
-                .padding(.bottom, 40)
-            }
-        }
-    }
-
     private func formatAndCalculatePaycheckAmount() {
         let filteredText = paycheckAmountText.filter { "0123456789.".contains($0) }
         if let value = Double(filteredText) {
@@ -300,28 +280,45 @@ struct ContentView: View {
     }
 }
 
-struct ActionButton: View {
-    var icon: String
-    var label: String
-    var action: () -> Void
+struct PopupMenu: View {
+    @Binding var isShowing: Bool
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            PopupButton(title: "Improve Budget") {
+                // Action for Improve Budget
+            }
+            
+            Divider()
+            
+            PopupButton(title: "Edit Budget") {
+                // Action for Edit Budget
+            }
+            
+            Divider()
+            
+            PopupButton(title: "Profile") {
+                // Action for Profile
+            }
+        }
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.15), radius: 5, x: 0, y: 5)
+        .frame(width: 220)
+    }
+}
 
+struct PopupButton: View {
+    let title: String
+    let action: () -> Void
+    
     var body: some View {
         Button(action: action) {
-            HStack {
-                Text(label)
-                    .foregroundColor(.primary)
-                    .font(.system(size: 18, weight: .medium))
-                Spacer()
-                Image(systemName: icon)
-                    .foregroundColor(.white)
-                    .frame(width: 30, height: 30)
-                    .background(Color.blue)
-                    .clipShape(Circle())
-            }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 16)
-            .background(Color.white)
-            .cornerRadius(30)
+            Text(title)
+                .foregroundColor(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
         }
     }
 }
