@@ -35,7 +35,7 @@ struct SavingsAmountInputView: View {
                                     .font(.headline)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 12)
                             .padding(.horizontal, 16)
                             .background(Color(UIColor.secondarySystemBackground))
 
@@ -46,19 +46,26 @@ struct SavingsAmountInputView: View {
                                 
                                 Spacer()
                                 
-                                CurrencyTextField(value: Binding(
-                                    get: { category.amount ?? 0 },
-                                    set: { newValue in
-                                        if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                            budgetCategoryStore.categories[index].amount = newValue
+                                HStack {
+                                    Text("$")
+                                        .foregroundColor(.primary)
+                                    TextField("0", text: Binding(
+                                        get: { String(format: "%.0f", category.amount ?? 0) },
+                                        set: { newValue in
+                                            if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                                budgetCategoryStore.categories[index].amount = Double(newValue) ?? 0
+                                            }
                                         }
-                                    }))
-                                    .frame(width: 120)
-                                    .padding(8)
-                                    .background(Color(UIColor.systemGray6))
-                                    .cornerRadius(8)
+                                    ))
+                                    .keyboardType(.numberPad)
+                                    .multilineTextAlignment(.trailing)
+                                    .frame(width: 100)
+                                }
+                                .padding(8)
+                                .background(Color(UIColor.systemGray6))
+                                .cornerRadius(8)
                             }
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 12)
                             .padding(.horizontal, 16)
                         }
                         .background(Color.white)
