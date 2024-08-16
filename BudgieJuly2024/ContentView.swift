@@ -11,8 +11,6 @@ struct ContentView: View {
     @State private var expandedCategoryIndex: UUID? = nil
     @State private var expandedSubCategoryIndex: UUID? = nil
     @State private var showCategorySelection = false
-    @State private var showImproveBudgetPopup = false
-    @State private var isSurplus = false
     @FocusState private var isInputFocused: Bool
     @State private var selectedTab: Tab = .budget
 
@@ -45,59 +43,23 @@ struct ContentView: View {
     }
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: 12) {
-                        allocationListView()
-                    }
-                    .padding(.top, 16)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(spacing: 12) {
+                    allocationListView()
                 }
-                .background(Color.clear)
+                .padding(.top, 16)
+            }
+            .background(Color.clear)
 
-                Spacer()
-                
-                footerNavigationBar()
-            }
-            .environmentObject(budgetCategoryStore)
-            .sheet(isPresented: $showCategorySelection) {
-                // Show category selection view or any other view when the user clicks "Enhance"
-            }
-            .onAppear {
-                formatAndCalculatePaycheckAmount()
-                calculateBudget()
-            }
-
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button(action: {
-                        withAnimation {
-                            showImproveBudgetPopup.toggle()
-                            isSurplus = budgieModel.paycheckAmount > totalMonthlyBudget
-                        }
-                    }) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 50, height: 50)
-                            .background(
-                                LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                               startPoint: .topLeading,
-                                               endPoint: .bottomTrailing)
-                            )
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
-                    }
-                    .padding(.trailing, 20)
-                    .padding(.bottom, 90)
-                }
-            }
-
-            if showImproveBudgetPopup {
-                ImproveBudgetPopup(isShowing: $showImproveBudgetPopup, selectedCategories: $selectedCategories, budgieModel: $budgieModel, isSurplus: isSurplus, budgetCategoryStore: budgetCategoryStore)
-            }
+            Spacer()
+            
+            footerNavigationBar()
+        }
+        .environmentObject(budgetCategoryStore)
+        .onAppear {
+            formatAndCalculatePaycheckAmount()
+            calculateBudget()
         }
         .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
     }
@@ -145,7 +107,6 @@ struct ContentView: View {
             .padding(.horizontal, 16)
             .background(Color.white)
             .cornerRadius(10)
-            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
             .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation {
@@ -157,37 +118,17 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     if category.type == .saving || category.type == .debt {
                         descriptionView(for: category)
-                    }
-                    
-                    if category.type == .need || category.type == .want {
+                    } else if category.type == .need || category.type == .want {
                         ForEach(category.subcategories.filter { $0.isSelected }) { subcategory in
                             subcategoryView(for: subcategory, in: category)
                         }
                     }
                 }
                 .padding(.top, 8)
-                .padding(.horizontal, 16)
                 .padding(.bottom, 12)
-                .background(Color(UIColor.secondarySystemBackground))
+                .background(Color.white)
                 .cornerRadius(10)
             }
-        }
-    }
-
-    private func descriptionView(for category: BudgetCategory) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Description")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
-            
-            Text(category.description)
-                .font(.body)
-                .foregroundColor(.primary)
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white)
-                .cornerRadius(8)
         }
     }
 
@@ -205,10 +146,10 @@ struct ContentView: View {
                     .foregroundColor(.blue)
                     .font(.footnote)
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
             .background(Color.white)
-            .cornerRadius(8)
+            .cornerRadius(10)
             .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation {
@@ -217,16 +158,39 @@ struct ContentView: View {
             }
 
             if expandedSubCategoryIndex == subcategory.id {
-                Text(subcategory.description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(UIColor.tertiarySystemBackground))
-                    .cornerRadius(8)
-                    .padding(.top, 4)
+                descriptionView(for: subcategory)
+                    .padding(.top, 8)
             }
         }
+        .padding(.leading, 16)
+    }
+
+    private func descriptionView(for item: Any) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Description")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
+            
+            Text(description(for: item))
+                .font(.body)
+                .foregroundColor(.primary)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(UIColor.secondarySystemBackground))
+                .cornerRadius(8)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+    }
+
+    private func description(for item: Any) -> String {
+        if let category = item as? BudgetCategory {
+            return category.description
+        } else if let subcategory = item as? BudgetSubCategory {
+            return subcategory.description
+        }
+        return ""
     }
 
     private func formatAndCalculatePaycheckAmount() {
