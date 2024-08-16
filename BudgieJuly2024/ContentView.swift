@@ -91,7 +91,7 @@ struct ContentView: View {
                             .shadow(radius: 5)
                     }
                     .padding(.trailing, 20)
-                    .padding(.bottom, 90) // Raised slightly higher
+                    .padding(.bottom, 90)
                 }
             }
 
@@ -119,16 +119,11 @@ struct ContentView: View {
             .background(Color(UIColor.secondarySystemBackground))
             .cornerRadius(10)
 
-            VStack(spacing: 0) {
+            VStack(spacing: 12) {
                 ForEach(selectedCategories) { category in
                     categoryView(category)
-                    if category.id != selectedCategories.last?.id {
-                        Divider()
-                    }
                 }
             }
-            .background(Color.white)
-            .cornerRadius(10)
         }
         .padding(.horizontal)
     }
@@ -148,6 +143,9 @@ struct ContentView: View {
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
+            .background(Color.white)
+            .cornerRadius(10)
+            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
             .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation {
@@ -156,22 +154,9 @@ struct ContentView: View {
             }
 
             if expandedCategoryIndex == category.id {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 12) {
                     if category.type == .saving || category.type == .debt {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Description")
-                                .font(.body)
-                                .fontWeight(.bold)
-                                .foregroundColor(.primary)
-                            
-                            Text(category.description)
-                                .font(.body)
-                                .foregroundColor(.secondary)
-                                .padding(12)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color(UIColor.secondarySystemBackground))
-                                .cornerRadius(8)
-                        }
+                        descriptionView(for: category)
                     }
                     
                     if category.type == .need || category.type == .want {
@@ -180,25 +165,50 @@ struct ContentView: View {
                         }
                     }
                 }
+                .padding(.top, 8)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
+                .background(Color(UIColor.secondarySystemBackground))
+                .cornerRadius(10)
             }
         }
     }
 
+    private func descriptionView(for category: BudgetCategory) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Description")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
+            
+            Text(category.description)
+                .font(.body)
+                .foregroundColor(.primary)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white)
+                .cornerRadius(8)
+        }
+    }
+
     private func subcategoryView(for subcategory: BudgetSubCategory, in category: BudgetCategory) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: 0) {
             HStack {
                 Text(subcategory.name)
-                    .font(.body)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
                 Spacer()
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[subcategory.id] ?? 0)) ?? "$0")")
-                    .font(.body)
+                    .font(.subheadline)
                     .foregroundColor(Color.primary)
                 Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
                     .foregroundColor(.blue)
+                    .font(.footnote)
             }
             .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .background(Color.white)
+            .cornerRadius(8)
             .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation {
@@ -207,21 +217,14 @@ struct ContentView: View {
             }
 
             if expandedSubCategoryIndex == subcategory.id {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Description")
-                        .font(.body)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                    
-                    Text(subcategory.description)
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .padding(12)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color(UIColor.secondarySystemBackground))
-                        .cornerRadius(8)
-                }
-                .padding(.top, 8)
+                Text(subcategory.description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(UIColor.tertiarySystemBackground))
+                    .cornerRadius(8)
+                    .padding(.top, 4)
             }
         }
     }
@@ -246,18 +249,15 @@ struct ContentView: View {
     }
 
     private func footerNavigationBar() -> some View {
-        HStack(spacing: 70) {  // Increased spacing between the buttons
+        HStack(spacing: 70) {
             footerButton(title: "Budget", icon: "list.bullet", isSelected: selectedTab == .budget) {
                 selectedTab = .budget
-                // Navigate to Budget view
             }
             footerButton(title: "Affordability", icon: "house", isSelected: selectedTab == .affordability) {
                 selectedTab = .affordability
-                // Navigate to Affordability view
             }
             footerButton(title: "Profile", icon: "person.circle", isSelected: selectedTab == .profile) {
                 selectedTab = .profile
-                // Navigate to Profile view
             }
         }
         .padding(.vertical, 8)
