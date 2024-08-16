@@ -14,8 +14,7 @@ struct ContentView: View {
     @State private var showImproveBudgetPopup = false
     @State private var isSurplus = false
     @FocusState private var isInputFocused: Bool
-    @State private var selectedViewOption: ViewOption = .yourBudget
-    @State private var showPopup = false
+    @State private var selectedTab: Tab = .budget
 
     @State private var selectedCategories: [BudgetCategory]
 
@@ -47,67 +46,26 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            NavigationView {
-                VStack(spacing: 0) {
-                    viewOptionsPicker()
-                        .padding(.top, 16)
-                        .padding(.horizontal, 16)
-                    
-                    ScrollView {
-                        VStack(spacing: 12) {
-                            allocationListView()
-                        }
-                        .padding(.top, 16)
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 12) {
+                        allocationListView()
                     }
-                    .background(Color.clear)
+                    .padding(.top, 16)
+                }
+                .background(Color.clear)
 
-                    Spacer()
-                }
-                .navigationBarItems(trailing: EmptyView())
-                .navigationBarTitleDisplayMode(.inline)
-                .environmentObject(budgetCategoryStore)
-                .sheet(isPresented: $showCategorySelection) {
-                    // Show category selection view or any other view when the user clicks "Enhance"
-                }
-                .onAppear {
-                    formatAndCalculatePaycheckAmount()
-                    calculateBudget()
-                }
+                Spacer()
+                
+                footerNavigationBar()
             }
-            .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
-
-            if showPopup {
-                ZStack {
-                    Rectangle()
-                        .fill(Color.white.opacity(0.01))
-                        .background(
-                            Rectangle()
-                                .fill(Color.white.opacity(0.6))
-                                .blur(radius: 3)
-                        )
-                        .edgesIgnoringSafeArea(.all)
-                        .onTapGesture {
-                            withAnimation {
-                                showPopup = false
-                            }
-                        }
-                    
-                    VStack {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            PopupMenu(isShowing: $showPopup, onImproveBudget: {
-                                withAnimation {
-                                    showImproveBudgetPopup = true
-                                    isSurplus = budgieModel.paycheckAmount > totalMonthlyBudget
-                                }
-                            })
-                                .transition(.scale)
-                        }
-                        .padding(.trailing, 20)
-                        .padding(.bottom, 80)
-                    }
-                }
+            .environmentObject(budgetCategoryStore)
+            .sheet(isPresented: $showCategorySelection) {
+                // Show category selection view or any other view when the user clicks "Enhance"
+            }
+            .onAppear {
+                formatAndCalculatePaycheckAmount()
+                calculateBudget()
             }
 
             VStack {
@@ -121,9 +79,9 @@ struct ContentView: View {
                         }
                     }) {
                         Image(systemName: "sparkles")
-                            .font(.system(size: 24, weight: .bold))
+                            .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.white)
-                            .frame(width: 60, height: 60)
+                            .frame(width: 50, height: 50)
                             .background(
                                 LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
                                                startPoint: .topLeading,
@@ -133,7 +91,7 @@ struct ContentView: View {
                             .shadow(radius: 5)
                     }
                     .padding(.trailing, 20)
-                    .padding(.bottom, 40)
+                    .padding(.bottom, 90) // Raised slightly higher
                 }
             }
 
@@ -141,15 +99,7 @@ struct ContentView: View {
                 ImproveBudgetPopup(isShowing: $showImproveBudgetPopup, selectedCategories: $selectedCategories, budgieModel: $budgieModel, isSurplus: isSurplus, budgetCategoryStore: budgetCategoryStore)
             }
         }
-    }
-
-    private func viewOptionsPicker() -> some View {
-        Picker("View Option", selection: $selectedViewOption) {
-            ForEach(ViewOption.allCases, id: \.self) { option in
-                Text(option.title).tag(option)
-            }
-        }
-        .pickerStyle(SegmentedPickerStyle())
+        .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
     }
 
     private func allocationListView() -> some View {
@@ -294,61 +244,45 @@ struct ContentView: View {
         budgieModel.calculateAllocations(selectedCategories: selectedCategories)
         allocations = budgieModel.allocations
     }
-}
 
-struct PopupMenu: View {
-    @Binding var isShowing: Bool
-    var onImproveBudget: () -> Void
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            PopupButton(title: "Improve Budget", action: onImproveBudget)
-            
-            Divider()
-            
-            PopupButton(title: "Edit Budget") {
-                // Action for Edit Budget
+    private func footerNavigationBar() -> some View {
+        HStack(spacing: 70) {  // Increased spacing between the buttons
+            footerButton(title: "Budget", icon: "list.bullet", isSelected: selectedTab == .budget) {
+                selectedTab = .budget
+                // Navigate to Budget view
             }
-            
-            Divider()
-            
-            PopupButton(title: "Profile") {
-                // Action for Profile
+            footerButton(title: "Affordability", icon: "house", isSelected: selectedTab == .affordability) {
+                selectedTab = .affordability
+                // Navigate to Affordability view
+            }
+            footerButton(title: "Profile", icon: "person.circle", isSelected: selectedTab == .profile) {
+                selectedTab = .profile
+                // Navigate to Profile view
             }
         }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
         .background(Color(UIColor.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.15), radius: 5, x: 0, y: 5)
-        .frame(width: 220)
+        .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: -3)
+        .clipShape(Capsule())
     }
-}
 
-struct PopupButton: View {
-    let title: String
-    let action: () -> Void
-    
-    var body: some View {
+    private func footerButton(title: String, icon: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(title)
-                .foregroundColor(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 22))
+                    .foregroundColor(isSelected ? .blue : .gray)
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(isSelected ? .blue : .gray)
+            }
         }
     }
-}
 
-enum ViewOption: String, CaseIterable {
-    case yourBudget = "Actual"
-    case recommendedBudget = "Recommended"
-    case overview = "Summary"
-
-    var title: String { rawValue }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView(selectedCategories: BudgetCategoryStore.shared.categories, paymentFrequency: .monthly, paycheckAmountText: "")
-            .environmentObject(BudgetCategoryStore.shared)
+    enum Tab {
+        case budget
+        case affordability
+        case profile
     }
 }
