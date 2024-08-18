@@ -13,7 +13,6 @@ struct ContentView: View {
     @State private var showCategorySelection = false
     @FocusState private var isInputFocused: Bool
     @State private var selectedTab: Tab = .budget
-
     @State private var selectedCategories: [BudgetCategory]
 
     private let currencyFormatter: NumberFormatter = {
@@ -41,20 +40,29 @@ struct ContentView: View {
         guard let amount = paycheckAmount else { return 0 }
         return amount
     }
+    
+    var budgetDeficitOrSurplus: Double {
+        let totalAllocated = allocations.values.reduce(0, +)
+        return totalPerPaycheckBudget - totalAllocated
+    }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                VStack(spacing: 12) {
-                    allocationListView()
+        ZStack(alignment: .top) {
+            VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 8) {
+                        Color.clear.frame(height: 100)
+                        allocationListView()
+                    }
+                    .padding(.top, 8)
                 }
-                .padding(.top, 16)
-            }
-            .background(Color.clear)
+                .background(Color(UIColor.systemGroupedBackground))
 
-            Spacer()
+                footerNavigationBar()
+            }
             
-            footerNavigationBar()
+            paycheckTotalView()
+                .zIndex(1)
         }
         .environmentObject(budgetCategoryStore)
         .onAppear {
@@ -64,32 +72,58 @@ struct ContentView: View {
         .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
     }
 
-    private func allocationListView() -> some View {
-        VStack(spacing: 16) {
+    private func paycheckTotalView() -> some View {
+        VStack(spacing: 0) {
             HStack {
                 Text("Paycheck Total")
                     .font(.headline)
-                    .fontWeight(.bold)
                     .foregroundColor(.primary)
                 Spacer()
-                Text("\(currencyFormatter.string(from: NSNumber(value: totalPerPaycheckBudget)) ?? "$0")")
-                    .font(.headline)
+                Text(currencyFormatter.string(from: NSNumber(value: totalPerPaycheckBudget)) ?? "$0")
+                    .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
             }
-            .padding()
-            .background(Color(UIColor.secondarySystemBackground))
-            .cornerRadius(10)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(Color.white)
+            
+            Divider()
+                .background(Color.gray.opacity(0.3))
+            
+            HStack {
+                Text(budgetDeficitOrSurplus >= 0 ? "Surplus" : "Deficit")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text(currencyFormatter.string(from: NSNumber(value: abs(budgetDeficitOrSurplus))) ?? "$0")
+                    .font(.headline)
+                    .foregroundColor(budgetDeficitOrSurplus >= 0 ? .green : .red)
+            }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(Color.white)
+        }
+        .background(Color.white)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .padding(.horizontal)
+        .padding(.top, 8)
+    }
 
-            VStack(spacing: 12) {
-                ForEach(selectedCategories) { category in
-                    categoryView(category)
-                }
+    private func allocationListView() -> some View {
+        VStack(spacing: 12) {
+            ForEach(selectedCategories) { category in
+                categoryView(category)
             }
         }
         .padding(.horizontal)
     }
-
+    
     private func categoryView(_ category: BudgetCategory) -> some View {
         VStack(spacing: 0) {
             HStack {
@@ -106,7 +140,6 @@ struct ContentView: View {
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
             .background(Color.white)
-            .cornerRadius(10)
             .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation {
@@ -115,21 +148,37 @@ struct ContentView: View {
             }
 
             if expandedCategoryIndex == category.id {
-                VStack(alignment: .leading, spacing: 12) {
-                    if category.type == .saving || category.type == .debt {
+                if category.type == .saving || category.type == .debt {
+                    VStack(spacing: 0) {
+                        Divider()
+                            .background(Color.gray.opacity(0.3))
                         descriptionView(for: category)
-                    } else if category.type == .need || category.type == .want {
-                        ForEach(category.subcategories.filter { $0.isSelected }) { subcategory in
-                            subcategoryView(for: subcategory, in: category)
-                        }
                     }
+                } else if category.type == .need || category.type == .want {
+                    expenseCategoryView(for: category)
                 }
-                .padding(.top, 8)
-                .padding(.bottom, 12)
-                .background(Color.white)
-                .cornerRadius(10)
             }
         }
+        .background(Color.white)
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
+    }
+
+    private func expenseCategoryView(for category: BudgetCategory) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ForEach(category.subcategories.filter { $0.isSelected }) { subcategory in
+                subcategoryView(for: subcategory, in: category)
+            }
+        }
+        .padding(.top, 8)
+        .padding(.bottom, 12)
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(10)
+        .transition(.opacity)
     }
 
     private func subcategoryView(for subcategory: BudgetSubCategory, in category: BudgetCategory) -> some View {
@@ -149,7 +198,6 @@ struct ContentView: View {
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
             .background(Color.white)
-            .cornerRadius(10)
             .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation {
@@ -160,13 +208,21 @@ struct ContentView: View {
             if expandedSubCategoryIndex == subcategory.id {
                 descriptionView(for: subcategory)
                     .padding(.top, 8)
+                    .transition(.opacity)
             }
         }
-        .padding(.leading, 16)
+        .background(Color.white)
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
+        .padding(.horizontal, 16)
     }
 
     private func descriptionView(for item: Any) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("Description")
                 .font(.subheadline)
                 .fontWeight(.medium)
@@ -175,13 +231,10 @@ struct ContentView: View {
             Text(description(for: item))
                 .font(.body)
                 .foregroundColor(.primary)
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(8)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 16)
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(UIColor.secondarySystemBackground))
     }
 
     private func description(for item: Any) -> String {
@@ -226,7 +279,7 @@ struct ContentView: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
-        .background(Color(UIColor.systemBackground))
+        .background(Color.white)
         .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: -3)
         .clipShape(Capsule())
     }
