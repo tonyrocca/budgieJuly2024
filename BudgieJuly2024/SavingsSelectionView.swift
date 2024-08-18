@@ -31,7 +31,7 @@ struct SavingsSelectionView: View {
 
                 // Categories
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 0) {
                         ForEach(budgetCategoryStore.categories.filter { $0.type == .saving }) { category in
                             VStack(spacing: 0) {
                                 ToggleRow(isOn: Binding(

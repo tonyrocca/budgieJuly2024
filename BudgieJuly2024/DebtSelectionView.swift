@@ -11,105 +11,99 @@ struct DebtSelectionView: View {
     var hasExpenses: Bool
     var hasSavingsGoals: Bool
 
-    private let lightGrayColor = Color(UIColor.systemGray6)
-
     var body: some View {
-        ZStack {
-            VStack(spacing: 16) {
-                // Header
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Select your debt categories")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
+        VStack(spacing: 16) {
+            // Header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Select your debt categories")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
 
-                    Text("Choose the debt you currently are paying off.")
-                        .font(.headline)
-                        .fontWeight(.regular)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 16)
-                .padding(.bottom, 8)
-                .padding(.horizontal, 16)
+                Text("Choose the debt you currently are paying off.")
+                    .font(.headline)
+                    .fontWeight(.regular)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.top, 16)
+            .padding(.bottom, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
 
-                // Categories
-                ScrollView {
-                    VStack(spacing: 16) {
-                        ForEach(budgetCategoryStore.categories.filter { $0.type == .debt }) { category in
-                            VStack(spacing: 0) {
-                                ToggleRow(isOn: Binding(
-                                    get: { selectedDebtCategories.contains(category.id) },
-                                    set: { newValue in
-                                        if newValue {
-                                            selectedDebtCategories.append(category.id)
-                                            if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                                budgetCategoryStore.categories[index].isSelected = true
-                                            }
-                                        } else {
-                                            if let index = selectedDebtCategories.firstIndex(of: category.id) {
-                                                selectedDebtCategories.remove(at: index)
-                                                if let catIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                                    budgetCategoryStore.categories[catIndex].isSelected = false
-                                                }
-                                            }
-                                        }
+            // Categories
+            VStack(spacing: 0) {
+                ForEach(budgetCategoryStore.categories.filter { $0.type == .debt }, id: \.id) { category in
+                    ToggleRow(isOn: Binding(
+                        get: { selectedDebtCategories.contains(category.id) },
+                        set: { newValue in
+                            if newValue {
+                                selectedDebtCategories.append(category.id)
+                                if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                    budgetCategoryStore.categories[index].isSelected = true
+                                }
+                            } else {
+                                if let index = selectedDebtCategories.firstIndex(of: category.id) {
+                                    selectedDebtCategories.remove(at: index)
+                                    if let catIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                        budgetCategoryStore.categories[catIndex].isSelected = false
                                     }
-                                ), icon: category.emoji, text: category.name)
-                                
-                                if category.id != budgetCategoryStore.categories.filter({ $0.type == .debt }).last?.id {
-                                    Divider()
                                 }
                             }
                         }
-                        
-                        Button(action: {
-                            showAddDebtForm = true
-                        }) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(.blue)
-                                Text("Add Category")
-                                    .foregroundColor(.blue)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(lightGrayColor)
-                            .cornerRadius(8)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
+                    ), icon: category.emoji, text: category.name)
+                    
+                    if category.id != budgetCategoryStore.categories.filter({ $0.type == .debt }).last?.id {
+                        Divider()
                     }
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .padding(.horizontal, 16)
                 }
-
-                Spacer()
-
-                NavigationLink(destination: DebtDetailView(income: $income, paymentFrequency: $paymentFrequency, hasExpenses: hasExpenses, hasSavingsGoals: hasSavingsGoals)
-                    .environmentObject(budgetCategoryStore)) {
-                    Text("Next")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                           startPoint: .topLeading,
-                                           endPoint: .bottomTrailing)
-                        )
-                        .cornerRadius(10)
-                        .shadow(radius: 5)
+                
+                Button(action: {
+                    showAddDebtForm = true
+                }) {
+                    HStack {
+                        Image(systemName: "plus.circle.fill")
+                            .foregroundColor(.blue)
+                        Text("Add Category")
+                            .foregroundColor(.blue)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 50)
-                .disabled(selectedDebtCategories.isEmpty)
+                .background(Color(UIColor.systemBackground))
             }
-            .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
+            .background(Color.white)
+            .cornerRadius(10)
+            .padding(.horizontal, 16)
 
+            Spacer()
+
+            NavigationLink(destination: DebtDetailView(income: $income, paymentFrequency: $paymentFrequency, hasExpenses: hasExpenses, hasSavingsGoals: hasSavingsGoals)
+                .environmentObject(budgetCategoryStore)) {
+                Text("Next")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                       startPoint: .topLeading,
+                                       endPoint: .bottomTrailing)
+                    )
+                    .cornerRadius(10)
+                    .shadow(radius: 5)
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 50)
+            .disabled(selectedDebtCategories.isEmpty)
+        }
+        .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
+        .overlay(addDebtFormOverlay)
+    }
+
+    private var addDebtFormOverlay: some View {
+        Group {
             if showAddDebtForm {
                 Color.black.opacity(0.4)
                     .edgesIgnoringSafeArea(.all)
