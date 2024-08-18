@@ -7,8 +7,6 @@ struct ExpenseSubcategoryAmountInputView: View {
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
     var hasSavingsGoals: Bool
 
-    private let inputBackgroundColor = Color(UIColor.systemGray6)
-
     var body: some View {
         VStack(spacing: 16) {
             // Header
@@ -38,7 +36,7 @@ struct ExpenseSubcategoryAmountInputView: View {
                                     .font(.headline)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 12)
                             .padding(.horizontal, 16)
                             .background(Color(UIColor.secondarySystemBackground))
 
@@ -64,13 +62,13 @@ struct ExpenseSubcategoryAmountInputView: View {
                                         ))
                                         .keyboardType(.numberPad)
                                         .multilineTextAlignment(.trailing)
+                                        .frame(width: 100)
                                     }
                                     .padding(8)
-                                    .frame(width: 100)
-                                    .background(inputBackgroundColor)
+                                    .background(Color(UIColor.systemGray6))
                                     .cornerRadius(8)
                                 }
-                                .padding(.vertical, 8)
+                                .padding(.vertical, 12)
                                 .padding(.horizontal, 16)
                                 
                                 if subcategory.id != category.subcategories.filter({ $0.isSelected }).last?.id {
