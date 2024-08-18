@@ -28,7 +28,6 @@ struct DebtDetailView: View {
                 Text("Enter debt details")
                     .font(.title)
                     .fontWeight(.bold)
-                    .padding(.top, 16)
                     .foregroundColor(.primary)
                 
                 Text("Enter your total debt amount owed and when it is due.")
@@ -36,12 +35,14 @@ struct DebtDetailView: View {
                     .fontWeight(.regular)
                     .foregroundColor(.secondary)
             }
-            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 16)
             .padding(.bottom, 8)
+            .padding(.horizontal, 16)
 
             // Debt Categories
             ScrollView {
-                VStack(spacing: 0) {
+                VStack(spacing: 16) {
                     ForEach(budgetCategoryStore.categories.filter { $0.type == .debt && $0.isSelected }) { category in
                         DebtCategoryView(
                             category: category,
@@ -53,13 +54,8 @@ struct DebtDetailView: View {
                             showDatePicker: $showDatePicker,
                             dateRange: dateRange
                         )
-                        if category.id != budgetCategoryStore.categories.filter({ $0.type == .debt && $0.isSelected }).last?.id {
-                            Divider()
-                        }
                     }
                 }
-                .background(Color.white)
-                .cornerRadius(10)
                 .padding(.horizontal, 16)
             }
 
@@ -157,7 +153,7 @@ struct DebtCategoryView: View {
     @State private var selectedMonth: Int
     @State private var selectedYear: Int
 
-    private let inputBackgroundColor = Color(UIColor.systemGray6) // Lighter gray color
+    private let inputBackgroundColor = Color(UIColor.systemGray6)
     private let calendarIcon = Image(systemName: "calendar")
 
     init(category: BudgetCategory, debtAmount: Binding<String>, selectedDate: Binding<Date>, showDatePicker: Binding<UUID?>, dateRange: ClosedRange<Date>) {
@@ -174,29 +170,37 @@ struct DebtCategoryView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("\(category.emoji) \(category.name)")
-                .font(.headline)
-                .foregroundColor(.primary)
-
+        VStack(spacing: 0) {
             HStack {
-                Text("$")
-                    .foregroundColor(.primary)
-                TextField("Enter debt amount", text: $debtAmount)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.trailing)
-                    .onChange(of: debtAmount) { newValue in
-                        debtAmount = formatCurrencyInput(newValue)
-                    }
+                Text("\(category.emoji) \(category.name)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                Spacer()
+                HStack {
+                    Text("$")
+                        .foregroundColor(.primary)
+                    TextField("0", text: $debtAmount)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 100)
+                        .onChange(of: debtAmount) { newValue in
+                            debtAmount = formatCurrencyInput(newValue)
+                        }
+                }
+                .padding(8)
+                .background(inputBackgroundColor)
+                .cornerRadius(8)
             }
-            .padding(12)
-            .background(inputBackgroundColor)
-            .cornerRadius(8)
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(Color.white)
 
-            VStack(alignment: .leading, spacing: 4) {
+            Divider()
+
+            VStack(alignment: .leading, spacing: 8) {
                 Text("When is the debt due?")
                     .font(.subheadline)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.secondary)
                 
                 HStack {
                     Text("\(monthName(selectedMonth)) \(String(selectedYear))")
@@ -213,6 +217,9 @@ struct DebtCategoryView: View {
                     showDatePicker = (showDatePicker == category.id) ? nil : category.id
                 }
             }
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
+            .background(Color.white)
 
             if showDatePicker == category.id {
                 VStack(spacing: 0) {
@@ -257,8 +264,9 @@ struct DebtCategoryView: View {
                 .cornerRadius(12)
             }
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 16)
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
     }
 
     private func formatCurrencyInput(_ input: String) -> String {
