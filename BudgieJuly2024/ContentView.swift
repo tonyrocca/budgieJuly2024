@@ -14,6 +14,7 @@ struct ContentView: View {
     @FocusState private var isInputFocused: Bool
     @State private var selectedTab: Tab = .budget
     @State private var selectedCategories: [BudgetCategory]
+    @State private var showPopup = false
 
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -60,9 +61,12 @@ struct ContentView: View {
 
                 footerNavigationBar()
             }
+            .blur(radius: showPopup ? 5 : 0)
             
             paycheckTotalView()
                 .zIndex(1)
+                .blur(radius: showPopup ? 5 : 0)
+                .opacity(showPopup ? 0.7 : 1)
             
             VStack {
                 Spacer()
@@ -71,7 +75,27 @@ struct ContentView: View {
                     actionButton()
                 }
                 .padding(.trailing, 16)
-                .padding(.bottom, 80)  // Adjust this value to position the button above the footer
+                .padding(.bottom, 80)
+            }
+            
+            if showPopup {
+                Color.black.opacity(0.5)
+                    .edgesIgnoringSafeArea(.all)
+                    .onTapGesture {
+                        withAnimation {
+                            showPopup = false
+                        }
+                    }
+                
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        popupMenu()
+                    }
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 150)
+                }
             }
         }
         .environmentObject(budgetCategoryStore)
@@ -84,10 +108,11 @@ struct ContentView: View {
 
     private func actionButton() -> some View {
         Button(action: {
-            // Action to perform when the button is tapped
-            print("Action button tapped")
+            withAnimation {
+                showPopup.toggle()
+            }
         }) {
-            Image(systemName: "plus")
+            Image(systemName: showPopup ? "xmark" : "plus")
                 .font(.system(size: 24))
                 .foregroundColor(.white)
                 .frame(width: 56, height: 56)
@@ -95,6 +120,43 @@ struct ContentView: View {
                 .clipShape(Circle())
                 .shadow(radius: 5)
         }
+    }
+
+    private func popupMenu() -> some View {
+        VStack(spacing: 0) {
+            Button(action: {
+                print("Enhance Budget tapped")
+                withAnimation {
+                    showPopup = false
+                }
+            }) {
+                Text("Enhance Budget")
+                    .foregroundColor(.black)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white)
+            }
+            
+            Divider()
+                .background(Color.gray.opacity(0.3))
+            
+            Button(action: {
+                print("Edit Budget tapped")
+                withAnimation {
+                    showPopup = false
+                }
+            }) {
+                Text("Edit Budget")
+                    .foregroundColor(.black)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white)
+            }
+        }
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(radius: 10)
+        .frame(width: 180)
     }
 
     private func paycheckTotalView() -> some View {
