@@ -117,7 +117,7 @@ struct ContentView: View {
                 .background(Color.gray.opacity(0.3))
             
             HStack {
-                Text(budgetDeficitOrSurplus >= 0 ? "Surplus" : "Deficit")
+                Text(budgetDeficitOrSurplus >= 0 ? "Per Paycheck Surplus" : "Per Paycheck Deficit")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 Spacer()
