@@ -63,6 +63,16 @@ struct ContentView: View {
             
             paycheckTotalView()
                 .zIndex(1)
+            
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    actionButton()
+                }
+                .padding(.trailing, 16)
+                .padding(.bottom, 80)  // Adjust this value to position the button above the footer
+            }
         }
         .environmentObject(budgetCategoryStore)
         .onAppear {
@@ -70,6 +80,21 @@ struct ContentView: View {
             calculateBudget()
         }
         .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
+    }
+
+    private func actionButton() -> some View {
+        Button(action: {
+            // Action to perform when the button is tapped
+            print("Action button tapped")
+        }) {
+            Image(systemName: "plus")
+                .font(.system(size: 24))
+                .foregroundColor(.white)
+                .frame(width: 56, height: 56)
+                .background(Color.blue)
+                .clipShape(Circle())
+                .shadow(radius: 5)
+        }
     }
 
     private func paycheckTotalView() -> some View {
