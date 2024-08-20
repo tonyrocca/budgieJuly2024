@@ -11,10 +11,15 @@ struct ContentView: View {
     @State private var expandedCategoryIndex: UUID? = nil
     @State private var expandedSubCategoryIndex: UUID? = nil
     @State private var showCategorySelection = false
+    @State private var showPopup = false
+    @State private var isEditing = false
+    @State private var selectedCategoryForEdit: BudgetCategory? = nil
+    @State private var selectedSubcategoryForEdit: BudgetSubCategory? = nil
+    @State private var showDeleteDialog = false
+    @State private var itemToDelete: Any? = nil
     @FocusState private var isInputFocused: Bool
     @State private var selectedTab: Tab = .budget
     @State private var selectedCategories: [BudgetCategory]
-    @State private var showPopup = false
 
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -84,6 +89,7 @@ struct ContentView: View {
                     .onTapGesture {
                         withAnimation {
                             showPopup = false
+                            isEditing = false
                         }
                     }
                 
@@ -104,12 +110,37 @@ struct ContentView: View {
             calculateBudget()
         }
         .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
+        .sheet(item: $selectedCategoryForEdit) { category in
+            EditCategoryView(category: category, budgieModel: $budgieModel) {
+                updateScreen()
+            }
+        }
+        .sheet(item: $selectedSubcategoryForEdit) { subcategory in
+            if let category = selectedCategories.first(where: { $0.subcategories.contains(where: { $0.id == subcategory.id }) }) {
+                EditCategoryView(category: category, subcategory: subcategory, budgieModel: $budgieModel) {
+                    updateScreen()
+                }
+            }
+        }
+        .alert(isPresented: $showDeleteDialog) {
+            Alert(
+                title: Text("Confirm Deletion"),
+                message: Text("Are you sure you want to delete this \(itemToDelete is BudgetCategory ? "category" : "subcategory")?"),
+                primaryButton: .destructive(Text("Delete")) {
+                    deleteItem()
+                },
+                secondaryButton: .cancel()
+            )
+        }
     }
 
     private func actionButton() -> some View {
         Button(action: {
             withAnimation {
                 showPopup.toggle()
+                if !showPopup {
+                    isEditing = false
+                }
             }
         }) {
             Image(systemName: showPopup ? "xmark" : "plus")
@@ -125,32 +156,36 @@ struct ContentView: View {
     private func popupMenu() -> some View {
         VStack(spacing: 0) {
             Button(action: {
-                print("Enhance Budget tapped")
-                withAnimation {
-                    showPopup = false
-                }
+                isEditing.toggle()
+                showPopup = false
             }) {
-                Text("Enhance Budget")
-                    .foregroundColor(.black)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.white)
+                HStack {
+                    Image(systemName: "pencil")
+                    Text("Edit Budget")
+                }
+                .foregroundColor(.black)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .background(Color.white)
             }
             
             Divider()
                 .background(Color.gray.opacity(0.3))
             
             Button(action: {
-                print("Edit Budget tapped")
+                print("Enhance Budget tapped")
                 withAnimation {
                     showPopup = false
                 }
             }) {
-                Text("Edit Budget")
-                    .foregroundColor(.black)
-                    .padding(.vertical, 12)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.white)
+                HStack {
+                    Image(systemName: "sparkles")
+                    Text("Enhance Budget")
+                }
+                .foregroundColor(.black)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .background(Color.white)
             }
         }
         .background(Color.white)
@@ -221,6 +256,23 @@ struct ContentView: View {
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")")
                     .font(.headline)
                     .foregroundColor(Color.primary)
+                if isEditing {
+                    Button(action: {
+                        selectedCategoryForEdit = category
+                    }) {
+                        Image(systemName: "pencil")
+                            .foregroundColor(.blue)
+                    }
+                    .padding(.leading, 10)
+                    Button(action: {
+                        itemToDelete = category
+                        showDeleteDialog = true
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                    }
+                    .padding(.leading, 10)
+                }
                 Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
                     .foregroundColor(.blue)
             }
@@ -278,6 +330,25 @@ struct ContentView: View {
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[subcategory.id] ?? 0)) ?? "$0")")
                     .font(.subheadline)
                     .foregroundColor(Color.primary)
+                
+                if isEditing {
+                    Button(action: {
+                        selectedSubcategoryForEdit = subcategory
+                    }) {
+                        Image(systemName: "pencil")
+                            .foregroundColor(.blue)
+                    }
+                    .padding(.leading, 10)
+                    Button(action: {
+                        itemToDelete = subcategory
+                        showDeleteDialog = true
+                    }) {
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                    }
+                    .padding(.leading, 10)
+                }
+                
                 Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
                     .foregroundColor(.blue)
                     .font(.footnote)
@@ -306,6 +377,30 @@ struct ContentView: View {
         )
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
         .padding(.horizontal, 16)
+    }
+
+    private func deleteItem() {
+        withAnimation {
+            if let category = itemToDelete as? BudgetCategory {
+                deleteCategory(category)
+            } else if let subcategory = itemToDelete as? BudgetSubCategory {
+                deleteSubcategory(subcategory)
+            }
+        }
+        itemToDelete = nil
+    }
+
+    private func deleteCategory(_ category: BudgetCategory) {
+        budgieModel.removeCategory(category)
+        selectedCategories.removeAll { $0.id == category.id }
+        calculateBudget()
+    }
+
+    private func deleteSubcategory(_ subcategory: BudgetSubCategory) {
+        if let categoryIndex = selectedCategories.firstIndex(where: { $0.subcategories.contains(where: { $0.id == subcategory.id }) }) {
+            selectedCategories[categoryIndex].subcategories.removeAll { $0.id == subcategory.id }
+            calculateBudget()
+        }
     }
 
     private func descriptionView(for item: Any) -> some View {
@@ -350,6 +445,11 @@ struct ContentView: View {
         budgieModel.paymentCadence = paymentCadence
         budgieModel.calculateAllocations(selectedCategories: selectedCategories)
         allocations = budgieModel.allocations
+    }
+
+    private func updateScreen() {
+        calculateBudget()
+        selectedCategories = BudgetCategoryStore.shared.categories
     }
 
     private func footerNavigationBar() -> some View {
