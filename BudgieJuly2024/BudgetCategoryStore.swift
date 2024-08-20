@@ -1,13 +1,13 @@
 import Foundation
 
-enum CategoryType: String, Codable {
+enum CategoryType: String, Codable, Equatable {
     case need
     case want
     case saving
     case debt
 }
 
-struct BudgetSubCategory: Identifiable, Codable {
+struct BudgetSubCategory: Identifiable, Codable, Equatable {
     var id: UUID
     var name: String
     var allocationPercentage: Double
@@ -25,9 +25,19 @@ struct BudgetSubCategory: Identifiable, Codable {
         self.amount = amount
         self.dueDate = dueDate
     }
+
+    static func == (lhs: BudgetSubCategory, rhs: BudgetSubCategory) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.name == rhs.name &&
+               lhs.allocationPercentage == rhs.allocationPercentage &&
+               lhs.description == rhs.description &&
+               lhs.isSelected == rhs.isSelected &&
+               lhs.amount == rhs.amount &&
+               lhs.dueDate == rhs.dueDate
+    }
 }
 
-struct BudgetCategory: Identifiable, Codable {
+struct BudgetCategory: Identifiable, Codable, Equatable {
     var id: UUID
     var name: String
     var emoji: String
@@ -50,6 +60,19 @@ struct BudgetCategory: Identifiable, Codable {
         self.amount = amount
         self.dueDate = dueDate
         self.isSelected = isSelected
+    }
+
+    static func == (lhs: BudgetCategory, rhs: BudgetCategory) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.name == rhs.name &&
+               lhs.emoji == rhs.emoji &&
+               lhs.allocationPercentage == rhs.allocationPercentage &&
+               lhs.subcategories == rhs.subcategories &&
+               lhs.description == rhs.description &&
+               lhs.type == rhs.type &&
+               lhs.amount == rhs.amount &&
+               lhs.dueDate == rhs.dueDate &&
+               lhs.isSelected == rhs.isSelected
     }
 }
 

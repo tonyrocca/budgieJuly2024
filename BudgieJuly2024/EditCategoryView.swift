@@ -87,21 +87,10 @@ struct EditCategoryView: View {
             if let subcategory = subcategory {
                 budgieModel.updateSubcategory(category: category, subcategory: subcategory, newAmount: newAmount)
             } else {
-                budgieModel.updateCategory(category, newPercentage: newAmount / budgieModel.paycheckAmount)
+                budgieModel.updateCategory(category, newAmount: newAmount)
             }
             presentationMode.wrappedValue.dismiss()
             onDismiss()
-        }
-    }
-}
-
-extension BudgieModel {
-    mutating func updateSubcategory(category: BudgetCategory, subcategory: BudgetSubCategory, newAmount: Double) {
-        if let categoryIndex = BudgetCategoryStore.shared.categories.firstIndex(where: { $0.id == category.id }) {
-            if let subIndex = BudgetCategoryStore.shared.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-                BudgetCategoryStore.shared.categories[categoryIndex].subcategories[subIndex].amount = newAmount
-                calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
-            }
         }
     }
 }

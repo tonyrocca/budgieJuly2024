@@ -46,7 +46,7 @@ struct ContentView: View {
         guard let amount = paycheckAmount else { return 0 }
         return amount
     }
-    
+
     var budgetDeficitOrSurplus: Double {
         let totalAllocated = allocations.values.reduce(0, +)
         return totalPerPaycheckBudget - totalAllocated
@@ -67,12 +67,12 @@ struct ContentView: View {
                 footerNavigationBar()
             }
             .blur(radius: showPopup ? 5 : 0)
-            
+
             paycheckTotalView()
                 .zIndex(1)
                 .blur(radius: showPopup ? 5 : 0)
                 .opacity(showPopup ? 0.7 : 1)
-            
+
             VStack {
                 Spacer()
                 HStack {
@@ -82,7 +82,7 @@ struct ContentView: View {
                 .padding(.trailing, 16)
                 .padding(.bottom, 80)
             }
-            
+
             if showPopup {
                 Color.black.opacity(0.5)
                     .edgesIgnoringSafeArea(.all)
@@ -92,7 +92,7 @@ struct ContentView: View {
                             isEditing = false
                         }
                     }
-                
+
                 VStack {
                     Spacer()
                     HStack {
@@ -108,6 +108,9 @@ struct ContentView: View {
         .onAppear {
             formatAndCalculatePaycheckAmount()
             calculateBudget()
+        }
+        .onChange(of: budgetCategoryStore.categories) { _ in
+            updateScreen()
         }
         .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
         .sheet(item: $selectedCategoryForEdit) { category in
@@ -168,10 +171,10 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity)
                 .background(Color.white)
             }
-            
+
             Divider()
                 .background(Color.gray.opacity(0.3))
-            
+
             Button(action: {
                 print("Enhance Budget tapped")
                 withAnimation {
@@ -209,10 +212,10 @@ struct ContentView: View {
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
             .background(Color.white)
-            
+
             Divider()
                 .background(Color.gray.opacity(0.3))
-            
+
             HStack {
                 Text(budgetDeficitOrSurplus >= 0 ? "Per Paycheck Surplus" : "Per Paycheck Deficit")
                     .font(.subheadline)
@@ -245,7 +248,7 @@ struct ContentView: View {
         }
         .padding(.horizontal)
     }
-    
+
     private func categoryView(_ category: BudgetCategory) -> some View {
         VStack(spacing: 0) {
             HStack {
@@ -253,7 +256,7 @@ struct ContentView: View {
                     .font(.headline)
                     .fontWeight(.semibold)
                 Spacer()
-                Text("\(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")")
+                Text("\(currencyFormatter.string(from: NSNumber(value: category.type == .saving ? (category.amount ?? 0) : (allocations[category.id] ?? 0))) ?? "$0")")
                     .font(.headline)
                     .foregroundColor(Color.primary)
                 if isEditing {
@@ -330,7 +333,7 @@ struct ContentView: View {
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[subcategory.id] ?? 0)) ?? "$0")")
                     .font(.subheadline)
                     .foregroundColor(Color.primary)
-                
+
                 if isEditing {
                     Button(action: {
                         selectedSubcategoryForEdit = subcategory
@@ -348,7 +351,7 @@ struct ContentView: View {
                     }
                     .padding(.leading, 10)
                 }
-                
+
                 Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
                     .foregroundColor(.blue)
                     .font(.footnote)
@@ -409,7 +412,7 @@ struct ContentView: View {
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.secondary)
-            
+
             Text(description(for: item))
                 .font(.body)
                 .foregroundColor(.primary)
@@ -449,7 +452,7 @@ struct ContentView: View {
 
     private func updateScreen() {
         calculateBudget()
-        selectedCategories = BudgetCategoryStore.shared.categories
+        selectedCategories = BudgetCategoryStore.shared.categories.filter { $0.isSelected }
     }
 
     private func footerNavigationBar() -> some View {

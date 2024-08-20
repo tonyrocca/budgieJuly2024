@@ -5,43 +5,57 @@ struct BudgieModel {
     var paymentCadence: PaymentCadence = .monthly
     var allocations: [UUID: Double] = [:]
 
-    var sortedAllocations: [(key: UUID, value: Double)] {
-        allocations.sorted { $0.value > $1.value }
-    }
-
     mutating func calculateAllocations(selectedCategories: [BudgetCategory]) {
-        let monthlyPaycheck = paymentCadence.monthlyEquivalent(from: paycheckAmount)
-
         allocations.removeAll()
 
         for category in selectedCategories {
-            var categoryAllocation: Double = 0
-
-            if category.type == .saving {
-                categoryAllocation = category.amount ?? 0
+            if category.type == .saving || category.type == .debt {
+                allocations[category.id] = category.amount ?? 0
             } else {
+                var categoryAllocation: Double = 0
                 for subcategory in category.subcategories.filter({ $0.isSelected }) {
-                    if let subcategoryAmount = subcategory.amount {
-                        allocations[subcategory.id] = subcategoryAmount
-                        categoryAllocation += subcategoryAmount
-                    } else {
-                        allocations[subcategory.id] = 0
-                    }
+                    let subcategoryAmount = subcategory.amount ?? 0
+                    allocations[subcategory.id] = subcategoryAmount
+                    categoryAllocation += subcategoryAmount
                 }
-            }
-
-            if categoryAllocation > 0 {
                 allocations[category.id] = categoryAllocation
-            } else if category.type == .debt, let amount = category.amount, let dueDate = category.dueDate {
-                let monthlyDebtAllocation = calculateMonthlyDebtAllocation(from: Date(), to: dueDate, amount: amount)
-                allocations[category.id] = monthlyDebtAllocation
-            } else if category.type == .saving {
-                let savingsAmount = calculateSavingsAmount(for: category.name, monthlyPaycheck: monthlyPaycheck)
-                allocations[category.id] = savingsAmount
-            } else {
-                allocations[category.id] = 0
             }
         }
+    }
+
+    mutating func updateCategory(_ category: BudgetCategory, newAmount: Double) {
+        if let index = BudgetCategoryStore.shared.categories.firstIndex(where: { $0.id == category.id }) {
+            BudgetCategoryStore.shared.categories[index].amount = newAmount
+            allocations[category.id] = newAmount
+        }
+        calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected })
+    }
+
+    mutating func updateSubcategory(category: BudgetCategory, subcategory: BudgetSubCategory, newAmount: Double) {
+        if let categoryIndex = BudgetCategoryStore.shared.categories.firstIndex(where: { $0.id == category.id }),
+           let subIndex = BudgetCategoryStore.shared.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
+            
+            BudgetCategoryStore.shared.categories[categoryIndex].subcategories[subIndex].amount = newAmount
+            
+            let newCategoryTotal = BudgetCategoryStore.shared.categories[categoryIndex].subcategories.reduce(0) { $0 + ($1.amount ?? 0) }
+            BudgetCategoryStore.shared.categories[categoryIndex].amount = newCategoryTotal
+            
+            allocations[subcategory.id] = newAmount
+            allocations[category.id] = newCategoryTotal
+        }
+        calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected })
+    }
+
+    mutating func addCategory(_ category: BudgetCategory) {
+        BudgetCategoryStore.shared.addCategory(category)
+        calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
+    }
+
+    mutating func removeCategory(_ category: BudgetCategory) {
+        if let index = BudgetCategoryStore.shared.categories.firstIndex(where: { $0.id == category.id }) {
+            BudgetCategoryStore.shared.deleteCategory(at: index)
+        }
+        calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
     }
 
     func calculateMonthlyDebtAllocation(from startDate: Date, to endDate: Date, amount: Double) -> Double {
@@ -76,36 +90,15 @@ struct BudgieModel {
 
     func generateRecommendations(forSurplus surplus: Bool, selectedCategories: [BudgetCategory]) -> [BudgetCategory] {
         if surplus {
-            // Recommend categories not in the current budget
             return BudgetCategoryStore.shared.categories.filter { category in
                 !selectedCategories.contains { $0.id == category.id }
             }
         } else {
-            // Recommend categories to reduce or remove based on their delta from the recommended amount
             return selectedCategories.sorted { (a, b) -> Bool in
                 let aAmount = allocations[a.id] ?? 0
                 let bAmount = allocations[b.id] ?? 0
                 return (aAmount / (a.amount ?? 1)) > (bAmount / (b.amount ?? 1))
             }
         }
-    }
-
-    mutating func addCategory(_ category: BudgetCategory) {
-        BudgetCategoryStore.shared.addCategory(category)
-        calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
-    }
-
-    mutating func removeCategory(_ category: BudgetCategory) {
-        if let index = BudgetCategoryStore.shared.categories.firstIndex(where: { $0.id == category.id }) {
-            BudgetCategoryStore.shared.deleteCategory(at: index)
-        }
-        calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
-    }
-
-    mutating func updateCategory(_ category: BudgetCategory, newPercentage: Double) {
-        if let index = BudgetCategoryStore.shared.categories.firstIndex(where: { $0.id == category.id }) {
-            BudgetCategoryStore.shared.updateCategory(index: index, name: category.name, emoji: category.emoji, allocationPercentage: newPercentage, description: category.description, type: category.type)
-        }
-        calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
     }
 }
