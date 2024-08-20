@@ -56,7 +56,7 @@ struct ContentView: View {
         ZStack(alignment: .top) {
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(spacing: 8) {
+                    VStack(spacing: 1) { // Reduced spacing between categories
                         Color.clear.frame(height: 100)
                         allocationListView()
                     }
@@ -241,7 +241,7 @@ struct ContentView: View {
     }
 
     private func allocationListView() -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 1) {
             ForEach(selectedCategories) { category in
                 categoryView(category)
             }
@@ -277,7 +277,7 @@ struct ContentView: View {
                     .padding(.leading, 10)
                 }
                 Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
-                    .foregroundColor(.blue)
+                    .foregroundColor(.black) // Updated to black
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
@@ -302,10 +302,10 @@ struct ContentView: View {
             }
         }
         .background(Color.white)
-        .cornerRadius(10)
+        .cornerRadius(5) // Reduced corner radius for a cleaner look
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: expandedCategoryIndex == category.id ? 10 : 5) // More prominent border when expanded
+                .stroke(Color.gray.opacity(expandedCategoryIndex == category.id ? 0.3 : 0.1), lineWidth: expandedCategoryIndex == category.id ? 1 : 0.5)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
     }
@@ -353,7 +353,7 @@ struct ContentView: View {
                 }
 
                 Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
-                    .foregroundColor(.blue)
+                    .foregroundColor(.black) // Updated to black
                     .font(.footnote)
             }
             .padding(.vertical, 12)
@@ -373,10 +373,10 @@ struct ContentView: View {
             }
         }
         .background(Color.white)
-        .cornerRadius(10)
+        .cornerRadius(5) // Reduced corner radius for a cleaner look
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 5)
+                .stroke(Color.gray.opacity(0.1), lineWidth: 0.5)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
         .padding(.horizontal, 16)

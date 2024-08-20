@@ -30,56 +30,69 @@ struct EditCategoryView: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
-            HStack {
-                Text("Edit \(subcategory?.name ?? category.name)")
-                    .font(.headline)
-                Spacer()
-                Button(action: {
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.gray)
-                }
-            }
+        ZStack {
+            BlurView(style: .systemMaterial)
+                .edgesIgnoringSafeArea(.all)
             
-            VStack(alignment: .leading, spacing: 10) {
-                Text("Category: \(category.name)")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                if let subcategory = subcategory {
-                    Text("Subcategory: \(subcategory.name)")
+            VStack(spacing: 24) {
+                HStack {
+                    Text("Edit \(subcategory?.name ?? category.name)")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    Spacer()
+                    Button(action: {
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Category: \(category.name)")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    if let subcategory = subcategory {
+                        Text("Subcategory: \(subcategory.name)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    Text("Original Amount: \(currencyFormatter.string(from: NSNumber(value: originalAmount)) ?? "")")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
-                Text("Original Amount: \(currencyFormatter.string(from: NSNumber(value: originalAmount)) ?? "")")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                .padding()
+                .background(Color(UIColor.secondarySystemBackground))
+                .cornerRadius(10)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("New Amount:")
+                        .font(.headline)
+                    TextField("Enter amount", text: $newAmountText)
+                        .keyboardType(.decimalPad)
+                        .font(.title3)
+                        .padding()
+                        .background(Color(UIColor.tertiarySystemBackground))
+                        .cornerRadius(10)
+                }
+                
+                Button(action: save) {
+                    Text("Save")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(15)
+                }
             }
-            
-            HStack {
-                Text("New Amount:")
-                Spacer()
-                TextField("Enter amount", text: $newAmountText)
-                    .keyboardType(.decimalPad)
-                    .multilineTextAlignment(.trailing)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-            }
-            
-            Button(action: save) {
-                Text("Save")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
+            .padding()
+            .background(Color(UIColor.secondarySystemBackground).opacity(0.5))
+            .cornerRadius(20)
+            .shadow(radius: 10)
+            .padding(.horizontal)
         }
-        .padding()
-        .background(Color(UIColor.systemBackground))
-        .cornerRadius(20)
-        .shadow(radius: 10)
-        .frame(width: 300, height: 300)
     }
     
     private func save() {
@@ -92,5 +105,17 @@ struct EditCategoryView: View {
             presentationMode.wrappedValue.dismiss()
             onDismiss()
         }
+    }
+}
+
+struct BlurView: UIViewRepresentable {
+    let style: UIBlurEffect.Style
+
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        return UIVisualEffectView(effect: UIBlurEffect(style: style))
+    }
+
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
+        uiView.effect = UIBlurEffect(style: style)
     }
 }
