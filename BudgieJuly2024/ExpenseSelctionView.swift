@@ -28,14 +28,23 @@ struct ExpenseSelectionView: View {
             // Expenses
             VStack(spacing: 0) {
                 ForEach(budgetCategoryStore.categories.filter { $0.type == .need }, id: \.id) { category in
-                    ToggleRow(isOn: Binding(
+                    Toggle(isOn: Binding(
                         get: { category.isSelected },
                         set: { newValue in
                             if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
                                 budgetCategoryStore.categories[index].isSelected = newValue
                             }
                         }
-                    ), icon: category.emoji, text: category.name)
+                    )) {
+                        HStack {
+                            Text(category.emoji)
+                            Text(category.name)
+                                .font(.body)
+                        }
+                    }
+                    .toggleStyle(SwitchToggleStyle(tint: .blue))
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
                     
                     if category.id != budgetCategoryStore.categories.filter({ $0.type == .need }).last?.id {
                         Divider()
@@ -48,7 +57,7 @@ struct ExpenseSelectionView: View {
 
             Spacer()
 
-            NavigationLink(destination: ExpenseSubcategorySelectionView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, hasSavingsGoals: hasSavingsGoals)
+            NavigationLink(destination: ExpenseSubcategorySelectionView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, hasSavings: hasSavingsGoals)
                 .environmentObject(budgetCategoryStore)) {
                 Text("Next")
                     .font(.headline)
@@ -68,12 +77,5 @@ struct ExpenseSelectionView: View {
             .disabled(budgetCategoryStore.categories.filter { $0.type == .need && $0.isSelected }.isEmpty)
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
-    }
-}
-
-struct ExpenseSelectionView_Previews: PreviewProvider {
-    static var previews: some View {
-        ExpenseSelectionView(income: .constant("5000"), paymentFrequency: .constant(.monthly), hasSavingsGoals: true)
-            .environmentObject(BudgetCategoryStore.shared)
     }
 }

@@ -79,7 +79,7 @@ struct DebtSelectionView: View {
 
             Spacer()
 
-            NavigationLink(destination: DebtDetailView(income: $income, paymentFrequency: $paymentFrequency, hasExpenses: hasExpenses, hasSavingsGoals: hasSavingsGoals)
+            NavigationLink(destination: DebtDetailView(income: $income, paymentFrequency: $paymentFrequency, hasExpenses: hasExpenses, hasSavings: hasSavingsGoals)
                 .environmentObject(budgetCategoryStore)) {
                 Text("Next")
                     .font(.headline)

@@ -5,6 +5,8 @@ struct SavingsAmountInputView: View {
     @Binding var paymentFrequency: PaymentCadence
     var selectedCategories: [BudgetCategory]
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
+    var hasDebt: Bool
+    var hasExpenses: Bool
 
     var body: some View {
         VStack(spacing: 16) {
@@ -77,8 +79,15 @@ struct SavingsAmountInputView: View {
             
             Spacer()
             
-            NavigationLink(destination: ContentView(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, paymentFrequency: paymentFrequency, paycheckAmountText: income)
-                .environmentObject(budgetCategoryStore)) {
+            NavigationLink(destination: ContentView(
+                selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected },
+                paymentFrequency: paymentFrequency,
+                paycheckAmountText: income,
+                hasDebt: hasDebt,
+                hasExpenses: hasExpenses,
+                hasSavings: true  // We know the user has savings because they're on this view
+            )
+            .environmentObject(budgetCategoryStore)) {
                 Text("Next")
                     .font(.headline)
                     .foregroundColor(.white)
@@ -101,7 +110,13 @@ struct SavingsAmountInputView: View {
 
 struct SavingsAmountInputView_Previews: PreviewProvider {
     static var previews: some View {
-        SavingsAmountInputView(income: .constant("5000"), paymentFrequency: .constant(.monthly), selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected })
-            .environmentObject(BudgetCategoryStore.shared)
+        SavingsAmountInputView(
+            income: .constant("5000"),
+            paymentFrequency: .constant(.monthly),
+            selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected },
+            hasDebt: true,
+            hasExpenses: true
+        )
+        .environmentObject(BudgetCategoryStore.shared)
     }
 }

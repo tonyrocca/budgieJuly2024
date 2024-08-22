@@ -21,6 +21,10 @@ struct ContentView: View {
     @State private var selectedTab: Tab = .budget
     @State private var selectedCategories: [BudgetCategory]
 
+    let hasDebt: Bool
+    let hasExpenses: Bool
+    let hasSavings: Bool
+
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -30,11 +34,14 @@ struct ContentView: View {
         return formatter
     }()
 
-    init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String) {
+    init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String, hasDebt: Bool, hasExpenses: Bool, hasSavings: Bool) {
         self._paymentCadence = State(initialValue: paymentFrequency)
         self._paycheckAmountText = State(initialValue: paycheckAmountText)
         self._budgieModel = State(initialValue: BudgieModel(paycheckAmount: Double(paycheckAmountText) ?? 0.0))
         self._selectedCategories = State(initialValue: selectedCategories)
+        self.hasDebt = hasDebt
+        self.hasExpenses = hasExpenses
+        self.hasSavings = hasSavings
     }
 
     var totalMonthlyBudget: Double {
@@ -242,8 +249,20 @@ struct ContentView: View {
 
     private func allocationListView() -> some View {
         VStack(spacing: 1) {
-            ForEach(selectedCategories) { category in
-                categoryView(category)
+            if hasDebt {
+                ForEach(selectedCategories.filter { $0.type == .debt }) { category in
+                    categoryView(category)
+                }
+            }
+            if hasExpenses {
+                ForEach(selectedCategories.filter { $0.type == .need || $0.type == .want }) { category in
+                    categoryView(category)
+                }
+            }
+            if hasSavings {
+                ForEach(selectedCategories.filter { $0.type == .saving }) { category in
+                    categoryView(category)
+                }
             }
         }
         .padding(.horizontal)
@@ -446,7 +465,17 @@ struct ContentView: View {
 
     private func calculateBudget() {
         budgieModel.paymentCadence = paymentCadence
-        budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+        let relevantCategories = selectedCategories.filter { category in
+            switch category.type {
+            case .debt:
+                return hasDebt
+            case .need, .want:
+                return hasExpenses
+            case .saving:
+                return hasSavings
+            }
+        }
+        budgieModel.calculateAllocations(selectedCategories: relevantCategories)
         allocations = budgieModel.allocations
     }
 

@@ -17,7 +17,7 @@ struct WelcomeView: View {
 
             Spacer()
 
-            NavigationLink(destination: PaymentInputView()) {
+            NavigationLink(destination: PaymentInputView().environmentObject(BudgetCategoryStore.shared)) {
                 Text("Get Started")
                     .font(.headline)
                     .foregroundColor(.white)

@@ -31,52 +31,40 @@ struct SavingsSelectionView: View {
 
                 // Categories
                 ScrollView {
-                    VStack(spacing: 0) {
-                        ForEach(budgetCategoryStore.categories.filter { $0.type == .saving }) { category in
-                            VStack(spacing: 0) {
-                                ToggleRow(isOn: Binding(
-                                    get: { category.isSelected },
-                                    set: { newValue in
-                                        if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
-                                            budgetCategoryStore.categories[index].isSelected = newValue
-                                        }
-                                    }
-                                ), icon: category.emoji, text: category.name)
-                                
-                                if category.id != budgetCategoryStore.categories.filter({ $0.type == .saving }).last?.id {
-                                    Divider()
-                                }
-                            }
+                    savingsCategoryList()
+
+                    Button(action: {
+                        showAddSavingsForm = true
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .foregroundColor(.blue)
+                            Text("Add Category")
+                                .foregroundColor(.blue)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
                         }
-                        
-                        Button(action: {
-                            showAddSavingsForm = true
-                        }) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundColor(.blue)
-                                Text("Add Category")
-                                    .foregroundColor(.blue)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 10)
-                            .background(lightGrayColor)
-                            .cornerRadius(8)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(lightGrayColor)
+                        .cornerRadius(8)
                     }
-                    .background(Color.white)
-                    .cornerRadius(10)
                     .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
                 }
+                .background(Color.white)
+                .cornerRadius(10)
+                .padding(.horizontal, 16)
 
                 Spacer()
 
-                NavigationLink(destination: SavingsAmountInputView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected && $0.type == .saving })
-                    .environmentObject(budgetCategoryStore)) {
+                NavigationLink(destination: SavingsAmountInputView(
+                    income: $income,
+                    paymentFrequency: $paymentFrequency,
+                    selectedCategories: selectedSavingsCategories,
+                    hasDebt: budgetCategoryStore.categories.contains { $0.type == .debt && $0.isSelected },
+                    hasExpenses: budgetCategoryStore.categories.contains { $0.type == .need && $0.isSelected }
+                ).environmentObject(budgetCategoryStore)) {
                     Text("Next")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -92,7 +80,7 @@ struct SavingsSelectionView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 50)
-                .disabled(budgetCategoryStore.categories.filter { $0.type == .saving && $0.isSelected }.isEmpty)
+                .disabled(selectedSavingsCategories.isEmpty)
             }
             .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
 
@@ -138,6 +126,33 @@ struct SavingsSelectionView: View {
             }
         }
         .navigationTitle("Select Savings Goals")
+    }
+
+    private var selectedSavingsCategories: [BudgetCategory] {
+        budgetCategoryStore.categories.filter { $0.isSelected && $0.type == .saving }
+    }
+
+    @ViewBuilder
+    private func savingsCategoryList() -> some View {
+        let savingsCategories = budgetCategoryStore.categories.filter { $0.type == .saving }
+        VStack(spacing: 0) {
+            ForEach(savingsCategories) { category in
+                VStack(spacing: 0) {
+                    ToggleRow(isOn: Binding(
+                        get: { category.isSelected },
+                        set: { newValue in
+                            if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+                                budgetCategoryStore.categories[index].isSelected = newValue
+                            }
+                        }
+                    ), icon: category.emoji, text: category.name)
+                    
+                    if category.id != savingsCategories.last?.id {
+                        Divider()
+                    }
+                }
+            }
+        }
     }
 
     private func addSavingsCategory() {

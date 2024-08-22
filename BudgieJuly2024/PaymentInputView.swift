@@ -1,7 +1,7 @@
 import SwiftUI
-import Combine
 
 struct PaymentInputView: View {
+    @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
     @State private var income: String = ""
     @State private var paymentFrequency: PaymentCadence?
     @State private var showPaymentFrequency = false
@@ -11,8 +11,8 @@ struct PaymentInputView: View {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.locale = Locale.current
-        formatter.maximumFractionDigits = 0  // Ensures no cents are displayed
-        formatter.minimumFractionDigits = 0  // Ensures no cents are displayed
+        formatter.maximumFractionDigits = 0
+        formatter.minimumFractionDigits = 0
         return formatter
     }()
 
@@ -97,7 +97,10 @@ struct PaymentInputView: View {
 
             // Next button
             if showNextButton {
-                NavigationLink(destination: CategoryQuestionView(income: .constant(income), paymentFrequency: $paymentFrequency.unwrap(defaultValue: .monthly))) {
+                NavigationLink(destination: DebtQuestionView(income: .constant(income), paymentFrequency: Binding(
+                    get: { self.paymentFrequency ?? .monthly },
+                    set: { self.paymentFrequency = $0 }
+                )).environmentObject(budgetCategoryStore)) {
                     Text("Next")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -132,20 +135,5 @@ struct PaymentInputView: View {
         } else {
             showNextButton = false
         }
-    }
-}
-
-struct PaymentInputView_Previews: PreviewProvider {
-    static var previews: some View {
-        PaymentInputView()
-    }
-}
-
-extension Binding {
-    func unwrap<T>(defaultValue: T) -> Binding<T> where Value == T? {
-        return Binding<T>(
-            get: { self.wrappedValue ?? defaultValue },
-            set: { self.wrappedValue = $0 }
-        )
     }
 }

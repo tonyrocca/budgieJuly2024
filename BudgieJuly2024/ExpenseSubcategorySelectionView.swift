@@ -5,7 +5,7 @@ struct ExpenseSubcategorySelectionView: View {
     @Binding var paymentFrequency: PaymentCadence
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
     var selectedCategories: [BudgetCategory]
-    var hasSavingsGoals: Bool
+    var hasSavings: Bool
     @State private var showAddSubcategoryForm = false
     @State private var newSubcategoryName = ""
     @State private var currentCategoryID: UUID?
@@ -92,7 +92,7 @@ struct ExpenseSubcategorySelectionView: View {
 
                 Spacer()
 
-                NavigationLink(destination: ExpenseSubcategoryAmountInputView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: selectedCategories, hasSavingsGoals: hasSavingsGoals)
+                NavigationLink(destination: ExpenseSubcategoryAmountInputView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: selectedCategories, hasSavingsGoals: hasSavings)
                     .environmentObject(budgetCategoryStore)) {
                     Text("Next")
                         .font(.headline)
@@ -164,12 +164,5 @@ struct ExpenseSubcategorySelectionView: View {
         }
         showAddSubcategoryForm = false
         newSubcategoryName = ""
-    }
-}
-
-struct ExpenseSubcategorySelectionView_Previews: PreviewProvider {
-    static var previews: some View {
-        ExpenseSubcategorySelectionView(income: .constant("5000"), paymentFrequency: .constant(.monthly), selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected }, hasSavingsGoals: true)
-            .environmentObject(BudgetCategoryStore.shared)
     }
 }
