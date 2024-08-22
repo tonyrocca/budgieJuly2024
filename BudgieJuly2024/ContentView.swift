@@ -153,13 +153,18 @@ struct ContentView: View {
                 }
             }
         }) {
-            Image(systemName: showPopup ? "xmark" : "plus")
-                .font(.system(size: 24))
-                .foregroundColor(.white)
-                .frame(width: 56, height: 56)
-                .background(Color.blue)
-                .clipShape(Circle())
-                .shadow(radius: 5)
+            HStack {
+                Image(systemName: showPopup ? "xmark" : "sparkles")
+                    .font(.system(size: 16))
+                Text("Enhance")
+                    .font(.system(size: 16, weight: .semibold))
+            }
+            .foregroundColor(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Color.blue)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .shadow(radius: 5)
         }
     }
 
