@@ -1,9 +1,10 @@
 import Foundation
 
-enum PaymentCadence: String, CaseIterable {
+enum PaymentCadence: String, CaseIterable, Codable {
     case monthly = "Monthly"
     case biWeekly = "Bi-Weekly"
     case weekly = "Weekly"
+    case semiMonthly = "Semi-Monthly"  // New case
 
     func monthlyEquivalent(from amount: Double) -> Double {
         switch self {
@@ -13,6 +14,8 @@ enum PaymentCadence: String, CaseIterable {
             return amount * 2
         case .weekly:
             return amount * 4
+        case .semiMonthly:
+            return amount * 2  // Semi-monthly is paid twice per month
         }
     }
 
@@ -24,6 +27,8 @@ enum PaymentCadence: String, CaseIterable {
             return 2
         case .weekly:
             return 4
+        case .semiMonthly:
+            return 2  // Two paychecks per month for semi-monthly
         }
     }
 }
