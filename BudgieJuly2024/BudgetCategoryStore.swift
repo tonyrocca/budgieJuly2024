@@ -83,7 +83,7 @@ class BudgetCategoryStore: ObservableObject {
 
     init() {
         categories = [
-            // Debt Categories
+            // Debt Categories (10)
             BudgetCategory(
                 name: "Student Loan",
                 emoji: "🎓",
@@ -132,15 +132,40 @@ class BudgetCategoryStore: ObservableObject {
                 description: "Unpaid taxes owed to the government. Example: Income tax debt.",
                 type: .debt
             ),
-            // Expense Categories
+            BudgetCategory(
+                name: "Consolidation Loan",
+                emoji: "🔗",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Loan taken to consolidate multiple debts. Example: Debt consolidation loan.",
+                type: .debt
+            ),
+            BudgetCategory(
+                name: "Payday Loan",
+                emoji: "🏦",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Short-term loan typically used for urgent expenses. Example: Payday loan.",
+                type: .debt
+            ),
+            BudgetCategory(
+                name: "Alimony",
+                emoji: "💼",
+                allocationPercentage: 0.0,
+                subcategories: [],
+                description: "Payments made to a spouse or ex-spouse following a divorce. Example: Alimony payments.",
+                type: .debt
+            ),
+            
+            // Expense Categories (10)
             BudgetCategory(
                 name: "Housing",
                 emoji: "🏠",
                 allocationPercentage: 0.0,
                 subcategories: [
+                    BudgetSubCategory(name: "Mortgage", allocationPercentage: 0.0, description: "Monthly payment for home mortgage."),
                     BudgetSubCategory(name: "Rent", allocationPercentage: 0.0, description: "Monthly payment for living space. Example: Apartment rent."),
                     BudgetSubCategory(name: "Utilities", allocationPercentage: 0.0, description: "Basic services for the home. Example: Electricity and water bills."),
-                    BudgetSubCategory(name: "HOA Fee", allocationPercentage: 0.0, description: "Monthly or annual fee for homeowners association. Example: Fees for condo amenities."),
                     BudgetSubCategory(name: "Home Maintenance", allocationPercentage: 0.0, description: "Upkeep and repairs for the home. Example: Fixing a leaky roof."),
                     BudgetSubCategory(name: "Property Tax", allocationPercentage: 0.0, description: "Annual tax on property ownership. Example: County property tax."),
                     BudgetSubCategory(name: "Home Insurance", allocationPercentage: 0.0, description: "Insurance coverage for the home. Example: Homeowners insurance policy.")
@@ -171,7 +196,8 @@ class BudgetCategoryStore: ObservableObject {
                 subcategories: [
                     BudgetSubCategory(name: "Groceries", allocationPercentage: 0.0, description: "Food and supplies for home. Example: Weekly grocery shopping."),
                     BudgetSubCategory(name: "Dining Out", allocationPercentage: 0.0, description: "Meals eaten at restaurants. Example: Dinner at a local restaurant."),
-                    BudgetSubCategory(name: "Snacks", allocationPercentage: 0.0, description: "Quick bites and snacks. Example: Afternoon snacks and treats.")
+                    BudgetSubCategory(name: "Snacks", allocationPercentage: 0.0, description: "Quick bites and snacks. Example: Afternoon snacks and treats."),
+                    BudgetSubCategory(name: "Meal Delivery", allocationPercentage: 0.0, description: "Food delivered to home. Example: UberEats or DoorDash."),
                 ],
                 description: "Food related expenses",
                 type: .need
@@ -228,12 +254,55 @@ class BudgetCategoryStore: ObservableObject {
                     BudgetSubCategory(name: "Streaming Services", allocationPercentage: 0.0, description: "Monthly fee for streaming. Example: Netflix subscription."),
                     BudgetSubCategory(name: "Music Services", allocationPercentage: 0.0, description: "Monthly fee for music streaming. Example: Spotify subscription."),
                     BudgetSubCategory(name: "Magazines", allocationPercentage: 0.0, description: "Subscription cost for magazines. Example: Monthly magazine subscription."),
-                    BudgetSubCategory(name: "Apps", allocationPercentage: 0.0, description: "Cost for app subscriptions. Example: Premium app services.")
+                    BudgetSubCategory(name: "Apps", allocationPercentage: 0.0, description: "Cost for app subscriptions. Example: Premium app services."),
+                    BudgetSubCategory(name: "News Subscriptions", allocationPercentage: 0.0, description: "Monthly fee for news services. Example: New York Times subscription.")
                 ],
                 description: "Subscription related expenses",
                 type: .want
             ),
-            // Savings Categories
+            BudgetCategory(
+                name: "Entertainment",
+                emoji: "🎮",
+                allocationPercentage: 0.0,
+                subcategories: [
+                    BudgetSubCategory(name: "Movies", allocationPercentage: 0.0, description: "Monthly spending on movies. Example: Cinema tickets or rentals."),
+                    BudgetSubCategory(name: "Games", allocationPercentage: 0.0, description: "Spending on video games. Example: Console or PC games."),
+                    BudgetSubCategory(name: "Concerts", allocationPercentage: 0.0, description: "Spending on concert tickets. Example: Live music events."),
+                    BudgetSubCategory(name: "Sports Events", allocationPercentage: 0.0, description: "Spending on live sports events. Example: Football or basketball games."),
+                    BudgetSubCategory(name: "Hobbies", allocationPercentage: 0.0, description: "Expenses related to hobbies. Example: Crafting or collecting items.")
+                ],
+                description: "Entertainment related expenses",
+                type: .want
+            ),
+            BudgetCategory(
+                name: "Personal Care",
+                emoji: "💅",
+                allocationPercentage: 0.0,
+                subcategories: [
+                    BudgetSubCategory(name: "Haircuts", allocationPercentage: 0.0, description: "Spending on haircuts and styling. Example: Monthly haircut at a salon."),
+                    BudgetSubCategory(name: "Skincare", allocationPercentage: 0.0, description: "Spending on skincare products. Example: Moisturizers and cleansers."),
+                    BudgetSubCategory(name: "Cosmetics", allocationPercentage: 0.0, description: "Spending on makeup. Example: Foundation, lipstick, etc."),
+                    BudgetSubCategory(name: "Spa Treatments", allocationPercentage: 0.0, description: "Spending on spa visits. Example: Massages and facials."),
+                    BudgetSubCategory(name: "Gym Membership", allocationPercentage: 0.0, description: "Spending on fitness memberships. Example: Monthly gym membership.")
+                ],
+                description: "Personal care related expenses",
+                type: .need
+            ),
+            BudgetCategory(
+                name: "Education",
+                emoji: "📚",
+                allocationPercentage: 0.0,
+                subcategories: [
+                    BudgetSubCategory(name: "Tuition", allocationPercentage: 0.0, description: "Spending on education fees. Example: College tuition."),
+                    BudgetSubCategory(name: "Books & Supplies", allocationPercentage: 0.0, description: "Spending on books and educational materials. Example: Textbooks."),
+                    BudgetSubCategory(name: "Online Courses", allocationPercentage: 0.0, description: "Spending on online education. Example: Udemy or Coursera courses."),
+                    BudgetSubCategory(name: "School Fees", allocationPercentage: 0.0, description: "Spending on school-related fees. Example: Lab fees, activity fees.")
+                ],
+                description: "Education related expenses",
+                type: .need
+            ),
+            
+            // Savings Categories (15)
             BudgetCategory(
                 name: "Emergency Fund",
                 emoji: "💰",
@@ -315,35 +384,11 @@ class BudgetCategoryStore: ObservableObject {
                 type: .saving
             ),
             BudgetCategory(
-                name: "Emergency Savings",
-                emoji: "🚨",
-                allocationPercentage: 0.0,
-                subcategories: [],
-                description: "Savings for unexpected emergencies. Example: Medical emergencies or urgent repairs.",
-                type: .saving
-            ),
-            BudgetCategory(
-                name: "Travel Fund",
-                emoji: "🌍",
-                allocationPercentage: 0.0,
-                subcategories: [],
-                description: "Savings for travel and adventures. Example: International trips or weekend getaways.",
-                type: .saving
-            ),
-            BudgetCategory(
                 name: "Gadgets",
                 emoji: "📱",
                 allocationPercentage: 0.0,
                 subcategories: [],
                 description: "Savings for gadgets and electronics. Example: New smartphone or laptop.",
-                type: .saving
-            ),
-            BudgetCategory(
-                name: "Fitness",
-                emoji: "💪",
-                allocationPercentage: 0.0,
-                subcategories: [],
-                description: "Savings for fitness and health expenses. Example: Gym membership or fitness equipment.",
                 type: .saving
             ),
             BudgetCategory(
