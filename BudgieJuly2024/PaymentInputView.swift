@@ -67,10 +67,10 @@ struct PaymentInputView: View {
                     HStack {
                         Menu {
                             Picker("How often are you paid?", selection: $paymentFrequency) {
-                                ForEach(PaymentCadence.allCases, id: \.self) { frequency in
-                                    Text(frequency.rawValue.capitalized)
-                                        .tag(PaymentCadence?.some(frequency))
-                                }
+                                Text("Weekly").tag(PaymentCadence?.some(.weekly))
+                                Text("Bi-Weekly").tag(PaymentCadence?.some(.biWeekly))
+                                Text("Semi-Monthly").tag(PaymentCadence?.some(.semiMonthly))
+                                Text("Monthly").tag(PaymentCadence?.some(.monthly))
                             }
                         } label: {
                             HStack {
