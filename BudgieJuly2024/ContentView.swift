@@ -319,6 +319,11 @@ struct ContentView: View {
                         Divider()
                             .background(Color.gray.opacity(0.3))
                         descriptionView(for: category)
+                        if let dueDate = category.dueDate {
+                            Divider()
+                                .background(Color.gray.opacity(0.3))
+                            dueDateView(for: dueDate)
+                        }
                     }
                 } else if category.type == .need || category.type == .want {
                     expenseCategoryView(for: category)
@@ -446,6 +451,22 @@ struct ContentView: View {
         .background(Color(UIColor.secondarySystemBackground))
     }
 
+    private func dueDateView(for dueDate: Date) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Debt Due Date")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
+            
+            Text(dateFormatter.string(from: dueDate))
+                .font(.body)
+                .foregroundColor(.primary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(UIColor.secondarySystemBackground))
+    }
+
     private func description(for item: Any) -> String {
         if let category = item as? BudgetCategory {
             return category.description
@@ -525,5 +546,11 @@ struct ContentView: View {
         case budget
         case affordability
         case profile
+    }
+
+    private var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter
     }
 }
