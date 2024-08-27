@@ -63,7 +63,7 @@ struct ContentView: View {
         ZStack(alignment: .top) {
             VStack(spacing: 0) {
                 ScrollView {
-                    VStack(spacing: 1) { // Reduced spacing between categories
+                    VStack(spacing: 1) {
                         Color.clear.frame(height: 100)
                         allocationListView()
                     }
@@ -283,25 +283,8 @@ struct ContentView: View {
                 Text("\(currencyFormatter.string(from: NSNumber(value: category.type == .saving ? (category.amount ?? 0) : (allocations[category.id] ?? 0))) ?? "$0")")
                     .font(.headline)
                     .foregroundColor(Color.primary)
-                if isEditing {
-                    Button(action: {
-                        selectedCategoryForEdit = category
-                    }) {
-                        Image(systemName: "pencil")
-                            .foregroundColor(.blue)
-                    }
-                    .padding(.leading, 10)
-                    Button(action: {
-                        itemToDelete = category
-                        showDeleteDialog = true
-                    }) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
-                    }
-                    .padding(.leading, 10)
-                }
                 Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
-                    .foregroundColor(.black) // Updated to black
+                    .foregroundColor(.black)
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
@@ -324,6 +307,9 @@ struct ContentView: View {
                                 .background(Color.gray.opacity(0.3))
                             dueDateView(for: dueDate)
                         }
+                        Divider()
+                            .background(Color.gray.opacity(0.3))
+                        editDeleteButtons(for: category)
                     }
                 } else if category.type == .need || category.type == .want {
                     expenseCategoryView(for: category)
@@ -331,12 +317,51 @@ struct ContentView: View {
             }
         }
         .background(Color.white)
-        .cornerRadius(5) // Reduced corner radius for a cleaner look
+        .cornerRadius(5)
         .overlay(
-            RoundedRectangle(cornerRadius: expandedCategoryIndex == category.id ? 10 : 5) // More prominent border when expanded
+            RoundedRectangle(cornerRadius: expandedCategoryIndex == category.id ? 10 : 5)
                 .stroke(Color.gray.opacity(expandedCategoryIndex == category.id ? 0.3 : 0.1), lineWidth: expandedCategoryIndex == category.id ? 1 : 0.5)
         )
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
+    }
+
+    private func editDeleteButtons(for item: Any) -> some View {
+        HStack(spacing: 1) {
+            Button(action: {
+                // Edit action will be implemented later
+            }) {
+                HStack {
+                    Image(systemName: "pencil")
+                    Text("Edit")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.blue.opacity(0.1))
+                .foregroundColor(.blue)
+            }
+
+            Button(action: {
+                // Delete action will be implemented later
+            }) {
+                HStack {
+                    Image(systemName: "trash")
+                    Text("Delete")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.red.opacity(0.1))
+                .foregroundColor(.red)
+            }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .cornerRadius(8)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+        )
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color(UIColor.secondarySystemBackground))
     }
 
     private func expenseCategoryView(for category: BudgetCategory) -> some View {
@@ -362,27 +387,8 @@ struct ContentView: View {
                 Text("\(currencyFormatter.string(from: NSNumber(value: allocations[subcategory.id] ?? 0)) ?? "$0")")
                     .font(.subheadline)
                     .foregroundColor(Color.primary)
-
-                if isEditing {
-                    Button(action: {
-                        selectedSubcategoryForEdit = subcategory
-                    }) {
-                        Image(systemName: "pencil")
-                            .foregroundColor(.blue)
-                    }
-                    .padding(.leading, 10)
-                    Button(action: {
-                        itemToDelete = subcategory
-                        showDeleteDialog = true
-                    }) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
-                    }
-                    .padding(.leading, 10)
-                }
-
                 Image(systemName: expandedSubCategoryIndex == subcategory.id ? "chevron.up" : "chevron.down")
-                    .foregroundColor(.black) // Updated to black
+                    .foregroundColor(.black)
                     .font(.footnote)
             }
             .padding(.vertical, 12)
@@ -396,161 +402,166 @@ struct ContentView: View {
             }
 
             if expandedSubCategoryIndex == subcategory.id {
-                descriptionView(for: subcategory)
-                    .padding(.top, 8)
+                    VStack(spacing: 0) {
+                        descriptionView(for: subcategory)
+                            .padding(.top, 8)
+                        Divider()
+                            .background(Color.gray.opacity(0.3))
+                        editDeleteButtons(for: subcategory)
+                    }
                     .transition(.opacity)
+                }
             }
-        }
-        .background(Color.white)
-        .cornerRadius(5) // Reduced corner radius for a cleaner look
-        .overlay(
-            RoundedRectangle(cornerRadius: 5)
-                .stroke(Color.gray.opacity(0.1), lineWidth: 0.5)
-        )
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
-        .padding(.horizontal, 16)
-    }
+            .background(Color.white)
+            .cornerRadius(5)
+            .overlay(
+                RoundedRectangle(cornerRadius: 5)
+                    .stroke(Color.gray.opacity(0.1), lineWidth: 0.5)
+            )
+            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
+            .padding(.horizontal, 16)
+                }
 
-    private func deleteItem() {
-        withAnimation {
-            if let category = itemToDelete as? BudgetCategory {
-                deleteCategory(category)
-            } else if let subcategory = itemToDelete as? BudgetSubCategory {
-                deleteSubcategory(subcategory)
+                private func deleteItem() {
+                    withAnimation {
+                        if let category = itemToDelete as? BudgetCategory {
+                            deleteCategory(category)
+                        } else if let subcategory = itemToDelete as? BudgetSubCategory {
+                            deleteSubcategory(subcategory)
+                        }
+                    }
+                    itemToDelete = nil
+                }
+
+                private func deleteCategory(_ category: BudgetCategory) {
+                    budgieModel.removeCategory(category)
+                    selectedCategories.removeAll { $0.id == category.id }
+                    calculateBudget()
+                }
+
+                private func deleteSubcategory(_ subcategory: BudgetSubCategory) {
+                    if let categoryIndex = selectedCategories.firstIndex(where: { $0.subcategories.contains(where: { $0.id == subcategory.id }) }) {
+                        selectedCategories[categoryIndex].subcategories.removeAll { $0.id == subcategory.id }
+                        calculateBudget()
+                    }
+                }
+
+                private func descriptionView(for item: Any) -> some View {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Description")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+
+                        Text(description(for: item))
+                            .font(.body)
+                            .foregroundColor(.primary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(UIColor.secondarySystemBackground))
+                }
+
+                private func dueDateView(for dueDate: Date) -> some View {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Debt Due Date")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+
+                        Text(dateFormatter.string(from: dueDate))
+                            .font(.body)
+                            .foregroundColor(.primary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(UIColor.secondarySystemBackground))
+                }
+
+                private func description(for item: Any) -> String {
+                    if let category = item as? BudgetCategory {
+                        return category.description
+                    } else if let subcategory = item as? BudgetSubCategory {
+                        return subcategory.description
+                    }
+                    return ""
+                }
+
+                private func formatAndCalculatePaycheckAmount() {
+                    let filteredText = paycheckAmountText.filter { "0123456789.".contains($0) }
+                    if let value = Double(filteredText) {
+                        paycheckAmount = value
+                        paycheckAmountText = currencyFormatter.string(from: NSNumber(value: value)) ?? ""
+                        showDetails = true
+                        budgieModel.paycheckAmount = value
+                        calculateBudget()
+                    } else {
+                        showDetails = false
+                    }
+                }
+
+                private func calculateBudget() {
+                    budgieModel.paymentCadence = paymentCadence
+                    let relevantCategories = selectedCategories.filter { category in
+                        switch category.type {
+                        case .debt:
+                            return hasDebt
+                        case .need, .want:
+                            return hasExpenses
+                        case .saving:
+                            return hasSavings
+                        }
+                    }
+                    budgieModel.calculateAllocations(selectedCategories: relevantCategories)
+                    allocations = budgieModel.allocations
+                }
+
+                private func updateScreen() {
+                    calculateBudget()
+                    selectedCategories = BudgetCategoryStore.shared.categories.filter { $0.isSelected }
+                }
+
+                private func footerNavigationBar() -> some View {
+                    HStack(spacing: 70) {
+                        footerButton(title: "Budget", icon: "list.bullet", isSelected: selectedTab == .budget) {
+                            selectedTab = .budget
+                        }
+                        footerButton(title: "Affordability", icon: "house", isSelected: selectedTab == .affordability) {
+                            selectedTab = .affordability
+                        }
+                        footerButton(title: "Profile", icon: "person.circle", isSelected: selectedTab == .profile) {
+                            selectedTab = .profile
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .background(Color.white)
+                    .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: -3)
+                    .clipShape(Capsule())
+                }
+
+                private func footerButton(title: String, icon: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
+                    Button(action: action) {
+                        VStack(spacing: 4) {
+                            Image(systemName: icon)
+                                .font(.system(size: 22))
+                                .foregroundColor(isSelected ? .blue : .gray)
+                            Text(title)
+                                .font(.caption)
+                                .foregroundColor(isSelected ? .blue : .gray)
+                        }
+                    }
+                }
+
+                enum Tab {
+                    case budget
+                    case affordability
+                    case profile
+                }
+
+                private var dateFormatter: DateFormatter {
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "MMMM yyyy"
+                    return formatter
+                }
             }
-        }
-        itemToDelete = nil
-    }
-
-    private func deleteCategory(_ category: BudgetCategory) {
-        budgieModel.removeCategory(category)
-        selectedCategories.removeAll { $0.id == category.id }
-        calculateBudget()
-    }
-
-    private func deleteSubcategory(_ subcategory: BudgetSubCategory) {
-        if let categoryIndex = selectedCategories.firstIndex(where: { $0.subcategories.contains(where: { $0.id == subcategory.id }) }) {
-            selectedCategories[categoryIndex].subcategories.removeAll { $0.id == subcategory.id }
-            calculateBudget()
-        }
-    }
-
-    private func descriptionView(for item: Any) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Description")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
-
-            Text(description(for: item))
-                .font(.body)
-                .foregroundColor(.primary)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(UIColor.secondarySystemBackground))
-    }
-
-    private func dueDateView(for dueDate: Date) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Debt Due Date")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
-            
-            Text(dateFormatter.string(from: dueDate))
-                .font(.body)
-                .foregroundColor(.primary)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(UIColor.secondarySystemBackground))
-    }
-
-    private func description(for item: Any) -> String {
-        if let category = item as? BudgetCategory {
-            return category.description
-        } else if let subcategory = item as? BudgetSubCategory {
-            return subcategory.description
-        }
-        return ""
-    }
-
-    private func formatAndCalculatePaycheckAmount() {
-        let filteredText = paycheckAmountText.filter { "0123456789.".contains($0) }
-        if let value = Double(filteredText) {
-            paycheckAmount = value
-            paycheckAmountText = currencyFormatter.string(from: NSNumber(value: value)) ?? ""
-            showDetails = true
-            budgieModel.paycheckAmount = value
-            calculateBudget()
-        } else {
-            showDetails = false
-        }
-    }
-
-    private func calculateBudget() {
-        budgieModel.paymentCadence = paymentCadence
-        let relevantCategories = selectedCategories.filter { category in
-            switch category.type {
-            case .debt:
-                return hasDebt
-            case .need, .want:
-                return hasExpenses
-            case .saving:
-                return hasSavings
-            }
-        }
-        budgieModel.calculateAllocations(selectedCategories: relevantCategories)
-        allocations = budgieModel.allocations
-    }
-
-    private func updateScreen() {
-        calculateBudget()
-        selectedCategories = BudgetCategoryStore.shared.categories.filter { $0.isSelected }
-    }
-
-    private func footerNavigationBar() -> some View {
-        HStack(spacing: 70) {
-            footerButton(title: "Budget", icon: "list.bullet", isSelected: selectedTab == .budget) {
-                selectedTab = .budget
-            }
-            footerButton(title: "Affordability", icon: "house", isSelected: selectedTab == .affordability) {
-                selectedTab = .affordability
-            }
-            footerButton(title: "Profile", icon: "person.circle", isSelected: selectedTab == .profile) {
-                selectedTab = .profile
-            }
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 16)
-        .background(Color.white)
-        .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: -3)
-        .clipShape(Capsule())
-    }
-
-    private func footerButton(title: String, icon: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                    .foregroundColor(isSelected ? .blue : .gray)
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(isSelected ? .blue : .gray)
-            }
-        }
-    }
-
-    enum Tab {
-        case budget
-        case affordability
-        case profile
-    }
-
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter
-    }
-}
