@@ -27,61 +27,39 @@ struct ExpenseQuestionView: View {
 
             // Yes/No Buttons
             VStack(spacing: 16) {
-                Button(action: { hasExpenses = true }) {
-                    Text("Yes")
-                        .font(.headline)
-                        .foregroundColor(hasExpenses == true ? .white : .primary)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(hasExpenses == true ? Color.blue : Color(UIColor.systemGray5))
-                        .cornerRadius(10)
+                NavigationLink(destination: ExpenseSelectionView(income: $income, paymentFrequency: $paymentFrequency, hasSavingsGoals: true).environmentObject(budgetCategoryStore), tag: true, selection: $hasExpenses) {
+                    Button(action: { hasExpenses = true }) {
+                        Text("Yes")
+                            .font(.headline)
+                            .foregroundColor(hasExpenses == true ? .white : .primary)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(hasExpenses == true ? Color.blue : Color(UIColor.systemGray5))
+                            .cornerRadius(10)
+                    }
                 }
 
-                Button(action: { hasExpenses = false }) {
-                    Text("No")
-                        .font(.headline)
-                        .foregroundColor(hasExpenses == false ? .white : .primary)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(hasExpenses == false ? .blue : Color(UIColor.systemGray5))
-                        .cornerRadius(10)
+                NavigationLink(destination: SavingsQuestionView(income: $income, paymentFrequency: $paymentFrequency, hasDebt: hasDebt, hasExpenses: false).environmentObject(budgetCategoryStore), tag: false, selection: $hasExpenses) {
+                    Button(action: { hasExpenses = false }) {
+                        Text("No")
+                            .font(.headline)
+                            .foregroundColor(hasExpenses == false ? .white : .primary)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(hasExpenses == false ? Color.blue : Color(UIColor.systemGray5))
+                            .cornerRadius(10)
+                    }
                 }
             }
             .padding(.horizontal, 16)
 
             Spacer()
-
-            // Next Button
-            if hasExpenses != nil {
-                NavigationLink(destination: nextView()) {
-                    Text("Next")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                           startPoint: .topLeading,
-                                           endPoint: .bottomTrailing)
-                        )
-                        .cornerRadius(10)
-                        .shadow(radius: 5)
-                }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 50)
-            }
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
-    }
-
-    @ViewBuilder
-    private func nextView() -> some View {
-        if hasExpenses == true {
-            ExpenseSelectionView(income: $income, paymentFrequency: $paymentFrequency, hasSavingsGoals: true)
-                .environmentObject(budgetCategoryStore)
-        } else {
-            SavingsQuestionView(income: $income, paymentFrequency: $paymentFrequency, hasDebt: hasDebt, hasExpenses: false)
-                .environmentObject(budgetCategoryStore)
+        .navigationBarBackButtonHidden(false)
+        .onAppear {
+            // Reset selection when the view appears
+            hasExpenses = nil
         }
     }
 }
