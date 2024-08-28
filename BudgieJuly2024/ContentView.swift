@@ -17,6 +17,8 @@ struct ContentView: View {
     @State private var selectedSubcategoryForEdit: BudgetSubCategory? = nil
     @State private var itemToDelete: Any? = nil
     @State private var isShowingDeleteAlert = false
+    @State private var isEditingAmounts: [UUID: Bool] = [:]
+    @State private var editedAmounts: [UUID: Double] = [:]
     @FocusState private var isInputFocused: Bool
     @State private var selectedTab: Tab = .budget
     @State private var selectedCategories: [BudgetCategory]
@@ -112,8 +114,6 @@ struct ContentView: View {
             }
             
             ZStack {
-                // Your existing view content
-                
                 if isShowingDeleteAlert {
                     Rectangle()
                         .fill(Color.white.opacity(0.01))  // Nearly transparent
@@ -347,47 +347,78 @@ struct ContentView: View {
     }
 
     private func editDeleteButtons(for item: Any) -> some View {
-        HStack(spacing: 1) {
-            Button(action: {
-                if let category = item as? BudgetCategory {
-                    selectedCategoryForEdit = category
-                } else if let subcategory = item as? BudgetSubCategory {
-                    selectedSubcategoryForEdit = subcategory
-                }
-            }) {
-                HStack {
-                    Image(systemName: "pencil")
-                    Text("Edit")
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Color.blue.opacity(0.1))
-                .foregroundColor(.blue)
+        let id = (item as? BudgetCategory)?.id ?? (item as? BudgetSubCategory)?.id ?? UUID()
+        let isEditingItem = isEditingAmounts[id] ?? false
+        let itemAmount = getItemAmount(item)
+
+        return VStack(spacing: 8) {
+            if isEditingItem {
+                CurrencyTextField(value: Binding(
+                    get: { self.editedAmounts[id] ?? itemAmount },
+                    set: { self.editedAmounts[id] = $0 }
+                ))
+                .frame(height: 44)
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(8)
+                .padding(.horizontal, 16)
             }
 
-            Button(action: {
-                itemToDelete = item
-                isShowingDeleteAlert = true
-            }) {
-                HStack {
-                    Image(systemName: "trash")
-                    Text("Delete")
+            HStack(spacing: 8) {
+                Button(action: {
+                    if isEditingItem {
+                        // Done editing
+                        updateItemAmount(item)
+                        isEditingAmounts[id] = false
+                    } else {
+                        // Start editing
+                        editedAmounts[id] = itemAmount
+                        isEditingAmounts[id] = true
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: isEditingItem ? "checkmark" : "pencil")
+                        Text(isEditingItem ? "Done" : "Edit Amount")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.blue.opacity(0.1))
+                    .foregroundColor(.blue)
+                    .cornerRadius(8)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Color.red.opacity(0.1))
-                .foregroundColor(.red)
+
+                Button(action: {
+                    itemToDelete = item
+                    isShowingDeleteAlert = true
+                }) {
+                    HStack {
+                        Image(systemName: "trash")
+                        Text("Delete Category")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.red.opacity(0.1))
+                    .foregroundColor(.red)
+                    .cornerRadius(8)
+                }
             }
         }
-        .fixedSize(horizontal: false, vertical: true)
-        .cornerRadius(8)
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-        )
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(Color(UIColor.secondarySystemBackground))
+    }
+
+    private func updateItemAmount(_ item: Any) {
+        let id = (item as? BudgetCategory)?.id ?? (item as? BudgetSubCategory)?.id ?? UUID()
+        if let newAmount = editedAmounts[id] {
+            if let category = item as? BudgetCategory {
+                if let index = selectedCategories.firstIndex(where: { $0.id == category.id }) {
+                    selectedCategories[index].amount = newAmount
+                }
+            } else if let subcategory = item as? BudgetSubCategory {
+                allocations[subcategory.id] = newAmount
+            }
+            calculateBudget()
+        }
     }
 
     private func expenseCategoryView(for category: BudgetCategory) -> some View {
