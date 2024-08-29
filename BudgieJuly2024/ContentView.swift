@@ -82,65 +82,33 @@ struct ContentView: View {
                 .blur(radius: showPopup ? 5 : 0)
                 .opacity(showPopup ? 0.7 : 1)
 
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    actionButton()
-                }
-                .padding(.trailing, 16)
-                .padding(.bottom, 80)
-            }
-
-            if showPopup {
-                Color.black.opacity(0.5)
-                    .edgesIgnoringSafeArea(.all)
-                    .onTapGesture {
-                        withAnimation {
-                            showPopup = false
-                            isEditing = false
-                        }
-                    }
-
+            ZStack(alignment: .bottom) {
                 VStack {
                     Spacer()
-                    HStack {
+                    
+                    actionButton()
+                        .padding(.bottom, 16)
+                    
+                    footerNavigationBar()
+                }
+
+                if showPopup {
+                    Color.black.opacity(0.5)
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            withAnimation {
+                                showPopup = false
+                                isEditing = false
+                            }
+                        }
+
+                    VStack {
                         Spacer()
                         popupMenu()
-                    }
-                    .padding(.trailing, 16)
-                    .padding(.bottom, 150)
-                }
-            }
-            
-            ZStack {
-                if isShowingDeleteAlert {
-                    Rectangle()
-                        .fill(Color.white.opacity(0.01))  // Nearly transparent
-                        .background(
-                            ZStack {
-                                VisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
-                            }
-                        )
-                        .edgesIgnoringSafeArea(.all)
-
-                    if let item = itemToDelete {
-                        DeleteConfirmationAlert(
-                            itemName: getItemName(item),
-                            amount: getItemAmount(item),
-                            onConfirm: {
-                                deleteItem(item)
-                                isShowingDeleteAlert = false
-                            },
-                            onCancel: {
-                                isShowingDeleteAlert = false
-                            }
-                        )
-                        .transition(.scale)
+                            .padding(.bottom, 100)
                     }
                 }
             }
-            .animation(.easeInOut, value: isShowingDeleteAlert)
         }
         .environmentObject(budgetCategoryStore)
         .onAppear {
@@ -174,18 +142,18 @@ struct ContentView: View {
                 }
             }
         }) {
-            HStack {
-                Image(systemName: showPopup ? "xmark" : "sparkles")
-                    .font(.system(size: 16))
-                Text("Enhance")
+            HStack(spacing: 8) {
+                Text("Enhance Budget")
                     .font(.system(size: 16, weight: .semibold))
+                Image(systemName: "sparkles")
+                    .font(.system(size: 16))
             }
             .foregroundColor(.white)
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(Color.blue)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
-            .shadow(radius: 5)
+            .padding(.vertical, 10)
+            .background(Color.black)
+            .clipShape(Capsule())
+            .shadow(color: .gray, radius: 2, x: 0, y: 2)
         }
     }
 
