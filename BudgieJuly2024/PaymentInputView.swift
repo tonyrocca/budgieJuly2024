@@ -18,110 +18,113 @@ struct PaymentInputView: View {
     }()
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                // Header
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Enter gross income")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .padding(.top, 16)
-                        .padding(.horizontal, 16)
-                        .foregroundColor(.primary)
-
-                    Text("Please enter your gross income per paycheck and how often you get paid.")
-                        .font(.headline)
-                        .fontWeight(.regular)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal, 16)
-                }
-
-                // Income input
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("$")
-                            .padding(.leading, 16)
+        VStack(spacing: 16) {
+            ScrollView {
+                VStack(spacing: 16) {
+                    // Header
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Enter gross income")
+                            .font(.title)
+                            .fontWeight(.bold)
                             .foregroundColor(.primary)
-                        TextField("Enter gross income per paycheck", text: $income)
-                            .textFieldStyle(PlainTextFieldStyle())
-                            .padding(12)
-                            .background(Color(UIColor.systemGray5))
-                            .cornerRadius(8)
-                            .keyboardType(.numberPad)
-                            .onChange(of: income) { newValue in
-                                income = formatCurrencyInput(newValue)
-                                if !income.isEmpty {
-                                    showPaymentFrequency = true
-                                }
-                                checkShowNextButton()
-                            }
-                            .multilineTextAlignment(.trailing)
-                            .padding(.trailing, 16)
+
+                        Text("Please enter your gross income per paycheck and how often you get paid.")
+                            .font(.headline)
+                            .fontWeight(.regular)
+                            .foregroundColor(.secondary)
                     }
-                    .background(Color(UIColor.systemGray5))
-                    .cornerRadius(8)
-                }
-                .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
 
-                // Information Dropdown
-                infoDropdown
-
-                // Payment frequency input
-                if showPaymentFrequency {
+                    // Income input
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Menu {
-                                Picker("How often are you paid?", selection: $paymentFrequency) {
-                                    Text("Weekly").tag(PaymentCadence?.some(.weekly))
-                                    Text("Bi-Weekly").tag(PaymentCadence?.some(.biWeekly))
-                                    Text("Semi-Monthly").tag(PaymentCadence?.some(.semiMonthly))
-                                    Text("Monthly").tag(PaymentCadence?.some(.monthly))
-                                }
-                            } label: {
-                                HStack {
-                                    Text(paymentFrequency?.rawValue.capitalized ?? "How often do you get paid?")
-                                        .foregroundColor(paymentFrequency == nil ? .secondary : .primary)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                    Image(systemName: "chevron.down")
-                                        .foregroundColor(.primary)
-                                }
+                            Text("$")
+                                .padding(.leading, 16)
+                                .foregroundColor(.primary)
+                            TextField("Enter gross income per paycheck", text: $income)
+                                .textFieldStyle(PlainTextFieldStyle())
                                 .padding(12)
                                 .background(Color(UIColor.systemGray5))
                                 .cornerRadius(8)
-                            }
-                            .frame(maxWidth: .infinity)
+                                .keyboardType(.numberPad)
+                                .onChange(of: income) { newValue in
+                                    income = formatCurrencyInput(newValue)
+                                    if !income.isEmpty {
+                                        showPaymentFrequency = true
+                                    }
+                                    checkShowNextButton()
+                                }
+                                .multilineTextAlignment(.trailing)
+                                .padding(.trailing, 16)
                         }
-                        .onChange(of: paymentFrequency) { _ in
-                            checkShowNextButton()
-                        }
+                        .background(Color(UIColor.systemGray5))
+                        .cornerRadius(8)
                     }
                     .padding(.horizontal, 16)
-                }
 
-                Spacer()
-
-                // Next button
-                if showNextButton {
-                    NavigationLink(destination: DebtQuestionView(income: .constant(income), paymentFrequency: Binding(
-                        get: { self.paymentFrequency ?? .monthly },
-                        set: { self.paymentFrequency = $0 }
-                    )).environmentObject(budgetCategoryStore)) {
-                        Text("Next")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                               startPoint: .topLeading,
-                                               endPoint: .bottomTrailing)
-                            )
-                            .cornerRadius(10)
-                            .padding(.horizontal)
-                            .shadow(radius: 5)
+                    // Payment frequency input
+                    if showPaymentFrequency {
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Menu {
+                                    Picker("How often are you paid?", selection: $paymentFrequency) {
+                                        Text("Weekly").tag(PaymentCadence?.some(.weekly))
+                                        Text("Bi-Weekly").tag(PaymentCadence?.some(.biWeekly))
+                                        Text("Semi-Monthly").tag(PaymentCadence?.some(.semiMonthly))
+                                        Text("Monthly").tag(PaymentCadence?.some(.monthly))
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text(paymentFrequency?.rawValue.capitalized ?? "How often do you get paid?")
+                                            .foregroundColor(paymentFrequency == nil ? .secondary : .primary)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                        Image(systemName: "chevron.down")
+                                            .foregroundColor(.primary)
+                                    }
+                                    .padding(12)
+                                    .background(Color(UIColor.systemGray5))
+                                    .cornerRadius(8)
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .onChange(of: paymentFrequency) { _ in
+                                checkShowNextButton()
+                            }
+                        }
+                        .padding(.horizontal, 16)
                     }
-                    .padding(.bottom, 50)
+
+                    // Information Dropdown
+                    infoDropdown
                 }
+            }
+
+            Spacer()
+
+            // Next button
+            if showNextButton {
+                NavigationLink(destination: DebtQuestionView(income: .constant(income), paymentFrequency: Binding(
+                    get: { self.paymentFrequency ?? .monthly },
+                    set: { self.paymentFrequency = $0 }
+                )).environmentObject(budgetCategoryStore)) {
+                    Text("Next")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(
+                            LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                           startPoint: .topLeading,
+                                           endPoint: .bottomTrailing)
+                        )
+                        .cornerRadius(10)
+                        .shadow(radius: 5)
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 50)
             }
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
