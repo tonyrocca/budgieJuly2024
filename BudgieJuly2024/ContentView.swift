@@ -20,8 +20,9 @@ struct ContentView: View {
     @State private var isEditingAmounts: [UUID: Bool] = [:]
     @State private var editedAmounts: [UUID: Double] = [:]
     @FocusState private var isInputFocused: Bool
-    @State private var selectedTab: Tab = .budget
+    @State private var selectedTab: BudgetTab = .yourBudget
     @State private var selectedCategories: [BudgetCategory]
+    @State private var isMenuOpen = false
 
     let hasDebt: Bool
     let hasExpenses: Bool
@@ -63,13 +64,17 @@ struct ContentView: View {
 
     var body: some View {
         NavigationView {
-            ZStack(alignment: .top) {
+            ZStack(alignment: .topTrailing) {
                 Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all)
 
                 VStack(spacing: 0) {
                     customNavigationBar
                         .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
-                    
+
+                    segmentedControlView
+                        .padding(.top, 8)
+                        .padding(.bottom, 8)
+
                     ScrollView {
                         VStack(spacing: 1) {
                             paycheckTotalView()
@@ -78,33 +83,29 @@ struct ContentView: View {
                         }
                     }
 
-                    Spacer(minLength: 20) // Reduced spacing before the button
+                    Spacer(minLength: 20)
 
                     actionButton()
-                        .padding(.bottom, 32) // Increased bottom padding to move button up
+                        .padding(.bottom, 32)
                 }
 
-                if showPopup {
+                if isMenuOpen {
                     Color.black.opacity(0.5)
                         .edgesIgnoringSafeArea(.all)
                         .onTapGesture {
                             withAnimation {
-                                showPopup = false
-                                isEditing = false
+                                isMenuOpen = false
                             }
                         }
 
-                    VStack {
-                        Spacer()
-                        popupMenu()
-                            .padding(.bottom, 100)
-                    }
+                    slideOutMenuView
+                        .transition(.move(edge: .trailing))
                 }
             }
             .navigationBarHidden(true)
             .edgesIgnoringSafeArea(.all)
         }
-        .navigationViewStyle(StackNavigationViewStyle()) // Removes the back button
+        .navigationViewStyle(StackNavigationViewStyle())
         .environmentObject(budgetCategoryStore)
         .onAppear {
             formatAndCalculatePaycheckAmount()
@@ -128,27 +129,100 @@ struct ContentView: View {
         }
     }
 
+    private var segmentedControlView: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(BudgetTab.allCases, id: \.self) { tab in
+                    Button(action: {
+                        selectedTab = tab
+                    }) {
+                        HStack(spacing: 8) {
+                            Text(tab.emoji)
+                                .font(.system(size: 20))
+                            Text(tab.title)
+                                .font(.subheadline)
+                                .fontWeight(selectedTab == tab ? .semibold : .regular)
+                        }
+                        .foregroundColor(selectedTab == tab ? .primary : .secondary)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(selectedTab == tab ? Color.white : Color.clear)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                        )
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+        .background(Color(UIColor.systemGray6))
+        .cornerRadius(16)
+        .padding(.horizontal, 16)
+    }
+
     private var customNavigationBar: some View {
-        ZStack {
+        HStack {
             Text("deep pockets")
                 .font(.headline)
                 .foregroundColor(.primary)
             
-            HStack {
-                Spacer()
-                
-                Button(action: {
-                    print("Profile button tapped")
-                }) {
-                    Image(systemName: "person.circle")
-                        .font(.system(size: 22))
-                        .foregroundColor(.primary)
+            Spacer()
+            
+            Button(action: {
+                withAnimation {
+                    isMenuOpen.toggle()
                 }
+            }) {
+                Image(systemName: "line.horizontal.3")
+                    .font(.system(size: 22))
+                    .foregroundColor(.primary)
             }
         }
         .padding(.horizontal, 16)
         .frame(height: 44)
         .background(Color(UIColor.systemGroupedBackground))
+    }
+
+    private var slideOutMenuView: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            Button(action: {
+                withAnimation {
+                    isMenuOpen = false
+                }
+            }) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 22))
+                    .foregroundColor(.primary)
+            }
+            .padding(.top, 20)
+
+            Text("Menu")
+                .font(.title)
+                .fontWeight(.bold)
+
+            VStack(alignment: .leading, spacing: 15) {
+                menuItem(title: "Profile", icon: "person.circle")
+                menuItem(title: "Settings", icon: "gear")
+                menuItem(title: "Help", icon: "questionmark.circle")
+                menuItem(title: "About", icon: "info.circle")
+            }
+
+            Spacer()
+        }
+        .frame(width: UIScreen.main.bounds.width * 0.7)
+        .padding()
+        .background(Color(UIColor.systemBackground))
+        .edgesIgnoringSafeArea(.vertical)
+    }
+
+    private func menuItem(title: String, icon: String) -> some View {
+        HStack {
+            Image(systemName: icon)
+            Text(title)
+        }
+        .font(.headline)
     }
 
     private func actionButton() -> some View {
@@ -577,10 +651,26 @@ struct ContentView: View {
         selectedCategories = BudgetCategoryStore.shared.categories.filter { $0.isSelected }
     }
 
-    enum Tab {
-        case budget
+    enum BudgetTab: String, CaseIterable {
+        case yourBudget
+        case perfectBudget
         case affordability
-        case profile
+
+        var title: String {
+            switch self {
+            case .yourBudget: return "Your Budget"
+            case .perfectBudget: return "Perfect Budget"
+            case .affordability: return "Affordability"
+            }
+        }
+
+        var emoji: String {
+            switch self {
+            case .yourBudget: return "💰"
+            case .perfectBudget: return "✨"
+            case .affordability: return "🏠"
+            }
+        }
     }
 
     private var dateFormatter: DateFormatter {
