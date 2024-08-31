@@ -62,34 +62,26 @@ struct ContentView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .top) {
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(spacing: 1) {
-                        Color.clear.frame(height: 100)
-                        allocationListView()
+        NavigationView {
+            ZStack(alignment: .top) {
+                Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all)
+
+                VStack(spacing: 0) {
+                    customNavigationBar
+                        .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
+                    
+                    ScrollView {
+                        VStack(spacing: 1) {
+                            paycheckTotalView()
+                                .padding(.top, 16)
+                            allocationListView()
+                        }
                     }
-                    .padding(.top, 8)
-                }
-                .background(Color(UIColor.systemGroupedBackground))
 
-                footerNavigationBar()
-            }
-            .blur(radius: showPopup ? 5 : 0)
+                    Spacer(minLength: 20) // Reduced spacing before the button
 
-            paycheckTotalView()
-                .zIndex(1)
-                .blur(radius: showPopup ? 5 : 0)
-                .opacity(showPopup ? 0.7 : 1)
-
-            ZStack(alignment: .bottom) {
-                VStack {
-                    Spacer()
-                    
                     actionButton()
-                        .padding(.bottom, 16)
-                    
-                    footerNavigationBar()
+                        .padding(.bottom, 32) // Increased bottom padding to move button up
                 }
 
                 if showPopup {
@@ -109,7 +101,10 @@ struct ContentView: View {
                     }
                 }
             }
+            .navigationBarHidden(true)
+            .edgesIgnoringSafeArea(.all)
         }
+        .navigationViewStyle(StackNavigationViewStyle()) // Removes the back button
         .environmentObject(budgetCategoryStore)
         .onAppear {
             formatAndCalculatePaycheckAmount()
@@ -118,7 +113,7 @@ struct ContentView: View {
         .onChange(of: budgetCategoryStore.categories) { _ in
             updateScreen()
         }
-        .background(Color(UIColor.systemBackground).edgesIgnoringSafeArea(.all))
+        .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
         .sheet(item: $selectedCategoryForEdit) { category in
             EditCategoryView(category: category, budgieModel: $budgieModel) {
                 updateScreen()
@@ -131,6 +126,29 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    private var customNavigationBar: some View {
+        ZStack {
+            Text("deep pockets")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            HStack {
+                Spacer()
+                
+                Button(action: {
+                    print("Profile button tapped")
+                }) {
+                    Image(systemName: "person.circle")
+                        .font(.system(size: 22))
+                        .foregroundColor(.primary)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 44)
+        .background(Color(UIColor.systemGroupedBackground))
     }
 
     private func actionButton() -> some View {
@@ -155,6 +173,7 @@ struct ContentView: View {
             .clipShape(Capsule())
             .shadow(color: .gray, radius: 2, x: 0, y: 2)
         }
+        .padding(.horizontal, 16)
     }
 
     private func popupMenu() -> some View {
@@ -177,7 +196,6 @@ struct ContentView: View {
                 .background(Color.gray.opacity(0.3))
 
             Button(action: {
-                print("Enhance Budget tapped")
                 withAnimation {
                     showPopup = false
                 }
@@ -334,11 +352,9 @@ struct ContentView: View {
             HStack(spacing: 8) {
                 Button(action: {
                     if isEditingItem {
-                        // Done editing
                         updateItemAmount(item)
                         isEditingAmounts[id] = false
                     } else {
-                        // Start editing
                         editedAmounts[id] = itemAmount
                         isEditingAmounts[id] = true
                     }
@@ -559,38 +575,6 @@ struct ContentView: View {
     private func updateScreen() {
         calculateBudget()
         selectedCategories = BudgetCategoryStore.shared.categories.filter { $0.isSelected }
-    }
-
-    private func footerNavigationBar() -> some View {
-        HStack(spacing: 70) {
-            footerButton(title: "Budget", icon: "list.bullet", isSelected: selectedTab == .budget) {
-                selectedTab = .budget
-            }
-            footerButton(title: "Affordability", icon: "house", isSelected: selectedTab == .affordability) {
-                selectedTab = .affordability
-            }
-            footerButton(title: "Profile", icon: "person.circle", isSelected: selectedTab == .profile) {
-                selectedTab = .profile
-            }
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 16)
-        .background(Color.white)
-        .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: -3)
-        .clipShape(Capsule())
-    }
-
-    private func footerButton(title: String, icon: String, isSelected: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 22))
-                    .foregroundColor(isSelected ? .blue : .gray)
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(isSelected ? .blue : .gray)
-            }
-        }
     }
 
     enum Tab {
