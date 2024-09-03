@@ -72,13 +72,11 @@ struct ContentView: View {
                         .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
 
                     segmentedControlView
-                        .padding(.top, 8)
-                        .padding(.bottom, 8)
 
                     ScrollView {
-                        VStack(spacing: 1) {
+                        VStack(spacing: 16) {
                             paycheckTotalView()
-                                .padding(.top, 16)
+                                .padding(.top, 8)
                             allocationListView()
                         }
                     }
@@ -129,6 +127,32 @@ struct ContentView: View {
         }
     }
 
+    // 1. Centered navigation bar
+    private var customNavigationBar: some View {
+        ZStack {
+            Text("deep pockets")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            HStack {
+                Spacer()
+                Button(action: {
+                    withAnimation {
+                        isMenuOpen.toggle()
+                    }
+                }) {
+                    Image(systemName: "line.horizontal.3")
+                        .font(.system(size: 22))
+                        .foregroundColor(.primary)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 44)
+        .background(Color(UIColor.systemBackground))
+    }
+
+    // 2. Improved segmented control
     private var segmentedControlView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
@@ -138,7 +162,7 @@ struct ContentView: View {
                     }) {
                         HStack(spacing: 8) {
                             Text(tab.emoji)
-                                .font(.system(size: 20))
+                                .font(.system(size: 16))
                             Text(tab.title)
                                 .font(.subheadline)
                                 .fontWeight(selectedTab == tab ? .semibold : .regular)
@@ -146,43 +170,59 @@ struct ContentView: View {
                         .foregroundColor(selectedTab == tab ? .primary : .secondary)
                         .padding(.vertical, 8)
                         .padding(.horizontal, 12)
-                        .background(selectedTab == tab ? Color.white : Color.clear)
-                        .cornerRadius(12)
+                        .background(selectedTab == tab ? Color(UIColor.tertiarySystemBackground) : Color.clear)
+                        .cornerRadius(16)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.secondary.opacity(0.3), lineWidth: selectedTab == tab ? 1 : 0)
                         )
                     }
                 }
             }
             .padding(.horizontal, 16)
         }
-        .background(Color(UIColor.systemGray6))
-        .cornerRadius(16)
-        .padding(.horizontal, 16)
+        .frame(height: 40)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
     }
 
-    private var customNavigationBar: some View {
-        HStack {
-            Text("deep pockets")
-                .font(.headline)
-                .foregroundColor(.primary)
-            
-            Spacer()
-            
-            Button(action: {
-                withAnimation {
-                    isMenuOpen.toggle()
-                }
-            }) {
-                Image(systemName: "line.horizontal.3")
-                    .font(.system(size: 22))
+    // 3. Cleaner paycheck total view
+    private func paycheckTotalView() -> some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Paycheck Total")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                Spacer()
+                Text(currencyFormatter.string(from: NSNumber(value: totalPerPaycheckBudget)) ?? "$0")
+                    .font(.title2)
+                    .fontWeight(.bold)
                     .foregroundColor(.primary)
             }
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
+            .background(Color(UIColor.systemBackground))
+
+            Divider()
+
+            HStack {
+                Text(budgetDeficitOrSurplus >= 0 ? "Per Paycheck Surplus" : "Per Paycheck Deficit")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text(currencyFormatter.string(from: NSNumber(value: abs(budgetDeficitOrSurplus))) ?? "$0")
+                    .font(.headline)
+                    .foregroundColor(budgetDeficitOrSurplus >= 0 ? .green : .red)
+            }
+            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
+            .background(Color(UIColor.systemBackground))
         }
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
         .padding(.horizontal, 16)
-        .frame(height: 44)
-        .background(Color(UIColor.systemGroupedBackground))
+        .padding(.top, 16)
     }
 
     private var slideOutMenuView: some View {
@@ -248,89 +288,6 @@ struct ContentView: View {
             .shadow(color: .gray, radius: 2, x: 0, y: 2)
         }
         .padding(.horizontal, 16)
-    }
-
-    private func popupMenu() -> some View {
-        VStack(spacing: 0) {
-            Button(action: {
-                isEditing.toggle()
-                showPopup = false
-            }) {
-                HStack {
-                    Image(systemName: "pencil")
-                    Text("Edit Budget")
-                }
-                .foregroundColor(.black)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity)
-                .background(Color.white)
-            }
-
-            Divider()
-                .background(Color.gray.opacity(0.3))
-
-            Button(action: {
-                withAnimation {
-                    showPopup = false
-                }
-            }) {
-                HStack {
-                    Image(systemName: "sparkles")
-                    Text("Enhance Budget")
-                }
-                .foregroundColor(.black)
-                .padding(.vertical, 12)
-                .frame(maxWidth: .infinity)
-                .background(Color.white)
-            }
-        }
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(radius: 10)
-        .frame(width: 180)
-    }
-
-    private func paycheckTotalView() -> some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("Paycheck Total")
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                Spacer()
-                Text(currencyFormatter.string(from: NSNumber(value: totalPerPaycheckBudget)) ?? "$0")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.primary)
-            }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 16)
-            .background(Color.white)
-
-            Divider()
-                .background(Color.gray.opacity(0.3))
-
-            HStack {
-                Text(budgetDeficitOrSurplus >= 0 ? "Per Paycheck Surplus" : "Per Paycheck Deficit")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                Spacer()
-                Text(currencyFormatter.string(from: NSNumber(value: abs(budgetDeficitOrSurplus))) ?? "$0")
-                    .font(.headline)
-                    .foregroundColor(budgetDeficitOrSurplus >= 0 ? .green : .red)
-            }
-            .padding(.vertical, 12)
-            .padding(.horizontal, 16)
-            .background(Color.white)
-        }
-        .background(Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-        )
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
-        .padding(.horizontal)
-        .padding(.top, 8)
     }
 
     private func allocationListView() -> some View {
