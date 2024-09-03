@@ -28,6 +28,7 @@
 		776125B12C75A0AE001E5453 /* SavingsQuestionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776125B02C75A0AE001E5453 /* SavingsQuestionView.swift */; };
 		776125B32C75A0CB001E5453 /* ExpenseQuestionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776125B22C75A0CB001E5453 /* ExpenseQuestionView.swift */; };
 		776125B52C75A0E4001E5453 /* DebtQuestionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776125B42C75A0E4001E5453 /* DebtQuestionView.swift */; };
+		776125B72C86BD6A001E5453 /* PerfectBudgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776125B62C86BD6A001E5453 /* PerfectBudgetView.swift */; };
 		77BEB7122C4CCEDF0000AFB9 /* ExpenseSelctionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7112C4CCEDF0000AFB9 /* ExpenseSelctionView.swift */; };
 		77BEB7182C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7172C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift */; };
 		77BEB71A2C4E026F0000AFB9 /* SavingsSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77BEB7192C4E026F0000AFB9 /* SavingsSelectionView.swift */; };
@@ -77,6 +78,7 @@
 		776125B02C75A0AE001E5453 /* SavingsQuestionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsQuestionView.swift; sourceTree = "<group>"; };
 		776125B22C75A0CB001E5453 /* ExpenseQuestionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseQuestionView.swift; sourceTree = "<group>"; };
 		776125B42C75A0E4001E5453 /* DebtQuestionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebtQuestionView.swift; sourceTree = "<group>"; };
+		776125B62C86BD6A001E5453 /* PerfectBudgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerfectBudgetView.swift; sourceTree = "<group>"; };
 		77BEB7112C4CCEDF0000AFB9 /* ExpenseSelctionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseSelctionView.swift; sourceTree = "<group>"; };
 		77BEB7172C4CD6B40000AFB9 /* ExpenseSubcategorySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseSubcategorySelectionView.swift; sourceTree = "<group>"; };
 		77BEB7192C4E026F0000AFB9 /* SavingsSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsSelectionView.swift; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 				77BEB7192C4E026F0000AFB9 /* SavingsSelectionView.swift */,
 				776125AA2C6B1A4D001E5453 /* SavingsAmountInputView.swift */,
 				7713A2CE2C32005900A0AFCE /* ContentView.swift */,
+				776125B62C86BD6A001E5453 /* PerfectBudgetView.swift */,
 				776125AE2C72EAB0001E5453 /* EditCategoryView.swift */,
 				7713A2FB2C3A28E500A0AFCE /* BudgetCategoryStore.swift */,
 				7713A3032C3A2A3000A0AFCE /* BudgieModel.swift */,
@@ -335,6 +338,7 @@
 				776125B32C75A0CB001E5453 /* ExpenseQuestionView.swift in Sources */,
 				776125AB2C6B1A4D001E5453 /* SavingsAmountInputView.swift in Sources */,
 				7713A2FC2C3A28E500A0AFCE /* BudgetCategoryStore.swift in Sources */,
+				776125B72C86BD6A001E5453 /* PerfectBudgetView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

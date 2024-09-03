@@ -73,12 +73,20 @@ struct ContentView: View {
 
                     segmentedControlView
 
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            paycheckTotalView()
-                                .padding(.top, 8)
-                            allocationListView()
+                    if selectedTab == .yourBudget {
+                        ScrollView {
+                            VStack(spacing: 16) {
+                                paycheckTotalView()
+                                    .padding(.top, 8)
+                                allocationListView()
+                            }
                         }
+                    } else if selectedTab == .perfectBudget {
+                        PerfectBudgetView(paycheckAmount: paycheckAmount ?? 0, paymentCadence: paymentCadence)
+                    } else if selectedTab == .affordability {
+                        Text("Affordability View")
+                            .font(.largeTitle)
+                            .foregroundColor(.secondary)
                     }
 
                     Spacer(minLength: 20)
@@ -127,7 +135,6 @@ struct ContentView: View {
         }
     }
 
-    // 1. Centered navigation bar
     private var customNavigationBar: some View {
         ZStack {
             Text("deep pockets")
@@ -152,7 +159,6 @@ struct ContentView: View {
         .background(Color(UIColor.systemBackground))
     }
 
-    // 2. Improved segmented control
     private var segmentedControlView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
@@ -186,7 +192,6 @@ struct ContentView: View {
         .padding(.bottom, 4)
     }
 
-    // 3. Cleaner paycheck total view
     private func paycheckTotalView() -> some View {
         VStack(spacing: 0) {
             HStack {

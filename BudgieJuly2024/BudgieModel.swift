@@ -4,12 +4,18 @@ struct BudgieModel {
     var paycheckAmount: Double
     var paymentCadence: PaymentCadence = .monthly
     var allocations: [UUID: Double] = [:]
+    var perfectAllocations: [UUID: Double] = [:]  // New property for perfect budget allocations
 
     mutating func calculateAllocations(selectedCategories: [BudgetCategory]) {
         allocations.removeAll()
 
         for category in selectedCategories {
-            if category.type == .saving || category.type == .debt {
+            if category.type == .debt {
+                if let amount = category.amount, let dueDate = category.dueDate {
+                    let monthlyAllocation = calculateMonthlyDebtAllocation(totalAmount: amount, dueDate: dueDate)
+                    allocations[category.id] = adjustAllocationForPaymentCadence(monthlyAllocation)
+                }
+            } else if category.type == .saving {
                 allocations[category.id] = category.amount ?? 0
             } else {
                 var categoryAllocation: Double = 0
@@ -20,6 +26,70 @@ struct BudgieModel {
                 }
                 allocations[category.id] = categoryAllocation
             }
+        }
+    }
+
+    // New function to calculate the perfect budget
+    mutating func calculatePerfectBudget(selectedCategories: [BudgetCategory]) {
+        perfectAllocations.removeAll()
+        var remainingAmount = paycheckAmount
+
+        // Handle debt categories first (keep them unchanged)
+        for category in selectedCategories where category.type == .debt {
+            perfectAllocations[category.id] = category.amount ?? 0
+            remainingAmount -= category.amount ?? 0
+        }
+
+        // Define ideal percentages for main categories
+        let idealPercentages: [CategoryType: Double] = [
+            .need: 0.50,
+            .want: 0.30,
+            .saving: 0.20
+        ]
+
+        // Calculate and allocate for main categories
+        for (type, percentage) in idealPercentages {
+            let typeCategories = selectedCategories.filter { $0.type == type }
+            let typeAllocation = remainingAmount * percentage
+            
+            for category in typeCategories {
+                if type == .saving {
+                    // For saving categories, use a specific calculation
+                    let savingsAmount = calculateSavingsAmount(for: category.name, monthlyPaycheck: paycheckAmount)
+                    perfectAllocations[category.id] = savingsAmount
+                } else {
+                    // For needs and wants, distribute evenly among categories
+                    let categoryAllocation = typeAllocation / Double(typeCategories.count)
+                    perfectAllocations[category.id] = categoryAllocation
+                    
+                    // Distribute among subcategories
+                    let selectedSubcategories = category.subcategories.filter { $0.isSelected }
+                    let subcategoryAllocation = categoryAllocation / Double(selectedSubcategories.count)
+                    for subcategory in selectedSubcategories {
+                        perfectAllocations[subcategory.id] = subcategoryAllocation
+                    }
+                }
+            }
+        }
+    }
+
+    private func calculateMonthlyDebtAllocation(totalAmount: Double, dueDate: Date) -> Double {
+        let currentDate = Date()
+        let calendar = Calendar.current
+        let monthsUntilDue = calendar.dateComponents([.month], from: currentDate, to: dueDate).month ?? 1
+        return totalAmount / Double(max(1, monthsUntilDue))
+    }
+
+    private func adjustAllocationForPaymentCadence(_ monthlyAllocation: Double) -> Double {
+        switch paymentCadence {
+        case .weekly:
+            return monthlyAllocation * 12 / 52
+        case .biWeekly:
+            return monthlyAllocation * 12 / 26
+        case .monthly:
+            return monthlyAllocation
+        case .semiMonthly:
+            return monthlyAllocation * 12 / 24
         }
     }
 
