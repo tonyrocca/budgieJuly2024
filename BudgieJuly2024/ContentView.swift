@@ -117,7 +117,7 @@ struct ContentView: View {
                             }
                         }
 
-                    EnhanceBudgetSheet(budgieModel: $budgieModel, showPopup: $showPopup)
+                    EnhanceBudgetSheet(budgieModel: $budgieModel, showPopup: $showPopup, selectedCategories: $selectedCategories)
                         .transition(.move(edge: .bottom))
                         .edgesIgnoringSafeArea(.bottom)
                 }

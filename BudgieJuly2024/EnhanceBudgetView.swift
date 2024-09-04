@@ -3,55 +3,32 @@ import SwiftUI
 struct BudgetRecommendation: Identifiable {
     let id = UUID()
     let type: RecommendationType
-    let category: String
-    let amount: Double?
+    let category: BudgetCategory
+    let subcategory: BudgetSubCategory?
+    let currentAmount: Double
+    let recommendedAmount: Double
     let reason: String
-    
-    var title: String {
-        switch type {
-        case .addCategory:
-            return "Add \(category)"
-        case .removeCategory:
-            return "Remove \(category)"
-        case .increaseAllocation:
-            return "Increase \(category) allocation"
-        case .decreaseAllocation:
-            return "Decrease \(category) allocation"
-        }
-    }
-    
-    var actionText: String {
-        switch type {
-        case .addCategory:
-            return "Add Category"
-        case .removeCategory:
-            return "Remove Category"
-        case .increaseAllocation:
-            return "Increase Allocation"
-        case .decreaseAllocation:
-            return "Decrease Allocation"
-        }
-    }
 }
 
 enum RecommendationType {
+    case updateAmount
     case addCategory
     case removeCategory
-    case increaseAllocation
-    case decreaseAllocation
 }
 
 struct EnhanceBudgetSheet: View {
     @Binding var budgieModel: BudgieModel
     @Binding var showPopup: Bool
+    @Binding var selectedCategories: [BudgetCategory]
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
     
-    @State private var recommendations: [BudgetRecommendation] = []
     @State private var offset: CGFloat = 0
     @State private var isDragging = false
 
     let screenHeight = UIScreen.main.bounds.height
-    let sheetHeight: CGFloat = UIScreen.main.bounds.height * 0.75 // 75% of screen height
+    let sheetHeight: CGFloat = UIScreen.main.bounds.height * 0.75
+    
+    private let lightGrayColor = Color(UIColor.systemGray6)
     
     var body: some View {
         GeometryReader { geometry in
@@ -63,28 +40,20 @@ struct EnhanceBudgetSheet: View {
                     .padding(.top, 10)
                 
                 // Header
-                HStack {
-                    Text("Enhance Your Budget")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    Spacer()
-                    Button(action: { showPopup = false }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.gray)
-                    }
-                }
-                .padding()
+                Text("Enhance Your Budget")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding()
                 
-                // Surplus/Deficit Info
-                surplusDeficitView
-                
-                // Recommendations List
+                // Content
                 ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(recommendations) { recommendation in
-                            RecommendationRow(recommendation: recommendation) {
-                                applyRecommendation(recommendation)
-                            }
+                    VStack(spacing: 24) {
+                        updateAmountsSection()
+                        
+                        if budgieModel.budgetDeficitOrSurplus > 0 {
+                            addMissingCriticalCategorySection()
+                        } else if budgieModel.budgetDeficitOrSurplus < 0 {
+                            removeCategorySection()
                         }
                     }
                     .padding()
@@ -114,91 +83,122 @@ struct EnhanceBudgetSheet: View {
             )
         }
         .edgesIgnoringSafeArea(.bottom)
-        .onAppear {
-            generateRecommendations()
-        }
     }
     
-    private var surplusDeficitView: some View {
-        HStack {
-            Text(budgieModel.budgetDeficitOrSurplus >= 0 ? "Current Surplus:" : "Current Deficit:")
-                .fontWeight(.medium)
-            Spacer()
-            Text(formatCurrency(budgieModel.budgetDeficitOrSurplus))
-                .fontWeight(.bold)
-                .foregroundColor(budgieModel.budgetDeficitOrSurplus >= 0 ? .green : .red)
-        }
-        .padding()
-        .background(Color(UIColor.secondarySystemBackground))
-    }
-    
-    private func generateRecommendations() {
-        recommendations = []
-        
-        // Check for emergency savings
-        if !budgetCategoryStore.categories.contains(where: { $0.name == "Emergency Fund" && $0.isSelected }) {
-            recommendations.append(BudgetRecommendation(type: .addCategory, category: "Emergency Fund", amount: nil, reason: "It's important to have an emergency fund for unexpected expenses."))
-        }
-        
-        // Compare with perfect budget allocations
-        for category in budgetCategoryStore.categories where category.isSelected {
-            let currentAllocation = budgieModel.allocations[category.id] ?? 0
-            let perfectAllocation = budgieModel.perfectAllocations[category.id] ?? 0
+    private func updateAmountsSection() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Update Amounts")
+                .font(.headline)
             
-            if currentAllocation < perfectAllocation * 0.8 {
-                recommendations.append(BudgetRecommendation(type: .increaseAllocation, category: category.name, amount: perfectAllocation - currentAllocation, reason: "You're underfunding this category based on recommended allocations."))
-            } else if currentAllocation > perfectAllocation * 1.2 {
-                recommendations.append(BudgetRecommendation(type: .decreaseAllocation, category: category.name, amount: currentAllocation - perfectAllocation, reason: "You might be overspending in this category based on recommended allocations."))
+            ForEach(getUpdateRecommendations()) { recommendation in
+                RecommendationRow(recommendation: recommendation) {
+                    applyRecommendation(recommendation)
+                }
             }
         }
-        
-        // Suggest new categories if there's a surplus
-        if budgieModel.budgetDeficitOrSurplus > 0 {
-            let unselectedCategories = budgetCategoryStore.categories.filter { !$0.isSelected }
-            for category in unselectedCategories.prefix(3) {
-                recommendations.append(BudgetRecommendation(type: .addCategory, category: category.name, amount: nil, reason: "Consider adding this category to your budget for a more comprehensive financial plan."))
+    }
+    
+    private func addMissingCriticalCategorySection() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Add Critical Category")
+                .font(.headline)
+            
+            if let recommendation = getMissingCriticalCategoryRecommendation() {
+                RecommendationRow(recommendation: recommendation) {
+                    applyRecommendation(recommendation)
+                }
+            } else {
+                Text("No critical categories missing")
+                    .foregroundColor(.secondary)
             }
         }
-        
-        // Suggest removing categories if there's a deficit
-        if budgieModel.budgetDeficitOrSurplus < 0 {
-            let nonEssentialCategories = budgetCategoryStore.categories.filter { $0.isSelected && $0.type == .want }
-            for category in nonEssentialCategories.prefix(3) {
-                recommendations.append(BudgetRecommendation(type: .removeCategory, category: category.name, amount: nil, reason: "Consider removing or reducing this non-essential category to balance your budget."))
+    }
+    
+    private func removeCategorySection() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Reduce Expenses")
+                .font(.headline)
+            
+            ForEach(getRemoveRecommendations()) { recommendation in
+                RecommendationRow(recommendation: recommendation) {
+                    applyRecommendation(recommendation)
+                }
             }
+        }
+    }
+    
+    private func getUpdateRecommendations() -> [BudgetRecommendation] {
+        return selectedCategories.compactMap { category in
+            let currentAmount = budgieModel.allocations[category.id] ?? 0
+            let recommendedAmount = budgieModel.perfectAllocations[category.id] ?? 0
+            
+            if abs(currentAmount - recommendedAmount) > max(currentAmount * 0.1, 10) { // Only recommend if change is >10% or >$10
+                return BudgetRecommendation(
+                    type: .updateAmount,
+                    category: category,
+                    subcategory: nil,
+                    currentAmount: currentAmount,
+                    recommendedAmount: recommendedAmount,
+                    reason: "Adjust to optimize your budget"
+                )
+            }
+            return nil
+        }
+    }
+    
+    private func getMissingCriticalCategoryRecommendation() -> BudgetRecommendation? {
+        let criticalCategories = ["Emergency Fund", "Retirement"]
+        let missingCriticalCategory = budgetCategoryStore.categories.first { category in
+            criticalCategories.contains(category.name) && !selectedCategories.contains(where: { $0.id == category.id })
+        }
+        
+        if let category = missingCriticalCategory {
+            let recommendedAmount = budgieModel.calculateSavingsAmount(for: category.name, monthlyPaycheck: budgieModel.paycheckAmount)
+            return BudgetRecommendation(
+                type: .addCategory,
+                category: category,
+                subcategory: nil,
+                currentAmount: 0,
+                recommendedAmount: recommendedAmount,
+                reason: "Add this important category to your budget"
+            )
+        }
+        return nil
+    }
+    
+    private func getRemoveRecommendations() -> [BudgetRecommendation] {
+        let sortedWants = selectedCategories.filter { $0.type == .want }
+            .sorted { (budgieModel.allocations[$0.id] ?? 0) > (budgieModel.allocations[$1.id] ?? 0) }
+        
+        return sortedWants.prefix(3).map { category in
+            BudgetRecommendation(
+                type: .removeCategory,
+                category: category,
+                subcategory: nil,
+                currentAmount: budgieModel.allocations[category.id] ?? 0,
+                recommendedAmount: 0,
+                reason: "Consider reducing this expense to balance your budget"
+            )
         }
     }
     
     private func applyRecommendation(_ recommendation: BudgetRecommendation) {
         switch recommendation.type {
+        case .updateAmount:
+            if selectedCategories.contains(where: { $0.id == recommendation.category.id }) {
+                budgieModel.updateCategory(recommendation.category, newAmount: recommendation.recommendedAmount)
+            }
         case .addCategory:
-            if let index = budgetCategoryStore.categories.firstIndex(where: { $0.name == recommendation.category }) {
-                budgetCategoryStore.categories[index].isSelected = true
+            if !selectedCategories.contains(where: { $0.id == recommendation.category.id }) {
+                budgieModel.addCategory(recommendation.category)
+                selectedCategories.append(recommendation.category)
             }
         case .removeCategory:
-            if let index = budgetCategoryStore.categories.firstIndex(where: { $0.name == recommendation.category }) {
-                budgetCategoryStore.categories[index].isSelected = false
-            }
-        case .increaseAllocation, .decreaseAllocation:
-            if let index = budgetCategoryStore.categories.firstIndex(where: { $0.name == recommendation.category }),
-               let amount = recommendation.amount {
-                let currentAmount = budgieModel.allocations[budgetCategoryStore.categories[index].id] ?? 0
-                let newAmount = recommendation.type == .increaseAllocation ? currentAmount + amount : currentAmount - amount
-                budgieModel.updateCategory(budgetCategoryStore.categories[index], newAmount: newAmount)
+            if selectedCategories.contains(where: { $0.id == recommendation.category.id }) {
+                budgieModel.removeCategory(recommendation.category)
+                selectedCategories.removeAll { $0.id == recommendation.category.id }
             }
         }
-        
-        // Recalculate budget and regenerate recommendations
-        budgieModel.calculateAllocations(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected })
-        budgieModel.calculatePerfectBudget(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected })
-        generateRecommendations()
-    }
-    
-    private func formatCurrency(_ amount: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.maximumFractionDigits = 2
-        return formatter.string(from: NSNumber(value: abs(amount))) ?? "$0.00"
     }
 }
 
@@ -207,31 +207,53 @@ struct RecommendationRow: View {
     let onApply: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(recommendation.title)
-                .font(.headline)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("\(recommendation.category.emoji) \(recommendation.category.name)")
+                    .font(.headline)
+                Spacer()
+                Button(action: onApply) {
+                    Text(actionText(for: recommendation.type))
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 12)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+            }
+            
             Text(recommendation.reason)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
-            if let amount = recommendation.amount {
-                Text(formatCurrency(amount))
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-            }
-            Button(action: onApply) {
-                Text(recommendation.actionText)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 16)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+            
+            HStack {
+                VStack(alignment: .leading) {
+                    Text("Current: \(formatCurrency(recommendation.currentAmount))")
+                    Text("Recommended: \(formatCurrency(recommendation.recommendedAmount))")
+                }
+                .font(.caption)
+                .foregroundColor(.secondary)
+                
+                Spacer()
             }
         }
-        .padding()
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
         .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(12)
+    }
+    
+    private func actionText(for type: RecommendationType) -> String {
+        switch type {
+        case .updateAmount:
+            return "Update"
+        case .addCategory:
+            return "Add"
+        case .removeCategory:
+            return "Remove"
+        }
     }
     
     private func formatCurrency(_ amount: Double) -> String {
