@@ -107,6 +107,20 @@ struct ContentView: View {
                     slideOutMenuView
                         .transition(.move(edge: .trailing))
                 }
+
+                if showPopup {
+                    Color.black.opacity(0.3)
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            withAnimation {
+                                showPopup = false
+                            }
+                        }
+
+                    EnhanceBudgetSheet(budgieModel: $budgieModel, showPopup: $showPopup)
+                        .transition(.move(edge: .bottom))
+                        .edgesIgnoringSafeArea(.bottom)
+                }
             }
             .navigationBarHidden(true)
             .edgesIgnoringSafeArea(.all)
@@ -140,7 +154,7 @@ struct ContentView: View {
             Text("deep pockets")
                 .font(.headline)
                 .foregroundColor(.primary)
-            
+
             HStack {
                 Spacer()
                 Button(action: {

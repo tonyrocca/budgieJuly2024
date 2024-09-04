@@ -4,7 +4,11 @@ struct BudgieModel {
     var paycheckAmount: Double
     var paymentCadence: PaymentCadence = .monthly
     var allocations: [UUID: Double] = [:]
-    var perfectAllocations: [UUID: Double] = [:]  // New property for perfect budget allocations
+    var perfectAllocations: [UUID: Double] = [:]
+
+    var budgetDeficitOrSurplus: Double {
+        paycheckAmount - allocations.values.reduce(0, +)
+    }
 
     mutating func calculateAllocations(selectedCategories: [BudgetCategory]) {
         allocations.removeAll()
@@ -29,7 +33,6 @@ struct BudgieModel {
         }
     }
 
-    // New function to calculate the perfect budget
     mutating func calculatePerfectBudget(selectedCategories: [BudgetCategory]) {
         perfectAllocations.removeAll()
         var remainingAmount = paycheckAmount
@@ -51,7 +54,7 @@ struct BudgieModel {
         for (type, percentage) in idealPercentages {
             let typeCategories = selectedCategories.filter { $0.type == type }
             let typeAllocation = remainingAmount * percentage
-            
+
             for category in typeCategories {
                 if type == .saving {
                     // For saving categories, use a specific calculation
@@ -61,7 +64,7 @@ struct BudgieModel {
                     // For needs and wants, distribute evenly among categories
                     let categoryAllocation = typeAllocation / Double(typeCategories.count)
                     perfectAllocations[category.id] = categoryAllocation
-                    
+
                     // Distribute among subcategories
                     let selectedSubcategories = category.subcategories.filter { $0.isSelected }
                     let subcategoryAllocation = categoryAllocation / Double(selectedSubcategories.count)
@@ -104,12 +107,12 @@ struct BudgieModel {
     mutating func updateSubcategory(category: BudgetCategory, subcategory: BudgetSubCategory, newAmount: Double) {
         if let categoryIndex = BudgetCategoryStore.shared.categories.firstIndex(where: { $0.id == category.id }),
            let subIndex = BudgetCategoryStore.shared.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
-            
+
             BudgetCategoryStore.shared.categories[categoryIndex].subcategories[subIndex].amount = newAmount
-            
+
             let newCategoryTotal = BudgetCategoryStore.shared.categories[categoryIndex].subcategories.reduce(0) { $0 + ($1.amount ?? 0) }
             BudgetCategoryStore.shared.categories[categoryIndex].amount = newCategoryTotal
-            
+
             allocations[subcategory.id] = newAmount
             allocations[category.id] = newCategoryTotal
         }
