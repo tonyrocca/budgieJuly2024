@@ -200,14 +200,14 @@ struct ContentView: View {
 
     private var segmentedControlView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
+            HStack(spacing: 8) {
                 ForEach(BudgetTab.allCases, id: \.self) { tab in
                     Button(action: {
                         selectedTab = tab
                     }) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 6) {
                             Text(tab.emoji)
-                                .font(.system(size: 16))
+                                .font(.system(size: 14))
                             Text(tab.title)
                                 .font(.subheadline)
                                 .fontWeight(selectedTab == tab ? .semibold : .regular)
@@ -217,11 +217,11 @@ struct ContentView: View {
                         .padding(.horizontal, 12)
                         .background(selectedTab == tab ? Color(UIColor.tertiarySystemBackground) : Color.clear)
                         .cornerRadius(16)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.secondary.opacity(0.3), lineWidth: selectedTab == tab ? 1 : 0)
-                        )
                     }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(selectedTab == tab ? Color.clear : Color.gray.opacity(0.3), lineWidth: 1)
+                    )
                 }
             }
             .padding(.horizontal, 16)
