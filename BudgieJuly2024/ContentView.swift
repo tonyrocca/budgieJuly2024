@@ -1,5 +1,30 @@
 import SwiftUI
 
+struct SectionHeaderView: View {
+    let title: String
+    let color: Color
+    
+    var body: some View {
+        HStack {
+            Text(title)
+                .font(.headline)
+                .foregroundColor(color)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .background(Color.white)
+                .cornerRadius(10, corners: [.topLeft, .topRight])
+            Spacer()
+        }
+        .overlay(
+            Rectangle()
+                .fill(Color.white)
+                .frame(height: 10)
+                .offset(y: 5),
+            alignment: .bottom
+        )
+    }
+}
+
 struct ContentView: View {
     @StateObject private var budgetCategoryStore = BudgetCategoryStore.shared
     @State private var budgieModel: BudgieModel
@@ -310,26 +335,37 @@ struct ContentView: View {
     }
 
     private func allocationListView() -> some View {
-        VStack(spacing: 1) {
-            if hasDebt {
-                ForEach(selectedCategories.filter { $0.type == .debt }) { category in
-                    categoryView(category)
+            VStack(spacing: 0) {
+                if hasDebt {
+                    sectionView(title: "Debt", color: .red, categories: selectedCategories.filter { $0.type == .debt })
+                }
+                if hasExpenses {
+                    sectionView(title: "Expenses", color: .orange, categories: selectedCategories.filter { $0.type == .need || $0.type == .want })
+                }
+                if hasSavings {
+                    sectionView(title: "Savings", color: .green, categories: selectedCategories.filter { $0.type == .saving })
                 }
             }
-            if hasExpenses {
-                ForEach(selectedCategories.filter { $0.type == .need || $0.type == .want }) { category in
-                    categoryView(category)
-                }
-            }
-            if hasSavings {
-                ForEach(selectedCategories.filter { $0.type == .saving }) { category in
-                    categoryView(category)
-                }
-            }
+            .padding(.horizontal)
         }
-        .padding(.horizontal)
-    }
 
+        private func sectionView(title: String, color: Color, categories: [BudgetCategory]) -> some View {
+            VStack(spacing: 0) {
+                SectionHeaderView(title: title, color: color)
+                VStack(spacing: 8) {
+                    ForEach(categories) { category in
+                        categoryView(category)
+                    }
+                }
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+                .background(Color.white)
+            }
+            .background(Color.white)
+            .cornerRadius(10)
+            .padding(.bottom, 16)
+        }
+    
     private func categoryView(_ category: BudgetCategory) -> some View {
         VStack(spacing: 0) {
             HStack {
