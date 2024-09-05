@@ -411,10 +411,11 @@ struct ContentView: View {
                 }) {
                     HStack {
                         Image(systemName: isEditingItem ? "checkmark" : "pencil")
-                        Text(isEditingItem ? "Done" : "Edit Amount")
+                        Text(isEditingItem ? "Done" : "Edit")
                     }
+                    .font(.subheadline)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 8)
                     .background(Color.blue.opacity(0.1))
                     .foregroundColor(.blue)
                     .cornerRadius(8)
@@ -426,10 +427,11 @@ struct ContentView: View {
                 }) {
                     HStack {
                         Image(systemName: "trash")
-                        Text("Delete Category")
+                        Text("Delete")
                     }
+                    .font(.subheadline)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
+                    .padding(.vertical, 8)
                     .background(Color.red.opacity(0.1))
                     .foregroundColor(.red)
                     .cornerRadius(8)
