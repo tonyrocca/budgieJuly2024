@@ -11,13 +11,13 @@ struct SectionHeaderView: View {
                 .foregroundColor(color)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 16)
-                .background(Color.white)
+                .background(Color(UIColor.systemBackground))
                 .cornerRadius(10, corners: [.topLeft, .topRight])
             Spacer()
         }
         .overlay(
             Rectangle()
-                .fill(Color.white)
+                .fill(Color(UIColor.systemBackground))
                 .frame(height: 10)
                 .offset(y: 5),
             alignment: .bottom
@@ -743,3 +743,6 @@ struct VisualEffectView: UIViewRepresentable {
     func makeUIView(context: UIViewRepresentableContext<Self>) -> UIVisualEffectView { UIVisualEffectView() }
     func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) { uiView.effect = effect }
 }
+
+
+
