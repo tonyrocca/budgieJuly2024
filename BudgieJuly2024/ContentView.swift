@@ -50,6 +50,7 @@ struct ContentView: View {
     @State private var selectedTab: BudgetTab = .yourBudget
     @State private var selectedCategories: [BudgetCategory]
     @State private var isMenuOpen = false
+    @State private var hasBudgetingExperience: Bool  // Added this line
 
     let hasDebt: Bool
     let hasExpenses: Bool
@@ -64,7 +65,7 @@ struct ContentView: View {
         return formatter
     }()
 
-    init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String, hasDebt: Bool, hasExpenses: Bool, hasSavings: Bool) {
+    init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String, hasDebt: Bool, hasExpenses: Bool, hasSavings: Bool, hasBudgetingExperience: Bool) {  // Updated init
         self._paymentCadence = State(initialValue: paymentFrequency)
         self._paycheckAmountText = State(initialValue: paycheckAmountText)
         self._budgieModel = State(initialValue: BudgieModel(paycheckAmount: Double(paycheckAmountText) ?? 0.0))
@@ -72,6 +73,7 @@ struct ContentView: View {
         self.hasDebt = hasDebt
         self.hasExpenses = hasExpenses
         self.hasSavings = hasSavings
+        self._hasBudgetingExperience = State(initialValue: hasBudgetingExperience)  // Updated init
     }
 
     var totalMonthlyBudget: Double {
@@ -802,6 +804,3 @@ struct VisualEffectView: UIViewRepresentable {
     func makeUIView(context: UIViewRepresentableContext<Self>) -> UIVisualEffectView { UIVisualEffectView() }
     func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) { uiView.effect = effect }
 }
-
-
-

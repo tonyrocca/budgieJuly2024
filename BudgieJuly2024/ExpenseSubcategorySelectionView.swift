@@ -6,6 +6,7 @@ struct ExpenseSubcategorySelectionView: View {
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
     var selectedCategories: [BudgetCategory]
     var hasSavings: Bool
+    var hasBudgetingExperience: Bool  // Added this line
     @State private var showAddSubcategoryForm = false
     @State private var newSubcategoryName = ""
     @State private var currentCategoryID: UUID?
@@ -92,8 +93,7 @@ struct ExpenseSubcategorySelectionView: View {
 
                 Spacer()
 
-                NavigationLink(destination: ExpenseSubcategoryAmountInputView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: selectedCategories, hasSavingsGoals: hasSavings)
-                    .environmentObject(budgetCategoryStore)) {
+                NavigationLink(destination: nextView()) {
                     Text("Next")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -156,6 +156,30 @@ struct ExpenseSubcategorySelectionView: View {
         }
     }
 
+    // New nextView function based on hasBudgetingExperience
+    @ViewBuilder
+    private func nextView() -> some View {
+        if hasBudgetingExperience {
+            ExpenseSubcategoryAmountInputView(
+                income: $income,
+                paymentFrequency: $paymentFrequency,
+                selectedCategories: selectedCategories,
+                hasSavingsGoals: hasSavings,
+                hasBudgetingExperience: hasBudgetingExperience  // Passing the new parameter
+            )
+            .environmentObject(budgetCategoryStore)
+        } else {
+            SavingsQuestionView(
+                income: $income,
+                paymentFrequency: $paymentFrequency,
+                hasDebt: selectedCategories.contains(where: { $0.type == .debt }),
+                hasExpenses: true,
+                hasBudgetingExperience: hasBudgetingExperience  // Passing the new parameter
+            )
+            .environmentObject(budgetCategoryStore)
+        }
+    }
+
     private func addSubcategory() {
         let newSubcategory = BudgetSubCategory(name: newSubcategoryName, allocationPercentage: 0.0, description: "")
         if let categoryID = currentCategoryID,
@@ -164,5 +188,18 @@ struct ExpenseSubcategorySelectionView: View {
         }
         showAddSubcategoryForm = false
         newSubcategoryName = ""
+    }
+}
+
+struct ExpenseSubcategorySelectionView_Previews: PreviewProvider {
+    static var previews: some View {
+        ExpenseSubcategorySelectionView(
+            income: .constant("5000"),
+            paymentFrequency: .constant(.monthly),
+            selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected },
+            hasSavings: true,
+            hasBudgetingExperience: true  // Added this line to the preview
+        )
+        .environmentObject(BudgetCategoryStore.shared)
     }
 }

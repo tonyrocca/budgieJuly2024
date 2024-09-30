@@ -6,6 +6,7 @@ struct SavingsSelectionView: View {
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
     @State private var showAddSavingsForm = false
     @State private var newSavingsName = ""
+    var hasBudgetingExperience: Bool  // Added this line
 
     private let lightGrayColor = Color(UIColor.systemGray6)
 
@@ -58,13 +59,7 @@ struct SavingsSelectionView: View {
 
                 Spacer()
 
-                NavigationLink(destination: SavingsAmountInputView(
-                    income: $income,
-                    paymentFrequency: $paymentFrequency,
-                    selectedCategories: selectedSavingsCategories,
-                    hasDebt: budgetCategoryStore.categories.contains { $0.type == .debt && $0.isSelected },
-                    hasExpenses: budgetCategoryStore.categories.contains { $0.type == .need && $0.isSelected }
-                ).environmentObject(budgetCategoryStore)) {
+                NavigationLink(destination: nextView()) {
                     Text("Next")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -169,11 +164,35 @@ struct SavingsSelectionView: View {
         showAddSavingsForm = false
         newSavingsName = ""
     }
+
+    @ViewBuilder
+    private func nextView() -> some View {
+        if hasBudgetingExperience {
+            SavingsAmountInputView(
+                income: $income,
+                paymentFrequency: $paymentFrequency,
+                selectedCategories: selectedSavingsCategories,
+                hasDebt: budgetCategoryStore.categories.contains { $0.type == .debt && $0.isSelected },
+                hasExpenses: budgetCategoryStore.categories.contains { $0.type == .need && $0.isSelected },
+                hasBudgetingExperience: hasBudgetingExperience
+            ).environmentObject(budgetCategoryStore)
+        } else {
+            ContentView(
+                selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected },
+                paymentFrequency: paymentFrequency,
+                paycheckAmountText: income,
+                hasDebt: budgetCategoryStore.categories.contains { $0.type == .debt && $0.isSelected },
+                hasExpenses: budgetCategoryStore.categories.contains { $0.type == .need && $0.isSelected },
+                hasSavings: true,
+                hasBudgetingExperience: hasBudgetingExperience
+            ).environmentObject(budgetCategoryStore)
+        }
+    }
 }
 
 struct SavingsSelectionView_Previews: PreviewProvider {
     static var previews: some View {
-        SavingsSelectionView(income: .constant("5000"), paymentFrequency: .constant(.monthly))
+        SavingsSelectionView(income: .constant("5000"), paymentFrequency: .constant(.monthly), hasBudgetingExperience: true)
             .environmentObject(BudgetCategoryStore.shared)
     }
 }

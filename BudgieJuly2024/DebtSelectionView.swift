@@ -7,9 +7,10 @@ struct DebtSelectionView: View {
     @State private var selectedDebtCategories: [UUID] = []
     @State private var showAddDebtForm = false
     @State private var newDebtName = ""
-
+    
     var hasExpenses: Bool
     var hasSavingsGoals: Bool
+    var hasBudgetingExperience: Bool  // Added this line
 
     private let lightGrayColor = Color(UIColor.systemGray6)
 
@@ -87,8 +88,13 @@ struct DebtSelectionView: View {
 
                 Spacer()
 
-                NavigationLink(destination: DebtDetailView(income: $income, paymentFrequency: $paymentFrequency, hasExpenses: hasExpenses, hasSavings: hasSavingsGoals)
-                    .environmentObject(budgetCategoryStore)) {
+                NavigationLink(destination: DebtDetailView(
+                    income: $income,
+                    paymentFrequency: $paymentFrequency,
+                    hasExpenses: hasExpenses,
+                    hasSavings: hasSavingsGoals,
+                    hasBudgetingExperience: hasBudgetingExperience  // Passing the new parameter
+                ).environmentObject(budgetCategoryStore)) {
                     Text("Next")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -193,7 +199,21 @@ struct DebtSelectionView_Previews: PreviewProvider {
             income: .constant("5000"),
             paymentFrequency: .constant(.monthly),
             hasExpenses: true,
-            hasSavingsGoals: true
+            hasSavingsGoals: true,
+            hasBudgetingExperience: true  // Added this line to the preview
+        )
+        .environmentObject(BudgetCategoryStore.shared)
+    }
+}
+
+struct DebtDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        DebtDetailView(
+            income: .constant("5000"),
+            paymentFrequency: .constant(.monthly),
+            hasExpenses: true,
+            hasSavings: true,
+            hasBudgetingExperience: true  // Added this line to the preview
         )
         .environmentObject(BudgetCategoryStore.shared)
     }

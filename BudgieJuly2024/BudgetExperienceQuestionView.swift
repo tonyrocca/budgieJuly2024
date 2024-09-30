@@ -1,25 +1,22 @@
 import SwiftUI
 
-struct DebtQuestionView: View {
-    @Binding var income: String
-    @Binding var paymentFrequency: PaymentCadence
-    @State private var hasDebt: Bool? = nil
+struct BudgetExperienceQuestionView: View {
+    @State private var hasBudgetingExperience: Bool? = nil
     @State private var isInfoExpanded = false
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
-    var hasBudgetingExperience: Bool  // Added this line
 
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
                 // Header
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Do you have debt?")
+                    Text("Do you currently budget?")
                         .font(.title)
                         .fontWeight(.bold)
                         .padding(.top, 16)
                         .foregroundColor(.primary)
-
-                    Text("Select whether you have any outstanding debts to manage.")
+                    
+                    Text("Select whether you have experience with budgeting.")
                         .font(.headline)
                         .fontWeight(.regular)
                         .foregroundColor(.secondary)
@@ -29,33 +26,33 @@ struct DebtQuestionView: View {
                 // Yes/No Buttons
                 VStack(spacing: 16) {
                     NavigationLink(
-                        destination: DebtSelectionView(income: $income, paymentFrequency: $paymentFrequency, hasExpenses: true, hasSavingsGoals: true, hasBudgetingExperience: hasBudgetingExperience).environmentObject(budgetCategoryStore),
+                        destination: PaymentInputView(hasBudgetingExperience: true).environmentObject(budgetCategoryStore),
                         tag: true,
-                        selection: $hasDebt
+                        selection: $hasBudgetingExperience
                     ) {
-                        Button(action: { hasDebt = true }) {
-                            Text("Yes")
+                        Button(action: { hasBudgetingExperience = true }) {
+                            Text("Yes, I have my own budget currently")
                                 .font(.headline)
-                                .foregroundColor(hasDebt == true ? .white : .primary)
+                                .foregroundColor(hasBudgetingExperience == true ? .white : .primary)
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(hasDebt == true ? Color.blue : Color(UIColor.systemGray5))
+                                .background(hasBudgetingExperience == true ? Color.blue : Color(UIColor.systemGray5))
                                 .cornerRadius(10)
                         }
                     }
 
                     NavigationLink(
-                        destination: ExpenseQuestionView(income: $income, paymentFrequency: $paymentFrequency, hasDebt: false, hasBudgetingExperience: hasBudgetingExperience).environmentObject(budgetCategoryStore),
+                        destination: PaymentInputView(hasBudgetingExperience: false).environmentObject(budgetCategoryStore),
                         tag: false,
-                        selection: $hasDebt
+                        selection: $hasBudgetingExperience
                     ) {
-                        Button(action: { hasDebt = false }) {
-                            Text("No")
+                        Button(action: { hasBudgetingExperience = false }) {
+                            Text("No, I have never budgeted before")
                                 .font(.headline)
-                                .foregroundColor(hasDebt == false ? .white : .primary)
+                                .foregroundColor(hasBudgetingExperience == false ? .white : .primary)
                                 .padding()
                                 .frame(maxWidth: .infinity)
-                                .background(hasDebt == false ? Color.blue : Color(UIColor.systemGray5))
+                                .background(hasBudgetingExperience == false ? Color.blue : Color(UIColor.systemGray5))
                                 .cornerRadius(10)
                         }
                     }
@@ -71,7 +68,7 @@ struct DebtQuestionView: View {
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
         .navigationBarBackButtonHidden(false)
         .onAppear {
-            hasDebt = nil
+            hasBudgetingExperience = nil
         }
     }
 
@@ -83,7 +80,7 @@ struct DebtQuestionView: View {
                 }
             }) {
                 HStack {
-                    Text("What is Debt?")
+                    Text("What is Budgeting?")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     Spacer()
@@ -95,27 +92,22 @@ struct DebtQuestionView: View {
 
             if isInfoExpanded {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Debt refers to money that you owe to others. It's a financial obligation that you're expected to repay, often with interest.")
+                    Text("Budgeting is the process of creating a plan to spend your money.")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
-                    Text("Common types of debt include:")
+                    Text("Benefits of budgeting include:")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        bulletPoint("Credit card balances")
-                        bulletPoint("Student loans")
-                        bulletPoint("Mortgages")
-                        bulletPoint("Personal loans")
-                        bulletPoint("Car loans")
+                        bulletPoint("Better control of your finances")
+                        bulletPoint("Ability to save for future goals")
+                        bulletPoint("Reduced financial stress")
+                        bulletPoint("Improved decision-making about spending")
                     }
 
-                    Text("Example: If you have a credit card balance of $1,000 and a student loan of $20,000, your total debt would be $21,000.")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-
-                    Text("Managing your debt is crucial for financial health. It affects your credit score, borrowing capacity, and ability to achieve other financial goals.")
+                    Text("Whether you're new to budgeting or have experience, this app will help you create and maintain a personalized budget tailored to your needs.")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .padding(.top, 4)
@@ -137,9 +129,9 @@ struct DebtQuestionView: View {
     }
 }
 
-struct DebtQuestionView_Previews: PreviewProvider {
+struct BudgetExperienceQuestionView_Previews: PreviewProvider {
     static var previews: some View {
-        DebtQuestionView(income: .constant("5000"), paymentFrequency: .constant(.monthly), hasBudgetingExperience: true)
+        BudgetExperienceQuestionView()
             .environmentObject(BudgetCategoryStore.shared)
     }
 }

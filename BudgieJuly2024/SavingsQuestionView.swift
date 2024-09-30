@@ -7,6 +7,7 @@ struct SavingsQuestionView: View {
     @State private var isInfoExpanded = false
     var hasDebt: Bool
     var hasExpenses: Bool
+    var hasBudgetingExperience: Bool  // Added this line
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
 
     var body: some View {
@@ -30,7 +31,7 @@ struct SavingsQuestionView: View {
                 // Yes/No Buttons
                 VStack(spacing: 16) {
                     NavigationLink(
-                        destination: SavingsSelectionView(income: $income, paymentFrequency: $paymentFrequency)
+                        destination: SavingsSelectionView(income: $income, paymentFrequency: $paymentFrequency, hasBudgetingExperience: hasBudgetingExperience)
                             .environmentObject(budgetCategoryStore),
                         tag: true,
                         selection: $hasSavings
@@ -53,7 +54,8 @@ struct SavingsQuestionView: View {
                             paycheckAmountText: income,
                             hasDebt: hasDebt,
                             hasExpenses: hasExpenses,
-                            hasSavings: false
+                            hasSavings: false,
+                            hasBudgetingExperience: hasBudgetingExperience  // Added this line
                         )
                         .environmentObject(budgetCategoryStore),
                         tag: false,
@@ -155,7 +157,8 @@ struct SavingsQuestionView_Previews: PreviewProvider {
             income: .constant("5000"),
             paymentFrequency: .constant(.monthly),
             hasDebt: true,
-            hasExpenses: true
+            hasExpenses: true,
+            hasBudgetingExperience: true  // Added to the preview
         )
         .environmentObject(BudgetCategoryStore.shared)
     }

@@ -4,6 +4,7 @@ struct ExpenseSelectionView: View {
     @Binding var income: String
     @Binding var paymentFrequency: PaymentCadence
     var hasSavingsGoals: Bool
+    var hasBudgetingExperience: Bool  // Added this line
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
 
     var body: some View {
@@ -57,7 +58,7 @@ struct ExpenseSelectionView: View {
 
             Spacer()
 
-            NavigationLink(destination: ExpenseSubcategorySelectionView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, hasSavings: hasSavingsGoals)
+            NavigationLink(destination: ExpenseSubcategorySelectionView(income: $income, paymentFrequency: $paymentFrequency, selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected }, hasSavings: hasSavingsGoals, hasBudgetingExperience: hasBudgetingExperience)
                 .environmentObject(budgetCategoryStore)) {
                 Text("Next")
                     .font(.headline)

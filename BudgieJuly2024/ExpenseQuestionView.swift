@@ -6,6 +6,7 @@ struct ExpenseQuestionView: View {
     @State private var hasExpenses: Bool? = nil
     @State private var isInfoExpanded = false
     var hasDebt: Bool
+    var hasBudgetingExperience: Bool  // Added this line
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
 
     var body: some View {
@@ -28,7 +29,7 @@ struct ExpenseQuestionView: View {
 
                 // Yes/No Buttons
                 VStack(spacing: 16) {
-                    NavigationLink(destination: ExpenseSelectionView(income: $income, paymentFrequency: $paymentFrequency, hasSavingsGoals: true).environmentObject(budgetCategoryStore), tag: true, selection: $hasExpenses) {
+                    NavigationLink(destination: ExpenseSelectionView(income: $income, paymentFrequency: $paymentFrequency, hasSavingsGoals: true, hasBudgetingExperience: hasBudgetingExperience).environmentObject(budgetCategoryStore), tag: true, selection: $hasExpenses) {
                         Button(action: { hasExpenses = true }) {
                             Text("Yes")
                                 .font(.headline)
@@ -40,7 +41,7 @@ struct ExpenseQuestionView: View {
                         }
                     }
 
-                    NavigationLink(destination: SavingsQuestionView(income: $income, paymentFrequency: $paymentFrequency, hasDebt: hasDebt, hasExpenses: false).environmentObject(budgetCategoryStore), tag: false, selection: $hasExpenses) {
+                    NavigationLink(destination: SavingsQuestionView(income: $income, paymentFrequency: $paymentFrequency, hasDebt: hasDebt, hasExpenses: false, hasBudgetingExperience: hasBudgetingExperience).environmentObject(budgetCategoryStore), tag: false, selection: $hasExpenses) {
                         Button(action: { hasExpenses = false }) {
                             Text("No")
                                 .font(.headline)
@@ -132,7 +133,7 @@ struct ExpenseQuestionView: View {
 
 struct ExpenseQuestionView_Previews: PreviewProvider {
     static var previews: some View {
-        ExpenseQuestionView(income: .constant("5000"), paymentFrequency: .constant(.monthly), hasDebt: true)
+        ExpenseQuestionView(income: .constant("5000"), paymentFrequency: .constant(.monthly), hasDebt: true, hasBudgetingExperience: true)
             .environmentObject(BudgetCategoryStore.shared)
     }
 }

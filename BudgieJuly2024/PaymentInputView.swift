@@ -7,6 +7,7 @@ struct PaymentInputView: View {
     @State private var showPaymentFrequency = false
     @State private var showNextButton = false
     @State private var isInfoExpanded = false
+    var hasBudgetingExperience: Bool
 
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -109,7 +110,7 @@ struct PaymentInputView: View {
                 NavigationLink(destination: DebtQuestionView(income: .constant(income), paymentFrequency: Binding(
                     get: { self.paymentFrequency ?? .monthly },
                     set: { self.paymentFrequency = $0 }
-                )).environmentObject(budgetCategoryStore)) {
+                ), hasBudgetingExperience: hasBudgetingExperience).environmentObject(budgetCategoryStore)) {
                     Text("Next")
                         .font(.headline)
                         .foregroundColor(.white)

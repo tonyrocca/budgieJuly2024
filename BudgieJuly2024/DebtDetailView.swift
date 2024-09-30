@@ -5,6 +5,7 @@ struct DebtDetailView: View {
     @Binding var paymentFrequency: PaymentCadence
     var hasExpenses: Bool
     var hasSavings: Bool
+    var hasBudgetingExperience: Bool  // Added this line
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
 
     @State private var debtAmounts: [UUID: String] = [:]
@@ -168,8 +169,20 @@ struct DebtDetailView: View {
     }
 
     private func nextView() -> some View {
-        ExpenseQuestionView(income: $income, paymentFrequency: $paymentFrequency, hasDebt: true)
-            .environmentObject(budgetCategoryStore)
+        if hasBudgetingExperience {
+            return AnyView(ExpenseQuestionView(income: $income, paymentFrequency: $paymentFrequency, hasDebt: true, hasBudgetingExperience: hasBudgetingExperience)
+                .environmentObject(budgetCategoryStore))
+        } else {
+            return AnyView(ContentView(
+                selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected },
+                paymentFrequency: paymentFrequency,
+                paycheckAmountText: income,
+                hasDebt: true,
+                hasExpenses: hasExpenses,
+                hasSavings: hasSavings,
+                hasBudgetingExperience: hasBudgetingExperience
+            ).environmentObject(budgetCategoryStore))
+        }
     }
 
     private func isFormComplete() -> Bool {
@@ -200,6 +213,8 @@ struct DebtDetailView: View {
     }
 }
 
+// MonthYearPickerView
+
 struct MonthYearPickerView: View {
     @Binding var selection: Date
     let range: ClosedRange<Date>
@@ -221,8 +236,7 @@ struct MonthYearPickerView: View {
         HStack {
             Picker("Month", selection: $selectedMonth) {
                 ForEach(1...12, id: \.self) { month in
-                    Text(monthFormatter.string(from: Date.from(year: selectedYear, month: month, day: 1)!))
-                        .tag(month)
+                    Text(DateFormatter().monthSymbols[month - 1]).tag(month)
                 }
             }
             .pickerStyle(WheelPickerStyle())
@@ -230,7 +244,7 @@ struct MonthYearPickerView: View {
             .clipped()
             
             Picker("Year", selection: $selectedYear) {
-                ForEach(availableYears, id: \.self) { year in
+                ForEach(Array(range.lowerBound.year...range.upperBound.year), id: \.self) { year in
                     Text(String(year)).tag(year)
                 }
             }
@@ -242,80 +256,25 @@ struct MonthYearPickerView: View {
         .onChange(of: selectedYear) { _ in updateDate() }
     }
     
-    private var availableYears: [Int] {
-        let calendar = Calendar.current
-        let startYear = calendar.component(.year, from: range.lowerBound)
-        let endYear = calendar.component(.year, from: range.upperBound)
-        return Array(startYear...endYear)
-    }
-    
     private func updateDate() {
-        if let newDate = Date.from(year: selectedYear, month: selectedMonth, day: 1) {
+        let calendar = Calendar.current
+        if let newDate = calendar.date(from: DateComponents(year: selectedYear, month: selectedMonth, day: 1)) {
             selection = newDate
         }
     }
-    
-    private let monthFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM"
-        return formatter
-    }()
 }
 
 extension Date {
-    static func from(year: Int, month: Int, day: Int) -> Date? {
-        let calendar = Calendar.current
-        var dateComponents = DateComponents()
-        dateComponents.year = year
-        dateComponents.month = month
-        dateComponents.day = day
-        return calendar.date(from: dateComponents)
+    var year: Int {
+        return Calendar.current.component(.year, from: self)
     }
 }
 
+// Extension for Calendar to get the start of the month
+
 extension Calendar {
-    func generateDates(
-        inside interval: DateInterval,
-        matching components: DateComponents
-    ) -> [Date] {
-        var dates: [Date] = []
-        dates.append(interval.start)
-
-        enumerateDates(
-            startingAfter: interval.start,
-            matching: components,
-            matchingPolicy: .nextTime
-        ) { date, _, stop in
-            if let date = date {
-                if date < interval.end {
-                    dates.append(date)
-                } else {
-                    stop = true
-                }
-            }
-        }
-
-        return dates
-    }
-
-    func generateDates(
-        inside range: ClosedRange<Date>,
-        matching components: DateComponents
-    ) -> [Date] {
-        generateDates(
-            inside: DateInterval(start: range.lowerBound, end: range.upperBound),
-            matching: components
-        )
-    }
-
     func startOfMonth(for date: Date) -> Date {
         let components = dateComponents([.year, .month], from: date)
         return self.date(from: components)!
     }
 }
-
-// Note: The following structures and enums are assumed to be defined elsewhere in your project
-// struct BudgetCategory
-// enum PaymentCadence
-// struct ExpenseQuestionView
-// class BudgetCategoryStore: ObservableObject

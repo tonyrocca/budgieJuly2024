@@ -6,6 +6,7 @@ struct ExpenseSubcategoryAmountInputView: View {
     var selectedCategories: [BudgetCategory]
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
     var hasSavingsGoals: Bool
+    var hasBudgetingExperience: Bool  // Added this line
 
     var body: some View {
         VStack(spacing: 16) {
@@ -107,14 +108,26 @@ struct ExpenseSubcategoryAmountInputView: View {
 
     @ViewBuilder
     private func nextView() -> some View {
-        SavingsQuestionView(income: $income, paymentFrequency: $paymentFrequency, hasDebt: selectedCategories.contains(where: { $0.type == .debt }), hasExpenses: true)
-            .environmentObject(budgetCategoryStore)
+        SavingsQuestionView(
+            income: $income,
+            paymentFrequency: $paymentFrequency,
+            hasDebt: selectedCategories.contains(where: { $0.type == .debt }),
+            hasExpenses: true,
+            hasBudgetingExperience: hasBudgetingExperience  // Passing the new parameter
+        )
+        .environmentObject(budgetCategoryStore)
     }
 }
 
 struct ExpenseSubcategoryAmountInputView_Previews: PreviewProvider {
     static var previews: some View {
-        ExpenseSubcategoryAmountInputView(income: .constant("5000"), paymentFrequency: .constant(.monthly), selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected }, hasSavingsGoals: true)
-            .environmentObject(BudgetCategoryStore.shared)
+        ExpenseSubcategoryAmountInputView(
+            income: .constant("5000"),
+            paymentFrequency: .constant(.monthly),
+            selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected },
+            hasSavingsGoals: true,
+            hasBudgetingExperience: true  // Add this line
+        )
+        .environmentObject(BudgetCategoryStore.shared)
     }
 }

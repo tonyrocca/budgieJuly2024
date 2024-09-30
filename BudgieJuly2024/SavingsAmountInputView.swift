@@ -7,6 +7,7 @@ struct SavingsAmountInputView: View {
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
     var hasDebt: Bool
     var hasExpenses: Bool
+    var hasBudgetingExperience: Bool  // Added this line
 
     var body: some View {
         VStack(spacing: 16) {
@@ -85,7 +86,8 @@ struct SavingsAmountInputView: View {
                 paycheckAmountText: income,
                 hasDebt: hasDebt,
                 hasExpenses: hasExpenses,
-                hasSavings: true  // We know the user has savings because they're on this view
+                hasSavings: true,
+                hasBudgetingExperience: hasBudgetingExperience  // Added this line
             )
             .environmentObject(budgetCategoryStore)) {
                 Text("Next")
@@ -115,7 +117,8 @@ struct SavingsAmountInputView_Previews: PreviewProvider {
             paymentFrequency: .constant(.monthly),
             selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected },
             hasDebt: true,
-            hasExpenses: true
+            hasExpenses: true,
+            hasBudgetingExperience: true  // Added this line to preview
         )
         .environmentObject(BudgetCategoryStore.shared)
     }
