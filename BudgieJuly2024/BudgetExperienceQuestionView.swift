@@ -1,69 +1,73 @@
 import SwiftUI
 
+// MARK: - BudgetExperienceQuestionView
 struct BudgetExperienceQuestionView: View {
     @State private var hasBudgetingExperience: Bool? = nil
     @State private var isInfoExpanded = false
     @EnvironmentObject var budgetCategoryStore: BudgetCategoryStore
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Header
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Do you currently budget?")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .padding(.top, 16)
-                        .foregroundColor(.primary)
-                    
-                    Text("Select whether you have experience with budgeting.")
-                        .font(.headline)
-                        .fontWeight(.regular)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal, 16)
-
-                // Yes/No Buttons
+        VStack(spacing: 16) {
+            ScrollView {
                 VStack(spacing: 16) {
-                    NavigationLink(
-                        destination: PaymentInputView(hasBudgetingExperience: true).environmentObject(budgetCategoryStore),
-                        tag: true,
-                        selection: $hasBudgetingExperience
-                    ) {
-                        Button(action: { hasBudgetingExperience = true }) {
-                            Text("Yes, I have my own budget currently")
-                                .font(.headline)
-                                .foregroundColor(hasBudgetingExperience == true ? .white : .primary)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(hasBudgetingExperience == true ? Color.blue : Color(UIColor.systemGray5))
-                                .cornerRadius(10)
-                        }
-                    }
+                    // Header
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Do you currently budget?")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
 
-                    NavigationLink(
-                        destination: PaymentInputView(hasBudgetingExperience: false).environmentObject(budgetCategoryStore),
-                        tag: false,
-                        selection: $hasBudgetingExperience
-                    ) {
-                        Button(action: { hasBudgetingExperience = false }) {
-                            Text("No, I have never budgeted before")
-                                .font(.headline)
-                                .foregroundColor(hasBudgetingExperience == false ? .white : .primary)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(hasBudgetingExperience == false ? Color.blue : Color(UIColor.systemGray5))
-                                .cornerRadius(10)
+                        Text("Select whether you have experience with budgeting.")
+                            .font(.headline)
+                            .fontWeight(.regular)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+
+                    // Yes/No Buttons
+                    VStack(spacing: 16) {
+                        NavigationLink(
+                            destination: PaymentInputView(hasBudgetingExperience: true).environmentObject(budgetCategoryStore),
+                            tag: true,
+                            selection: $hasBudgetingExperience
+                        ) {
+                            Button(action: { hasBudgetingExperience = true }) {
+                                Text("Yes, I have my own budget currently")
+                                    .font(.headline)
+                                    .foregroundColor(hasBudgetingExperience == true ? .white : .primary)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(hasBudgetingExperience == true ? Color.blue : Color(UIColor.systemGray5))
+                                    .cornerRadius(10)
+                            }
+                        }
+
+                        NavigationLink(
+                            destination: PaymentInputView(hasBudgetingExperience: false).environmentObject(budgetCategoryStore),
+                            tag: false,
+                            selection: $hasBudgetingExperience
+                        ) {
+                            Button(action: { hasBudgetingExperience = false }) {
+                                Text("No, I have never budgeted before")
+                                    .font(.headline)
+                                    .foregroundColor(hasBudgetingExperience == false ? .white : .primary)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(hasBudgetingExperience == false ? Color.blue : Color(UIColor.systemGray5))
+                                    .cornerRadius(10)
+                            }
                         }
                     }
+                    .padding(.horizontal, 16)
+
+                    // Information Dropdown
+                    infoDropdown
                 }
-                .padding(.horizontal, 16)
-
-                // Information Dropdown
-                infoDropdown
-
-                Spacer()
             }
+            Spacer()
         }
         .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
         .navigationBarBackButtonHidden(false)
@@ -129,6 +133,7 @@ struct BudgetExperienceQuestionView: View {
     }
 }
 
+// MARK: - Preview
 struct BudgetExperienceQuestionView_Previews: PreviewProvider {
     static var previews: some View {
         BudgetExperienceQuestionView()
