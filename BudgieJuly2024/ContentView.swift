@@ -159,6 +159,7 @@ struct ContentView: View {
         .onAppear {
             formatAndCalculatePaycheckAmount()
             calculateBudget()
+            populateInitialRecommendedAllocations()  // Add this call
         }
         .onChange(of: budgetCategoryStore.categories) { _ in
             updateScreen()
@@ -173,6 +174,23 @@ struct ContentView: View {
             if let category = selectedCategories.first(where: { $0.subcategories.contains(where: { $0.id == subcategory.id }) }) {
                 EditCategoryView(category: category, subcategory: subcategory, budgieModel: $budgieModel) {
                     updateScreen()
+                }
+            }
+        }
+    }
+
+    // MARK: - Populate Initial Recommended Allocations
+    private func populateInitialRecommendedAllocations() {
+        guard !hasBudgetingExperience else { return }
+        
+        for category in selectedCategories {
+            if let recommendedAmount = budgieModel.recommendedAllocations[category.id] {
+                allocations[category.id] = recommendedAmount
+            }
+            
+            for subcategory in category.subcategories {
+                if let recommendedSubAmount = budgieModel.recommendedAllocations[subcategory.id] {
+                    allocations[subcategory.id] = recommendedSubAmount
                 }
             }
         }
@@ -714,6 +732,9 @@ struct ContentView: View {
         budgieModel.calculateAllocations(selectedCategories: relevantCategories)
         budgieModel.calculateRecommendedAllocations(selectedCategories: relevantCategories)
         allocations = budgieModel.allocations
+
+        // Populate recommended allocations if the user has no prior budgeting experience
+        populateInitialRecommendedAllocations()
     }
 
     // MARK: - Update Screen
@@ -751,56 +772,4 @@ struct ContentView: View {
         formatter.dateFormat = "MMMM yyyy"
         return formatter
     }
-}
-
-// MARK: - DeleteConfirmationAlert
-struct DeleteConfirmationAlert: View {
-    let itemName: String
-    let amount: Double
-    let onConfirm: () -> Void
-    let onCancel: () -> Void
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Are you sure?")
-                .font(.headline)
-            Text("Do you want to delete \(itemName)?")
-                .multilineTextAlignment(.center)
-            Text("$\(String(format: "%.2f", amount)) will be added back into your budget.")
-                .multilineTextAlignment(.center)
-
-            HStack(spacing: 20) {
-                Button(action: onCancel) {
-                    Text("No")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color(UIColor.systemGray5))
-                        .foregroundColor(.blue)
-                        .cornerRadius(10)
-                }
-
-                Button(action: onConfirm) {
-                    Text("Yes")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-            }
-        }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(15)
-        .shadow(radius: 10)
-        .frame(width: 300)
-        .padding(.horizontal)
-    }
-}
-
-// MARK: - VisualEffectView
-struct VisualEffectView: UIViewRepresentable {
-    var effect: UIVisualEffect?
-    func makeUIView(context: UIViewRepresentableContext<Self>) -> UIVisualEffectView { UIVisualEffectView() }
-    func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) { uiView.effect = effect }
 }
