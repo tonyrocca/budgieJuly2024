@@ -93,14 +93,14 @@ struct ContentView: View {
 
     var body: some View {
         NavigationView {
-            ZStack(alignment: .topTrailing) {
-                Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all)
+                ZStack(alignment: .topTrailing) {
+                    Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all)
 
-                VStack(spacing: 0) {
-                    customNavigationBar
-                        .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
-
-                    segmentedControlView
+                    VStack(spacing: 0) {
+                        customNavigationBar
+                            .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
+                        
+                        segmentedControlView
 
                     if selectedTab == .yourBudget {
                         ScrollView {
@@ -199,10 +199,6 @@ struct ContentView: View {
     // MARK: - Custom Navigation Bar
     private var customNavigationBar: some View {
         ZStack {
-            Text("deep pockets")
-                .font(.headline)
-                .foregroundColor(.primary)
-
             HStack {
                 Spacer()
                 Button(action: {
@@ -214,13 +210,17 @@ struct ContentView: View {
                         .font(.system(size: 22))
                         .foregroundColor(.primary)
                 }
+                .frame(width: 44)
             }
+            
+            Text("deep pockets")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(.primary)
         }
-        .padding(.horizontal, 16)
         .frame(height: 44)
         .background(Color(UIColor.systemBackground))
     }
-
+    
     // MARK: - Segmented Control
     private var segmentedControlView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
