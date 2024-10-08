@@ -7,8 +7,9 @@ struct AffordabilityView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                affordabilityCard(item: .house)
-                affordabilityCard(item: .car)
+                ForEach(AffordabilityItem.allCases, id: \.self) { item in
+                    affordabilityCard(item: item)
+                }
             }
             .padding()
         }
@@ -29,11 +30,11 @@ struct AffordabilityView: View {
             }
             .padding(.bottom, 4)
             
-            Text("Below is the amount of \(item.name) you can afford based on your income:")
+            Text("Estimated \(item.name) savings based on your income:")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             
-            Text(currencyFormatter.string(from: NSNumber(value: item.calculateAffordability(annualIncome: calculateAnnualIncome()))) ?? "$0")
+            Text(currencyFormatter.string(from: NSNumber(value: item.calculateAmount(annualIncome: calculateAnnualIncome()))) ?? "$0")
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundColor(item.color)
             
@@ -84,14 +85,18 @@ struct AffordabilityView: View {
     }
 }
 
-enum AffordabilityItem {
-    case house
-    case car
+enum AffordabilityItem: CaseIterable {
+    case house, car, vacation, wedding, education, retirement, emergencyFund
 
     var name: String {
         switch self {
         case .house: return "home"
         case .car: return "car"
+        case .vacation: return "vacation"
+        case .wedding: return "wedding"
+        case .education: return "education"
+        case .retirement: return "retirement"
+        case .emergencyFund: return "emergency fund"
         }
     }
 
@@ -99,6 +104,11 @@ enum AffordabilityItem {
         switch self {
         case .house: return "🏠"
         case .car: return "🚗"
+        case .vacation: return "✈️"
+        case .wedding: return "💍"
+        case .education: return "🎓"
+        case .retirement: return "🏖️"
+        case .emergencyFund: return "🆘"
         }
     }
 
@@ -106,6 +116,11 @@ enum AffordabilityItem {
         switch self {
         case .house: return "Home Affordability"
         case .car: return "Car Affordability"
+        case .vacation: return "Vacation Savings"
+        case .wedding: return "Wedding Budget"
+        case .education: return "Education Fund"
+        case .retirement: return "Retirement Savings"
+        case .emergencyFund: return "Emergency Fund"
         }
     }
 
@@ -113,15 +128,30 @@ enum AffordabilityItem {
         switch self {
         case .house: return .blue
         case .car: return .green
+        case .vacation: return .orange
+        case .wedding: return .pink
+        case .education: return .purple
+        case .retirement: return .red
+        case .emergencyFund: return .yellow
         }
     }
 
-    func calculateAffordability(annualIncome: Double) -> Double {
+    func calculateAmount(annualIncome: Double) -> Double {
         switch self {
         case .house:
-            return annualIncome * 3 // Typically, you can afford a house 3x your annual income
+            return annualIncome * 3 // 3x annual income
         case .car:
-            return annualIncome * 0.35 // You can typically afford a car worth 35% of your annual income
+            return annualIncome * 0.35 // 35% of annual income
+        case .vacation:
+            return annualIncome * 0.05 // 5% of annual income
+        case .wedding:
+            return annualIncome * 0.5 // 50% of annual income
+        case .education:
+            return annualIncome * 2 // 2x annual income (for a 4-year degree)
+        case .retirement:
+            return annualIncome * 10 // 10x annual income (rough estimate)
+        case .emergencyFund:
+            return annualIncome * 0.5 // 6 months of income
         }
     }
 
@@ -132,15 +162,44 @@ enum AffordabilityItem {
                 "Based on 3x your annual income",
                 "Assumes a 20% down payment",
                 "Considers a 30-year fixed-rate mortgage",
-                "Doesn't include property taxes or insurance",
-                "Actual affordability may vary based on other factors"
+                "Doesn't include property taxes or insurance"
             ]
         case .car:
             return [
                 "Based on 35% of your annual income",
                 "Assumes a 4-year loan term",
-                "Doesn't include insurance or maintenance costs",
-                "Consider your other expenses when deciding on a car budget"
+                "Doesn't include insurance or maintenance costs"
+            ]
+        case .vacation:
+            return [
+                "Estimates 5% of your annual income for vacation savings",
+                "Actual costs may vary based on destination and travel style",
+                "Consider saving this amount annually for vacations"
+            ]
+        case .wedding:
+            return [
+                "Suggests a budget of 50% of your annual income",
+                "National average wedding cost is around $30,000",
+                "Adjust based on your preferences and guest count"
+            ]
+        case .education:
+            return [
+                "Estimates total cost at 2x your annual income",
+                "Based on average 4-year college costs",
+                "Includes tuition, room, and board",
+                "Actual costs vary by institution and location"
+            ]
+        case .retirement:
+            return [
+                "Rough estimate of 10x your annual income",
+                "Actual needs may vary based on lifestyle and retirement age",
+                "Consider consulting a financial advisor for personalized planning"
+            ]
+        case .emergencyFund:
+            return [
+                "Recommends saving 6 months of income",
+                "Covers unexpected expenses or loss of income",
+                "Adjust based on job security and personal circumstances"
             ]
         }
     }
