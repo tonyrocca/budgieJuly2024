@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		770B23162CB368A100E653C7 /* AffordabilityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 770B23152CB368A100E653C7 /* AffordabilityView.swift */; };
 		7713A2CD2C32005900A0AFCE /* BudgieJuly2024App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A2CC2C32005900A0AFCE /* BudgieJuly2024App.swift */; };
 		7713A2CF2C32005900A0AFCE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7713A2CE2C32005900A0AFCE /* ContentView.swift */; };
 		7713A2D42C32005A00A0AFCE /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7713A2D32C32005A00A0AFCE /* Preview Assets.xcassets */; };
@@ -56,6 +57,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		770B23152CB368A100E653C7 /* AffordabilityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AffordabilityView.swift; sourceTree = "<group>"; };
 		7713A2C92C32005900A0AFCE /* BudgieJuly2024.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BudgieJuly2024.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7713A2CC2C32005900A0AFCE /* BudgieJuly2024App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgieJuly2024App.swift; sourceTree = "<group>"; };
 		7713A2CE2C32005900A0AFCE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -154,6 +156,7 @@
 				77BEB7192C4E026F0000AFB9 /* SavingsSelectionView.swift */,
 				776125AA2C6B1A4D001E5453 /* SavingsAmountInputView.swift */,
 				7713A2CE2C32005900A0AFCE /* ContentView.swift */,
+				770B23152CB368A100E653C7 /* AffordabilityView.swift */,
 				776125B82C86C9E5001E5453 /* EnhanceBudgetView.swift */,
 				776125B62C86BD6A001E5453 /* PerfectBudgetView.swift */,
 				776125BA2CA661A8001E5453 /* EditCategoryView.swift */,
@@ -345,6 +348,7 @@
 				776125B32C75A0CB001E5453 /* ExpenseQuestionView.swift in Sources */,
 				776125AB2C6B1A4D001E5453 /* SavingsAmountInputView.swift in Sources */,
 				7713A2FC2C3A28E500A0AFCE /* BudgetCategoryStore.swift in Sources */,
+				770B23162CB368A100E653C7 /* AffordabilityView.swift in Sources */,
 				776125B72C86BD6A001E5453 /* PerfectBudgetView.swift in Sources */,
 				776125BD2CA661EC001E5453 /* BudgetExperienceQuestionView.swift in Sources */,
 			);

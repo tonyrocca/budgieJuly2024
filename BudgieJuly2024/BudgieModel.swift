@@ -1,21 +1,24 @@
 import Foundation
+import Combine
 
-struct BudgieModel {
-    // MARK: - Properties
-    
-    var paycheckAmount: Double
-    var paymentCadence: PaymentCadence = .monthly
-    var allocations: [UUID: Double] = [:]
-    var perfectAllocations: [UUID: Double] = [:]
-    var recommendedAllocations: [UUID: Double] = [:]
+class BudgieModel: ObservableObject {
+    @Published var paycheckAmount: Double
+    @Published var paymentCadence: PaymentCadence = .monthly
+    @Published var allocations: [UUID: Double] = [:]
+    @Published var perfectAllocations: [UUID: Double] = [:]
+    @Published var recommendedAllocations: [UUID: Double] = [:]
     
     var budgetDeficitOrSurplus: Double {
         paycheckAmount - allocations.values.reduce(0, +)
     }
     
+    init(paycheckAmount: Double) {
+        self.paycheckAmount = paycheckAmount
+    }
+    
     // MARK: - Allocation Calculations
     
-    mutating func calculateAllocations(selectedCategories: [BudgetCategory]) {
+    func calculateAllocations(selectedCategories: [BudgetCategory]) {
         allocations.removeAll()
         
         for category in selectedCategories {
@@ -39,7 +42,7 @@ struct BudgieModel {
         }
     }
     
-    mutating func calculateRecommendedAllocations(selectedCategories: [BudgetCategory]) {
+    func calculateRecommendedAllocations(selectedCategories: [BudgetCategory]) {
         recommendedAllocations.removeAll()
         let monthlyIncome = adjustAmountForPaymentCadence(paycheckAmount)
         
@@ -62,7 +65,7 @@ struct BudgieModel {
         }
     }
     
-    mutating func calculatePerfectBudget(selectedCategories: [BudgetCategory]) {
+    func calculatePerfectBudget(selectedCategories: [BudgetCategory]) {
         perfectAllocations.removeAll()
         var remainingAmount = paycheckAmount
         
@@ -159,7 +162,7 @@ struct BudgieModel {
         return totalAmount / Double(max(1, monthsUntilDue))
     }
     
-    private func adjustAmountForPaymentCadence(_ amount: Double) -> Double {
+    func adjustAmountForPaymentCadence(_ amount: Double) -> Double {
         switch paymentCadence {
         case .weekly:
             return amount * 52 / 12
@@ -187,7 +190,7 @@ struct BudgieModel {
     
     // MARK: - Category Management
     
-    mutating func updateCategory(_ category: BudgetCategory, newAmount: Double) {
+    func updateCategory(_ category: BudgetCategory, newAmount: Double) {
         if let index = BudgetCategoryStore.shared.categories.firstIndex(where: { $0.id == category.id }) {
             BudgetCategoryStore.shared.categories[index].amount = newAmount
             allocations[category.id] = newAmount
@@ -197,7 +200,7 @@ struct BudgieModel {
         calculatePerfectBudget(selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected })
     }
     
-    mutating func updateSubcategory(category: BudgetCategory, subcategory: BudgetSubCategory, newAmount: Double) {
+    func updateSubcategory(category: BudgetCategory, subcategory: BudgetSubCategory, newAmount: Double) {
         if let categoryIndex = BudgetCategoryStore.shared.categories.firstIndex(where: { $0.id == category.id }),
            let subIndex = BudgetCategoryStore.shared.categories[categoryIndex].subcategories.firstIndex(where: { $0.id == subcategory.id }) {
             
@@ -214,14 +217,14 @@ struct BudgieModel {
         calculatePerfectBudget(selectedCategories: BudgetCategoryStore.shared.categories.filter { $0.isSelected })
     }
     
-    mutating func addCategory(_ category: BudgetCategory) {
+    func addCategory(_ category: BudgetCategory) {
         BudgetCategoryStore.shared.addCategory(category)
         calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
         calculateRecommendedAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
         calculatePerfectBudget(selectedCategories: BudgetCategoryStore.shared.categories)
     }
     
-    mutating func removeCategory(_ category: BudgetCategory) {
+    func removeCategory(_ category: BudgetCategory) {
         if let index = BudgetCategoryStore.shared.categories.firstIndex(where: { $0.id == category.id }) {
             BudgetCategoryStore.shared.deleteCategory(at: index)
         }
