@@ -1,117 +1,102 @@
 import SwiftUI
 
 struct AffordabilityView: View {
-    @ObservedObject var budgetCategoryStore: BudgetCategoryStore
-    @StateObject private var budgieModel: BudgieModel
-    @State private var selectedTimeframe: Timeframe = .monthly
-
-    init(paymentAmount: Double, paymentCadence: PaymentCadence) {
-        self._budgieModel = StateObject(wrappedValue: BudgieModel(paycheckAmount: paymentAmount))
-        self.budgetCategoryStore = BudgetCategoryStore.shared
-        self.budgieModel.paymentCadence = paymentCadence
-    }
+    @ObservedObject var budgieModel: BudgieModel
+    @State private var expandedItem: AffordabilityItem?
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                timeframePicker
-                
-                affordabilityItem(title: "House", value: calculateHouseAffordability(), description: "Based on 28% of income for mortgage")
-                affordabilityItem(title: "Car", value: calculateCarAffordability(), description: "Based on 10% of income for car payment")
-                affordabilityItem(title: "Emergency Savings", value: calculateEmergencySavings(), description: "3-6 months of expenses")
-                affordabilityItem(title: "Dining Out", value: calculateDiningOut(), description: "Based on Food category allocation")
-                affordabilityItem(title: "Vacation", value: calculateVacation(), description: "Based on Vacation savings category")
-                affordabilityItem(title: "Wedding", value: calculateWedding(), description: "Based on Wedding savings category")
-                affordabilityItem(title: "Clothing", value: calculateClothing(), description: "Based on Clothing Fund savings category")
+            VStack(spacing: 20) {
+                affordabilityCard(
+                    item: .house,
+                    title: "Home Affordability",
+                    value: calculateHouseAffordability(),
+                    description: "Based on 28% of income for mortgage",
+                    color: .blue
+                )
+
+                affordabilityCard(
+                    item: .car,
+                    title: "Car Affordability",
+                    value: calculateCarAffordability(),
+                    description: "Based on 10% of income for car payment",
+                    color: .green
+                )
             }
             .padding()
-            .background(Color(UIColor.secondarySystemBackground))
-            .cornerRadius(16)
-            .shadow(radius: 5)
         }
-        .navigationTitle("Affordability View")
-        .onAppear {
-            budgieModel.calculateAllocations(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected })
-            budgieModel.calculateRecommendedAllocations(selectedCategories: budgetCategoryStore.categories.filter { $0.isSelected })
-        }
+        .navigationTitle("Affordability")
+        .background(Color(UIColor.systemGroupedBackground))
     }
 
-    private var timeframePicker: some View {
-        Picker("Timeframe", selection: $selectedTimeframe) {
-            ForEach(Timeframe.allCases, id: \.self) { timeframe in
-                Text(timeframe.rawValue).tag(timeframe)
-            }
-        }
-        .pickerStyle(SegmentedPickerStyle())
-        .padding(.horizontal)
-    }
-
-    private func affordabilityItem(title: String, value: Double, description: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+    private func affordabilityCard(item: AffordabilityItem, title: String, value: Double, description: String, color: Color) -> some View {
+        VStack(spacing: 0) {
             HStack {
-                Text(title)
-                    .font(.headline)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
                 Spacer()
                 Text(currencyFormatter.string(from: NSNumber(value: value)) ?? "$0")
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(color)
             }
-            Text(description)
-                .font(.caption)
-                .foregroundColor(.secondary)
+            .padding()
+            .background(Color(UIColor.systemBackground))
+
+            if expandedItem == item {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Assumptions:")
+                        .font(.headline)
+                        .padding(.top)
+                    
+                    ForEach(item.assumptions, id: \.self) { assumption in
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "circle.fill")
+                                .font(.system(size: 6))
+                                .padding(.top, 6)
+                            Text(assumption)
+                                .font(.subheadline)
+                        }
+                    }
+                }
+                .padding()
+                .background(Color(UIColor.secondarySystemBackground))
+                .transition(.opacity)
+            }
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(10)
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .onTapGesture {
+            withAnimation {
+                if expandedItem == item {
+                    expandedItem = nil
+                } else {
+                    expandedItem = item
+                }
+            }
+        }
     }
 
     private func calculateHouseAffordability() -> Double {
-        let monthlyIncome = budgieModel.adjustAmountForPaymentCadence(budgieModel.paycheckAmount)
-        let houseAffordability = monthlyIncome * 0.28 * Double(selectedTimeframe.months)
-        return houseAffordability
+        let annualIncome = calculateAnnualIncome()
+        return annualIncome * 3 // Typically, you can afford a house 3x your annual income
     }
 
     private func calculateCarAffordability() -> Double {
-        let monthlyIncome = budgieModel.adjustAmountForPaymentCadence(budgieModel.paycheckAmount)
-        let carAffordability = monthlyIncome * 0.10 * Double(selectedTimeframe.months)
-        return carAffordability
+        let annualIncome = calculateAnnualIncome()
+        return annualIncome * 0.35 // You can typically afford a car worth 35% of your annual income
     }
 
-    private func calculateEmergencySavings() -> Double {
-        if let emergencyFund = budgetCategoryStore.categories.first(where: { $0.name == "Emergency Fund" }) {
-            return (budgieModel.recommendedAllocations[emergencyFund.id] ?? 0) * Double(selectedTimeframe.months)
-        }
-        return 0
-    }
-
-    private func calculateDiningOut() -> Double {
-        if let foodCategory = budgetCategoryStore.categories.first(where: { $0.name == "Food" }),
-           let diningOutSubcategory = foodCategory.subcategories.first(where: { $0.name == "Dining Out" }) {
-            return (budgieModel.allocations[diningOutSubcategory.id] ?? 0) * Double(selectedTimeframe.months)
-        }
-        return 0
-    }
-
-    private func calculateVacation() -> Double {
-        if let vacationCategory = budgetCategoryStore.categories.first(where: { $0.name == "Vacation" }) {
-            return (budgieModel.recommendedAllocations[vacationCategory.id] ?? 0) * Double(selectedTimeframe.months)
-        }
-        return 0
-    }
-
-    private func calculateWedding() -> Double {
-        if let weddingCategory = budgetCategoryStore.categories.first(where: { $0.name == "Wedding" }) {
-            return (budgieModel.recommendedAllocations[weddingCategory.id] ?? 0) * 24 // Assuming 2 years of savings
-        }
-        return 0
-    }
-
-    private func calculateClothing() -> Double {
-        if let clothingCategory = budgetCategoryStore.categories.first(where: { $0.name == "Clothing Fund" }) {
-            return (budgieModel.recommendedAllocations[clothingCategory.id] ?? 0) * Double(selectedTimeframe.months)
-        }
-        return 0
+    private func calculateAnnualIncome() -> Double {
+        let monthlyIncome = budgieModel.paymentCadence.monthlyEquivalent(from: budgieModel.paycheckAmount)
+        return monthlyIncome * 12
     }
 
     private var currencyFormatter: NumberFormatter {
@@ -122,16 +107,28 @@ struct AffordabilityView: View {
     }
 }
 
-enum Timeframe: String, CaseIterable {
-    case monthly = "Monthly"
-    case quarterly = "Quarterly"
-    case yearly = "Yearly"
+enum AffordabilityItem {
+    case house
+    case car
 
-    var months: Int {
+    var assumptions: [String] {
         switch self {
-        case .monthly: return 1
-        case .quarterly: return 3
-        case .yearly: return 12
+        case .house:
+            return [
+                "28% of gross monthly income for mortgage payments",
+                "20% down payment",
+                "30-year fixed-rate mortgage at current market rates",
+                "Property taxes and insurance are not included",
+                "Does not account for other debts or expenses"
+            ]
+        case .car:
+            return [
+                "10% of gross monthly income for car payments",
+                "5-year loan term",
+                "Average interest rate for new car loans",
+                "20% down payment",
+                "Does not include insurance, maintenance, or fuel costs"
+            ]
         }
     }
 }

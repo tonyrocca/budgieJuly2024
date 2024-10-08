@@ -113,7 +113,7 @@ struct ContentView: View {
                     } else if selectedTab == .perfectBudget {
                         PerfectBudgetView(paycheckAmount: paycheckAmount ?? 0, paymentCadence: paymentCadence)
                     } else if selectedTab == .affordability {
-                        AffordabilityView(paymentAmount: paycheckAmount ?? 0, paymentCadence: paymentCadence)
+                        AffordabilityView(budgieModel: budgieModel)
                             .font(.largeTitle)
                             .foregroundColor(.secondary)
                     }
