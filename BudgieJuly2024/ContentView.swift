@@ -51,6 +51,7 @@ struct ContentView: View {
     @State private var selectedCategories: [BudgetCategory]
     @State private var isMenuOpen = false
     @State private var hasBudgetingExperience: Bool  // Added this line
+    @Namespace private var animation
 
     let hasDebt: Bool
     let hasExpenses: Bool
@@ -82,8 +83,7 @@ struct ContentView: View {
     }
 
     var totalPerPaycheckBudget: Double {
-        guard let amount = paycheckAmount else { return 0 }
-        return amount
+        return paycheckAmount ?? 0
     }
 
     var budgetDeficitOrSurplus: Double {
@@ -223,38 +223,57 @@ struct ContentView: View {
     
     // MARK: - Segmented Control
     private var segmentedControlView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                ForEach(BudgetTab.allCases, id: \.self) { tab in
-                    Button(action: {
-                        selectedTab = tab
-                    }) {
-                        HStack(spacing: 6) {
-                            Text(tab.emoji)
-                                .font(.system(size: 14))
-                            Text(tab.title)
-                                .font(.subheadline)
-                                .fontWeight(selectedTab == tab ? .semibold : .regular)
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(BudgetTab.allCases, id: \.self) { tab in
+                        Button(action: {
+                            withAnimation {
+                                selectedTab = tab
+                            }
+                        }) {
+                            HStack(spacing: 6) {
+                                Text(tab.emoji)
+                                    .font(.system(size: 14))
+                                Text(tab.title)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                            }
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 12)
+                            .background(
+                                Group {
+                                    if selectedTab == tab {
+                                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                                       startPoint: .topLeading,
+                                                       endPoint: .bottomTrailing)
+                                    } else {
+                                        Color.white
+                                    }
+                                }
+                            )
+                            .foregroundColor(selectedTab == tab ? .white : .primary)
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.gray.opacity(0.3), lineWidth: selectedTab == tab ? 0 : 1)
+                            )
                         }
-                        .foregroundColor(selectedTab == tab ? .primary : .secondary)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(selectedTab == tab ? Color(UIColor.tertiarySystemBackground) : Color.clear)
-                        .cornerRadius(16)
+                        .id(tab)
                     }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(selectedTab == tab ? Color.clear : Color.gray.opacity(0.3), lineWidth: 1)
-                    )
+                }
+                .padding(.horizontal, 16)
+            }
+            .frame(height: 50)
+            .padding(.vertical, 8)
+            .onChange(of: selectedTab) { newTab in
+                withAnimation {
+                    proxy.scrollTo(newTab, anchor: .center)
                 }
             }
-            .padding(.horizontal, 16)
         }
-        .frame(height: 40)
-        .padding(.top, 8)
-        .padding(.bottom, 4)
     }
-
+    
     // MARK: - Paycheck Total View
     private func paycheckTotalView() -> some View {
         VStack(spacing: 0) {
