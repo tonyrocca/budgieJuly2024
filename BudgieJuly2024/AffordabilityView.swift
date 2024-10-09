@@ -17,7 +17,8 @@ struct AffordabilityView: View {
     }
 
     private func affordabilityCard(item: AffordabilityItem) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(spacing: 0) {
+            // Header
             HStack {
                 Text(item.emoji)
                     .font(.system(size: 24))
@@ -26,20 +27,29 @@ struct AffordabilityView: View {
                     .fontWeight(.bold)
                 Spacer()
                 Image(systemName: expandedItem == item ? "chevron.up" : "chevron.down")
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.primary)
             }
-            .padding(.bottom, 4)
+            .padding()
+            .background(Color(UIColor.systemGray5))  // Changed to a light gray color
+            .foregroundColor(.primary)  // Changed text color to primary for better contrast
             
-            Text("Estimated \(item.name) savings based on your income:")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
+            // Main Content
+            VStack(alignment: .leading, spacing: 8) {
+                Text(currencyFormatter.string(from: NSNumber(value: item.calculateAmount(annualIncome: calculateAnnualIncome()))) ?? "$0")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(item.color)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color.white)
             
-            Text(currencyFormatter.string(from: NSNumber(value: item.calculateAmount(annualIncome: calculateAnnualIncome()))) ?? "$0")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(item.color)
-            
+            // Expandable Content
             if expandedItem == item {
                 VStack(alignment: .leading, spacing: 12) {
+                    Text("Estimated \(item.name) savings based on your income:")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
                     Text("How it's calculated:")
                         .font(.subheadline)
                         .fontWeight(.medium)
@@ -54,12 +64,12 @@ struct AffordabilityView: View {
                         }
                     }
                 }
+                .padding()
+                .background(Color(UIColor.secondarySystemBackground))
                 .transition(.opacity)
-                .padding(.top, 8)
             }
         }
-        .padding()
-        .background(Color(UIColor.systemBackground))
+        .background(Color.white)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
         .onTapGesture {
@@ -84,6 +94,8 @@ struct AffordabilityView: View {
         return formatter
     }
 }
+
+// The AffordabilityItem enum remains unchanged
 
 enum AffordabilityItem: CaseIterable {
     case house, car, vacation, wedding, education, retirement, emergencyFund
