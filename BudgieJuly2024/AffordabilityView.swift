@@ -128,14 +128,34 @@ struct AffordabilityView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 8) {
-                ForEach(AffordabilityItem.allCases, id: \.self) { item in
-                    affordabilityCard(item: item)
+            VStack(spacing: 16) {
+                // Title and Subtitle
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Affordability Breakdown")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+
+                    Text("Based on your income, here's what you could potentially afford:")
+                        .font(.headline)
+                        .fontWeight(.regular)
+                        .foregroundColor(.secondary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 16)
+                .padding(.bottom, 8)
+                .padding(.horizontal, 16)
+
+                // Affordability Cards
+                VStack(spacing: 8) {
+                    ForEach(AffordabilityItem.allCases, id: \.self) { item in
+                        affordabilityCard(item: item)
+                    }
+                }
+                .padding(.horizontal, 16)
             }
-            .padding()
         }
-        .background(Color(UIColor.systemBackground))
+        .background(Color.white)
     }
 
     private func affordabilityCard(item: AffordabilityItem) -> some View {
@@ -152,8 +172,8 @@ struct AffordabilityView: View {
                     .font(.system(size: 12))
             }
             .padding(.horizontal)
-            .padding(.vertical, 8)
-            .background(Color(UIColor.secondarySystemBackground))
+            .padding(.vertical, 12)
+            .background(Color(UIColor.systemGray5)) // Changed to a lighter gray color
             .onTapGesture {
                 withAnimation {
                     expandedItem = expandedItem == item ? nil : item
@@ -168,19 +188,20 @@ struct AffordabilityView: View {
                 Spacer()
             }
             .padding(.horizontal)
-            .padding(.vertical, 8)
-            .background(Color(UIColor.systemBackground))
+            .padding(.vertical, 12)
+            .background(Color.white)
             
             // Expandable Content
             if expandedItem == item {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Estimated \(item.name) savings based on your income:")
-                        .font(.footnote)
+                    Text(item.description)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
                     
                     Text("How it's calculated:")
-                        .font(.footnote)
+                        .font(.subheadline)
                         .fontWeight(.medium)
+                        .padding(.top, 8)
                     
                     ForEach(item.assumptionKeys, id: \.self) { key in
                         HStack(alignment: .top, spacing: 6) {
@@ -188,7 +209,7 @@ struct AffordabilityView: View {
                                 .foregroundColor(item.color)
                                 .font(.system(size: 12))
                             Text("\(key): \(formatAssumption(key: key, value: assumptions[item]?[key] ?? item.defaultAssumptions[key]!))")
-                                .font(.footnote)
+                                .font(.subheadline)
                         }
                     }
                     
@@ -196,7 +217,7 @@ struct AffordabilityView: View {
                         editingItem = item
                     }) {
                         Text("Edit Assumptions")
-                            .font(.footnote)
+                            .font(.subheadline)
                             .foregroundColor(.blue)
                             .padding(.vertical, 6)
                             .padding(.horizontal, 12)
@@ -210,7 +231,7 @@ struct AffordabilityView: View {
                 .transition(.opacity)
             }
         }
-        .background(Color(UIColor.systemBackground))
+        .background(Color.white)
         .cornerRadius(10)
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
         .sheet(item: $editingItem) { item in
@@ -219,7 +240,7 @@ struct AffordabilityView: View {
             }
         }
     }
-
+    
     private func calculateAnnualIncome() -> Double {
         budgieModel.paymentCadence.monthlyEquivalent(from: budgieModel.paycheckAmount) * 12
     }
