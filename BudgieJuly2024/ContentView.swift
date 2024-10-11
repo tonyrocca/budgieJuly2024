@@ -52,11 +52,11 @@ struct ContentView: View {
     @State private var isMenuOpen = false
     @State private var hasBudgetingExperience: Bool  // Added this line
     @Namespace private var animation
-
+    
     let hasDebt: Bool
     let hasExpenses: Bool
     let hasSavings: Bool
-
+    
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
@@ -65,7 +65,7 @@ struct ContentView: View {
         formatter.minimumFractionDigits = 2
         return formatter
     }()
-
+    
     init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String, hasDebt: Bool, hasExpenses: Bool, hasSavings: Bool, hasBudgetingExperience: Bool) {  // Updated init
         self._paymentCadence = State(initialValue: paymentFrequency)
         self._paycheckAmountText = State(initialValue: paycheckAmountText)
@@ -76,32 +76,32 @@ struct ContentView: View {
         self.hasSavings = hasSavings
         self._hasBudgetingExperience = State(initialValue: hasBudgetingExperience)  // Updated init
     }
-
+    
     var totalMonthlyBudget: Double {
         guard let amount = paycheckAmount else { return 0 }
         return paymentCadence.monthlyEquivalent(from: amount)
     }
-
+    
     var totalPerPaycheckBudget: Double {
         return paycheckAmount ?? 0
     }
-
+    
     var budgetDeficitOrSurplus: Double {
         let totalAllocated = allocations.values.reduce(0, +)
         return totalPerPaycheckBudget - totalAllocated
     }
-
+    
     var body: some View {
         NavigationView {
-                ZStack(alignment: .topTrailing) {
-                    Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all)
-
-                    VStack(spacing: 0) {
-                        customNavigationBar
-                            .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
-                        
-                        segmentedControlView
-
+            ZStack(alignment: .topTrailing) {
+                Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all)
+                
+                VStack(spacing: 0) {
+                    customNavigationBar
+                        .padding(.top, UIApplication.shared.windows.first?.safeAreaInsets.top ?? 0)
+                    
+                    segmentedControlView
+                    
                     if selectedTab == .yourBudget {
                         ScrollView {
                             VStack(spacing: 16) {
@@ -117,13 +117,13 @@ struct ContentView: View {
                             .font(.largeTitle)
                             .foregroundColor(.secondary)
                     }
-
+                    
                     Spacer(minLength: 20)
-
+                    
                     actionButton()
                         .padding(.bottom, 32)
                 }
-
+                
                 if isMenuOpen {
                     Color.black.opacity(0.5)
                         .edgesIgnoringSafeArea(.all)
@@ -132,11 +132,11 @@ struct ContentView: View {
                                 isMenuOpen = false
                             }
                         }
-
+                    
                     slideOutMenuView
                         .transition(.move(edge: .trailing))
                 }
-
+                
                 if showPopup {
                     Color.black.opacity(0.3)
                         .edgesIgnoringSafeArea(.all)
@@ -145,7 +145,7 @@ struct ContentView: View {
                                 showPopup = false
                             }
                         }
-
+                    
                     EnhanceBudgetSheet(budgieModel: $budgieModel, showPopup: $showPopup, selectedCategories: $selectedCategories)
                         .transition(.move(edge: .bottom))
                         .edgesIgnoringSafeArea(.bottom)
@@ -178,7 +178,7 @@ struct ContentView: View {
             }
         }
     }
-
+    
     // MARK: - Populate Initial Recommended Allocations
     private func populateInitialRecommendedAllocations() {
         guard !hasBudgetingExperience else { return }
@@ -195,7 +195,7 @@ struct ContentView: View {
             }
         }
     }
-
+    
     // MARK: - Custom Navigation Bar
     private var customNavigationBar: some View {
         ZStack {
@@ -223,56 +223,56 @@ struct ContentView: View {
     
     // MARK: - Segmented Control
     private var segmentedControlView: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    ForEach(BudgetTab.allCases, id: \.self) { tab in
-                        Button(action: {
-                            withAnimation {
-                                selectedTab = tab
-                            }
-                        }) {
-                            HStack(spacing: 6) {
-                                Text(tab.emoji)
-                                    .font(.system(size: 14))
-                                Text(tab.title)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                            }
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 12)
-                            .background(
-                                Group {
-                                    if selectedTab == tab {
-                                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                                       startPoint: .topLeading,
-                                                       endPoint: .bottomTrailing)
-                                    } else {
-                                        Color.white
-                                    }
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(BudgetTab.allCases, id: \.self) { tab in
+                            Button(action: {
+                                withAnimation {
+                                    selectedTab = tab
                                 }
-                            )
-                            .foregroundColor(selectedTab == tab ? .white : .primary)
-                            .cornerRadius(16)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: selectedTab == tab ? 0 : 1)
-                            )
+                            }) {
+                                HStack(spacing: 6) {
+                                    Text(tab.emoji)
+                                        .font(.system(size: 14))
+                                    Text(tab.title)
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                }
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 12)
+                                .background(
+                                    Group {
+                                        if selectedTab == tab {
+                                            LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                                           startPoint: .topLeading,
+                                                           endPoint: .bottomTrailing)
+                                        } else {
+                                            Color.white
+                                        }
+                                    }
+                                )
+                                .foregroundColor(selectedTab == tab ? .white : .primary)
+                                .cornerRadius(16)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: selectedTab == tab ? 0 : 1)
+                                )
+                            }
+                            .id(tab)
                         }
-                        .id(tab)
                     }
+                    .padding(.horizontal, 16)
                 }
-                .padding(.horizontal, 16)
-            }
-            .frame(height: 50)
-            .padding(.vertical, 8)
-            .onChange(of: selectedTab) { newTab in
-                withAnimation {
-                    proxy.scrollTo(newTab, anchor: .center)
+                .frame(height: 50)
+                .padding(.vertical, 8)
+                .onChange(of: selectedTab) { newTab in
+                    withAnimation {
+                        proxy.scrollTo(newTab, anchor: .center)
+                    }
                 }
             }
         }
-    }
     
     // MARK: - Paycheck Total View
     private func paycheckTotalView() -> some View {
@@ -290,9 +290,9 @@ struct ContentView: View {
             .padding(.vertical, 16)
             .padding(.horizontal, 20)
             .background(Color(UIColor.systemBackground))
-
+            
             Divider()
-
+            
             HStack {
                 Text(budgetDeficitOrSurplus >= 0 ? "Per Paycheck Surplus" : "Per Paycheck Deficit")
                     .font(.subheadline)
@@ -312,7 +312,7 @@ struct ContentView: View {
         .padding(.horizontal, 16)
         .padding(.top, 16)
     }
-
+    
     // MARK: - Slide Out Menu
     private var slideOutMenuView: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -326,18 +326,18 @@ struct ContentView: View {
                     .foregroundColor(.primary)
             }
             .padding(.top, 20)
-
+            
             Text("Menu")
                 .font(.title)
                 .fontWeight(.bold)
-
+            
             VStack(alignment: .leading, spacing: 15) {
                 menuItem(title: "Profile", icon: "person.circle")
                 menuItem(title: "Settings", icon: "gear")
                 menuItem(title: "Help", icon: "questionmark.circle")
                 menuItem(title: "About", icon: "info.circle")
             }
-
+            
             Spacer()
         }
         .frame(width: UIScreen.main.bounds.width * 0.7)
@@ -345,7 +345,7 @@ struct ContentView: View {
         .background(Color(UIColor.systemBackground))
         .edgesIgnoringSafeArea(.vertical)
     }
-
+    
     private func menuItem(title: String, icon: String) -> some View {
         HStack {
             Image(systemName: icon)
@@ -353,7 +353,7 @@ struct ContentView: View {
         }
         .font(.headline)
     }
-
+    
     // MARK: - Action Button
     private func actionButton() -> some View {
         Button(action: {
@@ -379,7 +379,7 @@ struct ContentView: View {
         }
         .padding(.horizontal, 16)
     }
-
+    
     // MARK: - Allocation List View
     private func allocationListView() -> some View {
         VStack(spacing: 0) {
@@ -395,7 +395,7 @@ struct ContentView: View {
         }
         .padding(.horizontal)
     }
-
+    
     private func sectionView(title: String, color: Color, categories: [BudgetCategory]) -> some View {
         VStack(spacing: 0) {
             SectionHeaderView(title: title, color: color)
@@ -412,7 +412,7 @@ struct ContentView: View {
         .cornerRadius(10)
         .padding(.bottom, 16)
     }
-
+    
     // MARK: - Updated Category View
     private func categoryView(_ category: BudgetCategory) -> some View {
         VStack(spacing: 0) {
@@ -436,7 +436,7 @@ struct ContentView: View {
                     expandedCategoryIndex = expandedCategoryIndex == category.id ? nil : category.id
                 }
             }
-
+            
             if expandedCategoryIndex == category.id {
                 VStack(spacing: 0) {
                     if let recommendedAmount = budgieModel.recommendedAllocations[category.id] {
@@ -478,7 +478,7 @@ struct ContentView: View {
         .cornerRadius(10)
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
     }
-
+    
     // MARK: - Updated Subcategory View
     private func subcategoryView(for subcategory: BudgetSubCategory, in category: BudgetCategory) -> some View {
         VStack(spacing: 0) {
@@ -503,7 +503,7 @@ struct ContentView: View {
                     expandedSubCategoryIndex = expandedSubCategoryIndex == subcategory.id ? nil : subcategory.id
                 }
             }
-
+            
             if expandedSubCategoryIndex == subcategory.id {
                 VStack(spacing: 0) {
                     if let recommendedAmount = budgieModel.recommendedAllocations[subcategory.id] {
@@ -541,13 +541,13 @@ struct ContentView: View {
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
         .padding(.horizontal, 16)
     }
-
+    
     // MARK: - Edit/Delete Buttons
     private func editDeleteButtons(for item: Any) -> some View {
         let id = (item as? BudgetCategory)?.id ?? (item as? BudgetSubCategory)?.id ?? UUID()
         let isEditingItem = isEditingAmounts[id] ?? false
         let itemAmount = getItemAmount(item)
-
+        
         return VStack(spacing: 8) {
             if isEditingItem {
                 CurrencyTextField(value: Binding(
@@ -559,7 +559,7 @@ struct ContentView: View {
                 .cornerRadius(8)
                 .padding(.horizontal, 16)
             }
-
+            
             HStack(spacing: 8) {
                 Button(action: {
                     if isEditingItem {
@@ -581,7 +581,7 @@ struct ContentView: View {
                     .foregroundColor(.blue)
                     .cornerRadius(8)
                 }
-
+                
                 Button(action: {
                     itemToDelete = item
                     isShowingDeleteAlert = true
@@ -603,7 +603,7 @@ struct ContentView: View {
         .padding(.vertical, 8)
         .background(Color(UIColor.secondarySystemBackground))
     }
-
+    
     // MARK: - Update Item Amount
     private func updateItemAmount(_ item: Any) {
         let id = (item as? BudgetCategory)?.id ?? (item as? BudgetSubCategory)?.id ?? UUID()
@@ -618,7 +618,7 @@ struct ContentView: View {
             calculateBudget()
         }
     }
-
+    
     // MARK: - Expense Category View
     private func expenseCategoryView(for category: BudgetCategory) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -632,7 +632,7 @@ struct ContentView: View {
         .cornerRadius(10)
         .transition(.opacity)
     }
-
+    
     // MARK: - Delete Item
     private func deleteItem(_ item: Any) {
         if let category = item as? BudgetCategory {
@@ -641,7 +641,7 @@ struct ContentView: View {
             deleteSubcategory(subcategory)
         }
     }
-
+    
     // MARK: - Get Item Name
     private func getItemName(_ item: Any) -> String {
         if let category = item as? BudgetCategory {
@@ -651,7 +651,7 @@ struct ContentView: View {
         }
         return ""
     }
-
+    
     // MARK: - Get Item Amount
     private func getItemAmount(_ item: Any) -> Double {
         if let category = item as? BudgetCategory {
@@ -661,14 +661,14 @@ struct ContentView: View {
         }
         return 0
     }
-
+    
     // MARK: - Delete Category
     private func deleteCategory(_ category: BudgetCategory) {
         budgieModel.removeCategory(category)
         selectedCategories.removeAll { $0.id == category.id }
         calculateBudget()
     }
-
+    
     // MARK: - Delete Subcategory
     private func deleteSubcategory(_ subcategory: BudgetSubCategory) {
         if let categoryIndex = selectedCategories.firstIndex(where: { $0.subcategories.contains(where: { $0.id == subcategory.id }) }) {
@@ -676,7 +676,7 @@ struct ContentView: View {
             calculateBudget()
         }
     }
-
+    
     // MARK: - Description View
     private func descriptionView(for item: Any) -> some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -684,7 +684,7 @@ struct ContentView: View {
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.secondary)
-
+            
             Text(description(for: item))
                 .font(.body)
                 .foregroundColor(.primary)
@@ -693,7 +693,7 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(UIColor.secondarySystemBackground))
     }
-
+    
     // MARK: - Due Date View
     private func dueDateView(for dueDate: Date) -> some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -701,7 +701,7 @@ struct ContentView: View {
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.secondary)
-
+            
             Text(dateFormatter.string(from: dueDate))
                 .font(.body)
                 .foregroundColor(.primary)
@@ -710,7 +710,7 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(UIColor.secondarySystemBackground))
     }
-
+    
     // MARK: - Description Helper
     private func description(for item: Any) -> String {
         if let category = item as? BudgetCategory {
@@ -720,7 +720,7 @@ struct ContentView: View {
         }
         return ""
     }
-
+    
     // MARK: - Format and Calculate Paycheck Amount
     private func formatAndCalculatePaycheckAmount() {
         let filteredText = paycheckAmountText.filter { "0123456789.".contains($0) }
@@ -734,7 +734,7 @@ struct ContentView: View {
             showDetails = false
         }
     }
-
+    
     // MARK: - Calculate Budget
     private func calculateBudget() {
         budgieModel.paymentCadence = paymentCadence
@@ -751,36 +751,36 @@ struct ContentView: View {
         budgieModel.calculateAllocations(selectedCategories: relevantCategories)
         budgieModel.calculateRecommendedAllocations(selectedCategories: relevantCategories)
         allocations = budgieModel.allocations
-
+        
         // Populate recommended allocations if the user has no prior budgeting experience
         populateInitialRecommendedAllocations()
     }
-
+    
     // MARK: - Update Screen
     private func updateScreen() {
         calculateBudget()
         selectedCategories = BudgetCategoryStore.shared.categories.filter { $0.isSelected }
     }
-
+    
     // MARK: - BudgetTab Enum
     enum BudgetTab: String, CaseIterable {
         case yourBudget
-        case perfectBudget
         case affordability
-
+        case perfectBudget
+        
         var title: String {
             switch self {
             case .yourBudget: return "Your Budget"
-            case .perfectBudget: return "Perfect Budget"
             case .affordability: return "Affordability"
+            case .perfectBudget: return "Perfect Budget"
             }
         }
-
+        
         var emoji: String {
             switch self {
             case .yourBudget: return "💰"
-            case .perfectBudget: return "✨"
             case .affordability: return "🏠"
+            case .perfectBudget: return "✨"
             }
         }
     }
