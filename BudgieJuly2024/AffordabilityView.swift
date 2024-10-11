@@ -6,14 +6,14 @@ struct AffordabilityView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: 8) {  // Reduced spacing between cards
                 ForEach(AffordabilityItem.allCases, id: \.self) { item in
                     affordabilityCard(item: item)
                 }
             }
             .padding()
         }
-        .background(Color(UIColor.systemGroupedBackground))
+        .background(Color(UIColor.systemBackground))
     }
 
     private func affordabilityCard(item: AffordabilityItem) -> some View {
@@ -21,66 +21,63 @@ struct AffordabilityView: View {
             // Header
             HStack {
                 Text(item.emoji)
-                    .font(.system(size: 24))
+                    .font(.system(size: 20))  // Slightly reduced emoji size
                 Text(item.title)
                     .font(.headline)
-                    .fontWeight(.bold)
                 Spacer()
                 Image(systemName: expandedItem == item ? "chevron.up" : "chevron.down")
-                    .foregroundColor(.primary)
+                    .foregroundColor(.gray)
+                    .font(.system(size: 12))  // Smaller chevron
             }
-            .padding()
-            .background(Color(UIColor.systemGray5))  // Changed to a light gray color
-            .foregroundColor(.primary)  // Changed text color to primary for better contrast
+            .padding(.horizontal)
+            .padding(.vertical, 8)  // Reduced vertical padding
+            .background(Color(UIColor.secondarySystemBackground))
+            .onTapGesture {
+                withAnimation {
+                    expandedItem = expandedItem == item ? nil : item
+                }
+            }
             
             // Main Content
-            VStack(alignment: .leading, spacing: 8) {
+            HStack {
                 Text(currencyFormatter.string(from: NSNumber(value: item.calculateAmount(annualIncome: calculateAnnualIncome()))) ?? "$0")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundColor(item.color)
+                    .font(.system(size: 24, weight: .bold, design: .rounded))  // Smaller font size
+                    .foregroundColor(.primary)  // Changed to black
+                Spacer()
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(Color.white)
+            .padding(.horizontal)
+            .padding(.vertical, 8)  // Reduced vertical padding
+            .background(Color(UIColor.systemBackground))
             
             // Expandable Content
             if expandedItem == item {
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {  // Reduced spacing
                     Text("Estimated \(item.name) savings based on your income:")
-                        .font(.subheadline)
+                        .font(.footnote)
                         .foregroundColor(.secondary)
                     
                     Text("How it's calculated:")
-                        .font(.subheadline)
+                        .font(.footnote)
                         .fontWeight(.medium)
                     
                     ForEach(item.assumptions, id: \.self) { assumption in
-                        HStack(alignment: .top, spacing: 8) {
+                        HStack(alignment: .top, spacing: 6) {  // Reduced spacing
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(item.color)
-                                .font(.system(size: 12))
+                                .font(.system(size: 12))  // Smaller checkmark
                             Text(assumption)
-                                .font(.subheadline)
+                                .font(.footnote)
                         }
                     }
                 }
                 .padding()
-                .background(Color(UIColor.secondarySystemBackground))
+                .background(Color(UIColor.tertiarySystemBackground))
                 .transition(.opacity)
             }
         }
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
-        .onTapGesture {
-            withAnimation {
-                if expandedItem == item {
-                    expandedItem = nil
-                } else {
-                    expandedItem = item
-                }
-            }
-        }
+        .background(Color(UIColor.systemBackground))
+        .cornerRadius(10)  // Slightly reduced corner radius
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)  // Subtle shadow
     }
 
     private func calculateAnnualIncome() -> Double {
