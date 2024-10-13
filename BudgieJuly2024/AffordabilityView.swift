@@ -155,7 +155,7 @@ struct AffordabilityView: View {
                 .padding(.horizontal, 16)
             }
         }
-        .background(Color.white)
+        .background(Color(UIColor.systemGray6))
     }
 
     private func affordabilityCard(item: AffordabilityItem) -> some View {
@@ -166,14 +166,15 @@ struct AffordabilityView: View {
                     .font(.system(size: 20))
                 Text(item.title)
                     .font(.headline)
+                    .foregroundColor(.black)
                 Spacer()
                 Image(systemName: expandedItem == item ? "chevron.up" : "chevron.down")
-                    .foregroundColor(.gray)
+                    .foregroundColor(.black)
                     .font(.system(size: 12))
             }
             .padding(.horizontal)
             .padding(.vertical, 12)
-            .background(Color(UIColor.systemGray5)) // Changed to a lighter gray color
+            .background(Color(UIColor.systemGray4)) // Slightly darker gray for the header
             .onTapGesture {
                 withAnimation {
                     expandedItem = expandedItem == item ? nil : item
@@ -227,7 +228,7 @@ struct AffordabilityView: View {
                     .padding(.top, 8)
                 }
                 .padding()
-                .background(Color(UIColor.tertiarySystemBackground))
+                .background(Color.white)
                 .transition(.opacity)
             }
         }
