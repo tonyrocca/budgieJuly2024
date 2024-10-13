@@ -147,7 +147,7 @@ struct AffordabilityView: View {
                 .padding(.horizontal, 16)
 
                 // Affordability Cards
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
                     ForEach(AffordabilityItem.allCases, id: \.self) { item in
                         affordabilityCard(item: item)
                     }
@@ -157,84 +157,147 @@ struct AffordabilityView: View {
         }
         .background(Color(UIColor.systemGray6))
     }
-
+    
     private func affordabilityCard(item: AffordabilityItem) -> some View {
         VStack(spacing: 0) {
             // Header
             HStack {
                 Text(item.emoji)
-                    .font(.system(size: 20))
+                    .font(.system(size: 24))
                 Text(item.title)
                     .font(.headline)
                     .foregroundColor(.black)
                 Spacer()
                 Image(systemName: expandedItem == item ? "chevron.up" : "chevron.down")
-                    .foregroundColor(.black)
+                    .foregroundColor(.gray)
                     .font(.system(size: 12))
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(UIColor.systemGray4)) // Slightly darker gray for the header
-            .onTapGesture {
-                withAnimation {
-                    expandedItem = expandedItem == item ? nil : item
-                }
-            }
             
-            // Main Content
+            Divider()
+                .background(Color.gray.opacity(0.3))
+            
+            // Amount
             HStack {
                 Text(currencyFormatter.string(from: NSNumber(value: item.calculateAmount(annualIncome: calculateAnnualIncome(), assumptions: assumptions[item] ?? [:]))) ?? "$0")
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
                 Spacer()
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color.white)
             
-            // Expandable Content
             if expandedItem == item {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(item.description)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                VStack(spacing: 0) {
+                    // Recommended Amount Section
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Recommended Amount:")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        Text(currencyFormatter.string(from: NSNumber(value: item.calculateAmount(annualIncome: calculateAnnualIncome(), assumptions: assumptions[item] ?? [:]))) ?? "$0")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 16)
+                    .background(Color(UIColor.secondarySystemBackground))
                     
-                    Text("How it's calculated:")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .padding(.top, 8)
+                    Divider()
+                        .background(Color.gray.opacity(0.3))
                     
-                    ForEach(item.assumptionKeys, id: \.self) { key in
-                        HStack(alignment: .top, spacing: 6) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(item.color)
-                                .font(.system(size: 12))
-                            Text("\(key): \(formatAssumption(key: key, value: assumptions[item]?[key] ?? item.defaultAssumptions[key]!))")
-                                .font(.subheadline)
+                    // Description Section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Description")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        
+                        Text(item.description)
+                            .font(.body)
+                            .foregroundColor(.primary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(UIColor.secondarySystemBackground))
+                    
+                    Divider()
+                        .background(Color.gray.opacity(0.3))
+                    
+                    // Assumptions Section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Assumptions")
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        
+                        ForEach(item.assumptionKeys, id: \.self) { key in
+                            HStack(alignment: .top, spacing: 6) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(item.color)
+                                    .font(.system(size: 12))
+                                Text("\(key): \(formatAssumption(key: key, value: assumptions[item]?[key] ?? item.defaultAssumptions[key]!))")
+                                    .font(.subheadline)
+                            }
                         }
                     }
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(UIColor.secondarySystemBackground))
                     
-                    Button(action: {
-                        editingItem = item
-                    }) {
-                        Text("Edit Assumptions")
+                    Divider()
+                        .background(Color.gray.opacity(0.3))
+                    
+                    // Edit/Delete Buttons
+                    HStack(spacing: 8) {
+                        Button(action: {
+                            editingItem = item
+                        }) {
+                            HStack {
+                                Image(systemName: "pencil")
+                                Text("Edit")
+                            }
                             .font(.subheadline)
-                            .foregroundColor(.blue)
-                            .padding(.vertical, 6)
-                            .padding(.horizontal, 12)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
                             .background(Color.blue.opacity(0.1))
-                            .cornerRadius(6)
+                            .foregroundColor(.blue)
+                            .cornerRadius(8)
+                        }
+                        
+                        Button(action: {
+                            // Implement delete functionality
+                        }) {
+                            HStack {
+                                Image(systemName: "trash")
+                                Text("Delete")
+                            }
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(Color.red.opacity(0.1))
+                            .foregroundColor(.red)
+                            .cornerRadius(8)
+                        }
                     }
-                    .padding(.top, 8)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color(UIColor.secondarySystemBackground))
                 }
-                .padding()
-                .background(Color.white)
                 .transition(.opacity)
             }
         }
         .background(Color.white)
         .cornerRadius(10)
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .onTapGesture {
+            withAnimation {
+                expandedItem = expandedItem == item ? nil : item
+            }
+        }
         .sheet(item: $editingItem) { item in
             EditAssumptionsView(item: item, assumptions: assumptions[item] ?? [:]) { updatedAssumptions in
                 assumptions[item] = updatedAssumptions
