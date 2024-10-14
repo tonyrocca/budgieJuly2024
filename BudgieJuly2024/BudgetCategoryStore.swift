@@ -1,10 +1,10 @@
 import Foundation
 
-enum CategoryType: String, Codable, Equatable {
+public enum CategoryType: String, Codable, Equatable, CaseIterable {
+    case debt
     case need
     case want
     case saving
-    case debt
 }
 
 struct BudgetSubCategory: Identifiable, Codable, Equatable {

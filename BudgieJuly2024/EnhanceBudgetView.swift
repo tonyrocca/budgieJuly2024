@@ -1,24 +1,5 @@
 import SwiftUI
 
-// MARK: - BudgetRecommendation Model
-struct BudgetRecommendation: Identifiable {
-    let id = UUID()
-    let type: RecommendationType
-    let category: BudgetCategory
-    let subcategory: BudgetSubCategory?
-    let currentAmount: Double
-    let recommendedAmount: Double
-    let reason: String
-}
-
-// MARK: - RecommendationType Enum
-enum RecommendationType {
-    case updateAmount
-    case addCategory
-    case removeCategory
-}
-
-// MARK: - EnhanceBudgetSheet
 struct EnhanceBudgetSheet: View {
     @Binding var budgieModel: BudgieModel
     @Binding var showPopup: Bool
@@ -27,282 +8,278 @@ struct EnhanceBudgetSheet: View {
     
     @State private var offset: CGFloat = 0
     @State private var isDragging = false
-    @State private var currentTab: RecommendationType = .updateAmount
+    @State private var currentTab: EditBudgetTab = .add
+    @State private var expandedSection: CategorySection?
+    @State private var showAddCategoryForm = false
+    @State private var newCategoryName = ""
+    @State private var newCategoryType: CategoryType = .need
+    @State private var currentSection: CategorySection = .expenses
+    @State private var toggledCategories: Set<UUID> = []
 
     let screenHeight = UIScreen.main.bounds.height
     let sheetHeight: CGFloat = UIScreen.main.bounds.height * 0.75
     
-    private var recommendations: [BudgetRecommendation] {
-        switch currentTab {
-        case .updateAmount:
-            return getUpdateRecommendations()
-        case .addCategory:
-            return getAddRecommendations()
-        case .removeCategory:
-            return getRemoveRecommendations()
+    var body: some View {
+        VStack(spacing: 0) {
+            // Tab Switcher
+            Picker("Edit Budget Options", selection: $currentTab) {
+                Text("Add").tag(EditBudgetTab.add)
+                Text("Recommended").tag(EditBudgetTab.recommended)
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            .padding(.horizontal)
+            .padding(.top)
+            
+            // Content based on selected tab
+            if currentTab == .add {
+                addCategoryView()
+            } else {
+                Text("Recommended functionality coming soon")
+                    .foregroundColor(.secondary)
+                    .padding()
+            }
+            
+            Spacer()
+            
+            // Done Button
+            Button(action: {
+                addSelectedCategoriesToBudget()
+                withAnimation {
+                    showPopup = false
+                }
+            }) {
+                Text("Done")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(
+                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                       startPoint: .leading,
+                                       endPoint: .trailing)
+                    )
+                    .cornerRadius(15)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 32)
+        }
+        .frame(height: sheetHeight)
+        .background(Color(UIColor.systemGroupedBackground))
+        .cornerRadius(20, corners: [.topLeft, .topRight])
+        .offset(y: max(offset + screenHeight - sheetHeight, 0))
+        .animation(.interactiveSpring(), value: isDragging)
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    isDragging = true
+                    if value.translation.height > 0 {
+                        offset = value.translation.height
+                    }
+                }
+                .onEnded { value in
+                    isDragging = false
+                    if value.translation.height > sheetHeight / 3 {
+                        showPopup = false
+                    } else {
+                        offset = 0
+                    }
+                }
+        )
+        .sheet(isPresented: $showAddCategoryForm) {
+            addCustomCategoryForm()
         }
     }
     
-    var body: some View {
-        GeometryReader { geometry in
-            VStack(spacing: 0) {
-                // Drag Indicator
-                RoundedRectangle(cornerRadius: 2.5)
-                    .fill(Color.secondary)
-                    .frame(width: 40, height: 5)
-                    .padding(.top, 10)
-                
-                // Header
-                Text("Enhance Your Budget")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding()
-                
-                // Tab Switcher
-                Picker("Recommendation Type", selection: $currentTab) {
-                    Text("Update").tag(RecommendationType.updateAmount)
-                    Text("Add").tag(RecommendationType.addCategory)
-                    Text("Remove").tag(RecommendationType.removeCategory)
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
-                
-                // Recommendations List
-                ScrollView {
-                    LazyVStack(spacing: 16) {
-                        ForEach(recommendations) { recommendation in
-                            RecommendationRow(recommendation: recommendation) {
-                                applyRecommendation(recommendation)
-                            }
-                        }
+    private func addCategoryView() -> some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                categoryDropdown(for: .debt)
+                categoryDropdown(for: .expenses)
+                categoryDropdown(for: .savings)
+            }
+            .padding(.top)
+        }
+    }
+    
+    private func categoryDropdown(for section: CategorySection) -> some View {
+        VStack(spacing: 0) {
+            Button(action: {
+                withAnimation {
+                    if expandedSection == section {
+                        expandedSection = nil
+                    } else {
+                        expandedSection = section
+                        currentSection = section
                     }
-                    .padding()
                 }
-                
-                // Action Button
-                Button(action: {
-                    withAnimation {
-                        showPopup = false
-                    }
-                }) {
-                    Text("Done")
+            }) {
+                HStack {
+                    Text(section.title)
                         .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
+                        .foregroundColor(.blue)
+                    Spacer()
+                    Image(systemName: expandedSection == section ? "chevron.up" : "chevron.down")
+                        .foregroundColor(.blue)
                 }
                 .padding()
+                .background(Color.white)
+                .cornerRadius(10)
             }
-            .frame(height: sheetHeight)
-            .background(Color(UIColor.systemBackground))
-            .cornerRadius(20, corners: [.topLeft, .topRight])
-            .offset(y: max(offset + screenHeight - sheetHeight, 0))
-            .animation(.interactiveSpring(), value: isDragging)
-            .gesture(
-                DragGesture()
-                    .onChanged { value in
-                        isDragging = true
-                        if value.translation.height > 0 {
-                            offset = value.translation.height
-                        }
-                    }
-                    .onEnded { value in
-                        isDragging = false
-                        if value.translation.height > sheetHeight / 3 {
-                            showPopup = false
-                        } else {
-                            offset = 0
-                        }
-                    }
-            )
-        }
-        .edgesIgnoringSafeArea(.bottom)
-    }
-    
-    // MARK: - Recommendation Generators
-    private func getUpdateRecommendations() -> [BudgetRecommendation] {
-        return selectedCategories.compactMap { category in
-            let currentAmount = budgieModel.allocations[category.id] ?? 0
-            let recommendedAmount = budgieModel.perfectAllocations[category.id] ?? 0
             
-            if abs(currentAmount - recommendedAmount) > max(currentAmount * 0.1, 10) { // Only recommend if change is >10% or >$10
-                return BudgetRecommendation(
-                    type: .updateAmount,
-                    category: category,
-                    subcategory: nil,
-                    currentAmount: currentAmount,
-                    recommendedAmount: recommendedAmount,
-                    reason: "Adjust to optimize your budget"
-                )
-            }
-            return nil
-        }
-    }
-    
-    private func getAddRecommendations() -> [BudgetRecommendation] {
-        let criticalCategories = ["Emergency Fund", "Retirement"]
-        let missingCriticalCategories = budgetCategoryStore.categories.filter { category in
-            criticalCategories.contains(category.name) && !selectedCategories.contains(where: { $0.id == category.id })
-        }
-        
-        return missingCriticalCategories.map { category in
-            let recommendedAmount = budgieModel.calculateSavingsAmount(for: category.name, monthlyPaycheck: budgieModel.paycheckAmount)
-            return BudgetRecommendation(
-                type: .addCategory,
-                category: category,
-                subcategory: nil,
-                currentAmount: 0,
-                recommendedAmount: recommendedAmount,
-                reason: "Add this important category to your budget"
-            )
-        }
-    }
-    
-    private func getRemoveRecommendations() -> [BudgetRecommendation] {
-        let sortedWants = selectedCategories.filter { $0.type == .want }
-            .sorted { (budgieModel.allocations[$0.id] ?? 0) > (budgieModel.allocations[$1.id] ?? 0) }
-        
-        return sortedWants.prefix(3).map { category in
-            BudgetRecommendation(
-                type: .removeCategory,
-                category: category,
-                subcategory: nil,
-                currentAmount: budgieModel.allocations[category.id] ?? 0,
-                recommendedAmount: 0,
-                reason: "Consider reducing this expense to balance your budget"
-            )
-        }
-    }
-    
-    // MARK: - Apply Recommendation
-    private func applyRecommendation(_ recommendation: BudgetRecommendation) {
-        switch recommendation.type {
-        case .updateAmount:
-            if let index = selectedCategories.firstIndex(where: { $0.id == recommendation.category.id }) {
-                selectedCategories[index].amount = recommendation.recommendedAmount
-                budgieModel.updateCategory(recommendation.category, newAmount: recommendation.recommendedAmount)
-            }
-        case .addCategory:
-            if !selectedCategories.contains(where: { $0.id == recommendation.category.id }) {
-                var newCategory = recommendation.category
-                newCategory.amount = recommendation.recommendedAmount
-                newCategory.isSelected = true
-                selectedCategories.append(newCategory)
-                budgieModel.addCategory(newCategory)
-            }
-        case .removeCategory:
-            if let index = selectedCategories.firstIndex(where: { $0.id == recommendation.category.id }) {
-                let removedCategory = selectedCategories.remove(at: index)
-                budgieModel.removeCategory(removedCategory)
-            }
-        }
-    }
-}
-
-// MARK: - RecommendationRow
-struct RecommendationRow: View {
-    let recommendation: BudgetRecommendation
-    let onApply: () -> Void
-    
-    private let currencyFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.maximumFractionDigits = 2
-        return formatter
-    }()
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("\(recommendation.category.emoji) \(recommendation.category.name)")
-                    .font(.headline)
-                Spacer()
-                Button(action: onApply) {
-                    Text(actionText(for: recommendation.type))
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .padding(.vertical, 6)
-                        .padding(.horizontal, 12)
+            if expandedSection == section {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(categoriesForSection(section), id: \.id) { category in
+                        if !selectedCategories.contains(where: { $0.id == category.id }) {
+                            Toggle(isOn: Binding(
+                                get: { toggledCategories.contains(category.id) },
+                                set: { newValue in
+                                    if newValue {
+                                        toggledCategories.insert(category.id)
+                                    } else {
+                                        toggledCategories.remove(category.id)
+                                    }
+                                }
+                            )) {
+                                HStack {
+                                    Text(category.emoji)
+                                    Text(category.name)
+                                }
+                            }
+                            .padding()
+                            .background(Color(UIColor.secondarySystemBackground))
+                            .cornerRadius(8)
+                        }
+                    }
+                    
+                    Button(action: {
+                        showAddCategoryForm = true
+                    }) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Add Custom Category")
+                        }
+                        .padding()
                         .background(Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(8)
+                    }
                 }
-            }
-            
-            Text(recommendation.reason)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("Current: \(formatCurrency(recommendation.currentAmount))")
-                    Text("Recommended: \(formatCurrency(recommendation.recommendedAmount))")
-                }
-                .font(.caption)
-                .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                if recommendation.type == .updateAmount {
-                    Text(differenceText(current: recommendation.currentAmount, recommended: recommendation.recommendedAmount))
-                        .font(.caption)
-                        .foregroundColor(recommendation.currentAmount < recommendation.recommendedAmount ? .green : .red)
-                        .padding(.vertical, 4)
-                        .padding(.horizontal, 8)
-                        .background(Color(UIColor.secondarySystemBackground))
-                        .cornerRadius(4)
-                }
+                .padding(.horizontal)
+                .padding(.top, 8)
+                .transition(.opacity)
             }
         }
-        .padding()
-        .background(Color(UIColor.tertiarySystemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 2)
+        .padding(.horizontal)
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
     }
     
-    // MARK: - Helper Methods
-    private func actionText(for type: RecommendationType) -> String {
-        switch type {
-        case .updateAmount:
-            return "Update"
-        case .addCategory:
-            return "Add"
-        case .removeCategory:
-            return "Remove"
+    private func addCustomCategoryForm() -> some View {
+        NavigationView {
+            Form {
+                TextField("Category Name", text: $newCategoryName)
+                
+                Picker("Category Type", selection: $newCategoryType) {
+                    ForEach(typeOptions(for: currentSection), id: \.self) { type in
+                        Text(type.rawValue.capitalized).tag(type)
+                    }
+                }
+            }
+            .navigationBarTitle("Add Custom Category", displayMode: .inline)
+            .navigationBarItems(
+                leading: Button("Cancel") {
+                    showAddCategoryForm = false
+                },
+                trailing: Button("Add") {
+                    addCustomCategory()
+                    showAddCategoryForm = false
+                }
+            )
         }
     }
     
-    private func formatCurrency(_ amount: Double) -> String {
-        return currencyFormatter.string(from: NSNumber(value: amount)) ?? "$0.00"
+    private func addCustomCategory() {
+        let newCategory = BudgetCategory(
+            name: newCategoryName,
+            emoji: "🔹", // You might want to let users choose an emoji
+            allocationPercentage: 0.0,
+            subcategories: [],
+            description: "Custom category",
+            type: newCategoryType,
+            isSelected: false
+        )
+        budgetCategoryStore.addCategory(newCategory)
+        toggledCategories.insert(newCategory.id)
+        newCategoryName = ""
     }
     
-    private func differenceText(current: Double, recommended: Double) -> String {
-        let difference = recommended - current
-        let sign = difference >= 0 ? "+" : "-"
-        return "\(sign)\(formatCurrency(abs(difference)))"
+    private func categoriesForSection(_ section: CategorySection) -> [BudgetCategory] {
+        switch section {
+        case .debt:
+            return budgetCategoryStore.categories.filter { $0.type == .debt }
+        case .expenses:
+            return budgetCategoryStore.categories.filter { $0.type == .need || $0.type == .want }
+        case .savings:
+            return budgetCategoryStore.categories.filter { $0.type == .saving }
+        }
+    }
+    
+    private func typeOptions(for section: CategorySection) -> [CategoryType] {
+        switch section {
+        case .debt:
+            return [.debt]
+        case .expenses:
+            return [.need, .want]
+        case .savings:
+            return [.saving]
+        }
+    }
+    
+    private func addSelectedCategoriesToBudget() {
+        for categoryId in toggledCategories {
+            if let category = budgetCategoryStore.categories.first(where: { $0.id == categoryId }) {
+                var updatedCategory = category
+                updatedCategory.isSelected = true
+                if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == categoryId }) {
+                    budgetCategoryStore.categories[index] = updatedCategory
+                }
+                if !selectedCategories.contains(where: { $0.id == categoryId }) {
+                    selectedCategories.append(updatedCategory)
+                }
+            }
+        }
     }
 }
 
-// MARK: - RoundedCorner Shape for Specific Corners
+enum EditBudgetTab {
+    case add
+    case recommended
+}
+
+enum CategorySection: String {
+    case debt
+    case expenses
+    case savings
+    
+    var title: String {
+        self.rawValue.capitalized
+    }
+}
+
+// MARK: - Custom Corner Radius Extension
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
 struct RoundedCorner: Shape {
     var radius: CGFloat = .infinity
     var corners: UIRectCorner = .allCorners
 
     func path(in rect: CGRect) -> Path {
-        let path = UIBezierPath(
-            roundedRect: rect,
-            byRoundingCorners: corners,
-            cornerRadii: CGSize(width: radius, height: radius)
-        )
+        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
         return Path(path.cgPath)
-    }
-}
-
-// MARK: - View Extension for Specific Corners
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
     }
 }

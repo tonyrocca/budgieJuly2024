@@ -146,9 +146,12 @@ struct ContentView: View {
                             }
                         }
                     
-                    EnhanceBudgetSheet(budgieModel: $budgieModel, showPopup: $showPopup, selectedCategories: $selectedCategories)
-                        .transition(.move(edge: .bottom))
-                        .edgesIgnoringSafeArea(.bottom)
+                    EnhanceBudgetSheet(
+                        budgieModel: $budgieModel,
+                        showPopup: $showPopup,
+                        selectedCategories: $selectedCategories
+                    )
+                    .environmentObject(budgetCategoryStore)
                 }
             }
             .navigationBarHidden(true)
@@ -365,9 +368,9 @@ struct ContentView: View {
             }
         }) {
             HStack(spacing: 8) {
-                Text("Enhance Budget")
+                Text("Edit Budget")
                     .font(.system(size: 16, weight: .semibold))
-                Image(systemName: "sparkles")
+                Image(systemName: "pencil")
                     .font(.system(size: 16))
             }
             .foregroundColor(.white)
