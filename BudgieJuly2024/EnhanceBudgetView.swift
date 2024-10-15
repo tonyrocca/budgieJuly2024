@@ -9,59 +9,34 @@ struct EnhanceBudgetSheet: View {
     @State private var offset: CGFloat = 0
     @State private var isDragging = false
     @State private var currentTab: EditBudgetTab = .add
-    @State private var expandedSection: CategorySection?
     @State private var showAddCategoryForm = false
     @State private var newCategoryName = ""
     @State private var newCategoryType: CategoryType = .need
-    @State private var currentSection: CategorySection = .expenses
-    @State private var toggledCategories: Set<UUID> = []
-
+    @State private var expandedSection: CategorySection?
+    @State private var showConfirmation = false
+    @State private var categoryToAdd: BudgetCategory?
+    
     let screenHeight = UIScreen.main.bounds.height
     let sheetHeight: CGFloat = UIScreen.main.bounds.height * 0.75
     
     var body: some View {
         VStack(spacing: 0) {
-            // Tab Switcher
-            Picker("Edit Budget Options", selection: $currentTab) {
-                Text("Add").tag(EditBudgetTab.add)
-                Text("Recommended").tag(EditBudgetTab.recommended)
+            // Custom Add/Recommended Toggle
+            HStack(spacing: 0) {
+                tabButton(for: .add)
+                tabButton(for: .recommended)
             }
-            .pickerStyle(SegmentedPickerStyle())
             .padding(.horizontal)
             .padding(.top)
             
             // Content based on selected tab
             if currentTab == .add {
-                addCategoryView()
+                addCategoriesView()
             } else {
-                Text("Recommended functionality coming soon")
-                    .foregroundColor(.secondary)
-                    .padding()
+                recommendedCategoriesView()
             }
             
             Spacer()
-            
-            // Done Button
-            Button(action: {
-                addSelectedCategoriesToBudget()
-                withAnimation {
-                    showPopup = false
-                }
-            }) {
-                Text("Done")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(
-                        LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
-                                       startPoint: .leading,
-                                       endPoint: .trailing)
-                    )
-                    .cornerRadius(15)
-            }
-            .padding(.horizontal)
-            .padding(.bottom, 32)
         }
         .frame(height: sheetHeight)
         .background(Color(UIColor.systemGroupedBackground))
@@ -88,16 +63,67 @@ struct EnhanceBudgetSheet: View {
         .sheet(isPresented: $showAddCategoryForm) {
             addCustomCategoryForm()
         }
+        .alert(isPresented: $showConfirmation) {
+            confirmationAlert()
+        }
     }
     
-    private func addCategoryView() -> some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                categoryDropdown(for: .debt)
-                categoryDropdown(for: .expenses)
-                categoryDropdown(for: .savings)
+    private func tabButton(for tab: EditBudgetTab) -> some View {
+        Button(action: {
+            withAnimation {
+                currentTab = tab
             }
-            .padding(.top)
+        }) {
+            Text(tab.title)
+                .font(.subheadline)
+                .foregroundColor(currentTab == tab ? .black : .gray)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .background(currentTab == tab ? Color.white : Color.clear)
+                .cornerRadius(20)
+        }
+    }
+    
+    private func addCategoriesView() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Add Categories")
+                .font(.title)
+                .fontWeight(.bold)
+                .padding(.horizontal)
+                .padding(.top)
+            
+            Text("Add categories that are missing from your current budget.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .padding(.horizontal)
+            
+            ScrollView {
+                VStack(spacing: 16) {
+                    categoryDropdown(for: .debt)
+                    categoryDropdown(for: .expenses)
+                    categoryDropdown(for: .savings)
+                }
+                .padding(.top)
+            }
+        }
+    }
+    
+    private func recommendedCategoriesView() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Recommended Changes")
+                .font(.title)
+                .fontWeight(.bold)
+                .padding(.horizontal)
+                .padding(.top)
+            
+            Spacer()
+            
+            Text("Recommended changes coming soon!")
+                .font(.headline)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .center)
+            
+            Spacer()
         }
     }
     
@@ -109,17 +135,17 @@ struct EnhanceBudgetSheet: View {
                         expandedSection = nil
                     } else {
                         expandedSection = section
-                        currentSection = section
                     }
                 }
             }) {
                 HStack {
                     Text(section.title)
                         .font(.headline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.primary)
                     Spacer()
                     Image(systemName: expandedSection == section ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.gray)
+                        .font(.system(size: 14))
                 }
                 .padding()
                 .background(Color.white)
@@ -127,44 +153,15 @@ struct EnhanceBudgetSheet: View {
             }
             
             if expandedSection == section {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(spacing: 12) {
                     ForEach(categoriesForSection(section), id: \.id) { category in
                         if !selectedCategories.contains(where: { $0.id == category.id }) {
-                            Toggle(isOn: Binding(
-                                get: { toggledCategories.contains(category.id) },
-                                set: { newValue in
-                                    if newValue {
-                                        toggledCategories.insert(category.id)
-                                    } else {
-                                        toggledCategories.remove(category.id)
-                                    }
-                                }
-                            )) {
-                                HStack {
-                                    Text(category.emoji)
-                                    Text(category.name)
-                                }
-                            }
-                            .padding()
-                            .background(Color(UIColor.secondarySystemBackground))
-                            .cornerRadius(8)
+                            categoryRow(for: category)
                         }
                     }
                     
-                    Button(action: {
-                        showAddCategoryForm = true
-                    }) {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                            Text("Add Custom Category")
-                        }
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                    }
+                    addCustomCategoryButton()
                 }
-                .padding(.horizontal)
                 .padding(.top, 8)
                 .transition(.opacity)
             }
@@ -175,13 +172,61 @@ struct EnhanceBudgetSheet: View {
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
     }
     
+    private func categoryRow(for category: BudgetCategory) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(category.emoji)
+                    Text(category.name)
+                        .font(.headline)
+                }
+                Text("Recommended: \(formatCurrency(budgieModel.recommendedAllocations[category.id] ?? 0))")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            Button(action: {
+                categoryToAdd = category
+                showConfirmation = true
+            }) {
+                Image(systemName: "plus")
+                    .foregroundColor(.black)
+                    .padding(8)
+                    .background(Color.gray.opacity(0.1))
+                    .clipShape(Circle())
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(10)
+    }
+    
+    private func addCustomCategoryButton() -> some View {
+        Button(action: {
+            showAddCategoryForm = true
+        }) {
+            HStack {
+                Image(systemName: "plus")
+                Text("Add Custom Category")
+            }
+            .font(.subheadline)
+            .foregroundColor(.blue)
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color.blue.opacity(0.1))
+            .cornerRadius(10)
+        }
+    }
+    
     private func addCustomCategoryForm() -> some View {
         NavigationView {
             Form {
                 TextField("Category Name", text: $newCategoryName)
                 
                 Picker("Category Type", selection: $newCategoryType) {
-                    ForEach(typeOptions(for: currentSection), id: \.self) { type in
+                    ForEach([CategoryType.debt, .need, .want, .saving], id: \.self) { type in
                         Text(type.rawValue.capitalized).tag(type)
                     }
                 }
@@ -202,59 +247,75 @@ struct EnhanceBudgetSheet: View {
     private func addCustomCategory() {
         let newCategory = BudgetCategory(
             name: newCategoryName,
-            emoji: "🔹", // You might want to let users choose an emoji
+            emoji: "🔹",
             allocationPercentage: 0.0,
             subcategories: [],
             description: "Custom category",
             type: newCategoryType,
-            isSelected: false
+            isSelected: true
         )
-        budgetCategoryStore.addCategory(newCategory)
-        toggledCategories.insert(newCategory.id)
-        newCategoryName = ""
+        categoryToAdd = newCategory
+        showConfirmation = true
+    }
+    
+    private func confirmationAlert() -> Alert {
+        let impact = calculateBudgetImpact()
+        return Alert(
+            title: Text("Add Category"),
+            message: Text("Adding '\(categoryToAdd?.name ?? "")' will \(impact.change) your budget by \(formatCurrency(abs(impact.amount))).\nYour new \(impact.amount >= 0 ? "surplus" : "deficit") will be \(formatCurrency(abs(impact.newTotal)))."),
+            primaryButton: .default(Text("Add")) {
+                if let category = categoryToAdd {
+                    addCategoryToBudget(category)
+                }
+            },
+            secondaryButton: .cancel()
+        )
+    }
+    
+    private func addCategoryToBudget(_ category: BudgetCategory) {
+        if !budgetCategoryStore.categories.contains(where: { $0.id == category.id }) {
+            budgetCategoryStore.addCategory(category)
+        }
+        selectedCategories.append(category)
+        budgieModel.updateCategory(category, newAmount: budgieModel.recommendedAllocations[category.id] ?? 0)
+    }
+    
+    private func calculateBudgetImpact() -> (change: String, amount: Double, newTotal: Double) {
+        let currentTotal = budgieModel.allocations.values.reduce(0, +)
+        let newAmount = budgieModel.recommendedAllocations[categoryToAdd?.id ?? UUID()] ?? 0
+        let newTotal = currentTotal + newAmount
+        let change = newAmount >= 0 ? "increase" : "decrease"
+        return (change, newAmount, budgieModel.paycheckAmount - newTotal)
     }
     
     private func categoriesForSection(_ section: CategorySection) -> [BudgetCategory] {
-        switch section {
-        case .debt:
-            return budgetCategoryStore.categories.filter { $0.type == .debt }
-        case .expenses:
-            return budgetCategoryStore.categories.filter { $0.type == .need || $0.type == .want }
-        case .savings:
-            return budgetCategoryStore.categories.filter { $0.type == .saving }
-        }
-    }
-    
-    private func typeOptions(for section: CategorySection) -> [CategoryType] {
-        switch section {
-        case .debt:
-            return [.debt]
-        case .expenses:
-            return [.need, .want]
-        case .savings:
-            return [.saving]
-        }
-    }
-    
-    private func addSelectedCategoriesToBudget() {
-        for categoryId in toggledCategories {
-            if let category = budgetCategoryStore.categories.first(where: { $0.id == categoryId }) {
-                var updatedCategory = category
-                updatedCategory.isSelected = true
-                if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == categoryId }) {
-                    budgetCategoryStore.categories[index] = updatedCategory
-                }
-                if !selectedCategories.contains(where: { $0.id == categoryId }) {
-                    selectedCategories.append(updatedCategory)
-                }
+        budgetCategoryStore.categories.filter { category in
+            switch section {
+            case .debt:
+                return category.type == .debt
+            case .expenses:
+                return category.type == .need || category.type == .want
+            case .savings:
+                return category.type == .saving
             }
-        }
+        }.filter { !selectedCategories.contains($0) }
+    }
+    
+    private func formatCurrency(_ amount: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = Locale.current
+        return formatter.string(from: NSNumber(value: amount)) ?? "$0.00"
     }
 }
 
-enum EditBudgetTab {
+enum EditBudgetTab: String {
     case add
     case recommended
+    
+    var title: String {
+        rawValue.capitalized
+    }
 }
 
 enum CategorySection: String {
@@ -263,7 +324,7 @@ enum CategorySection: String {
     case savings
     
     var title: String {
-        self.rawValue.capitalized
+        rawValue.capitalized
     }
 }
 
