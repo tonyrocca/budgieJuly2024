@@ -66,7 +66,7 @@ struct ContentView: View {
         return formatter
     }()
     
-    init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String, hasDebt: Bool, hasExpenses: Bool, hasSavings: Bool, hasBudgetingExperience: Bool) {  // Updated init
+    init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String, hasDebt: Bool, hasExpenses: Bool, hasSavings: Bool, hasBudgetingExperience: Bool) {
         self._paymentCadence = State(initialValue: paymentFrequency)
         self._paycheckAmountText = State(initialValue: paycheckAmountText)
         self._budgieModel = State(initialValue: BudgieModel(paycheckAmount: Double(paycheckAmountText) ?? 0.0))
@@ -138,41 +138,38 @@ struct ContentView: View {
                 }
                 
                 if showPopup {
-                    Color.black.opacity(0.3)
-                        .edgesIgnoringSafeArea(.all)
-                        .onTapGesture {
-                            withAnimation {
-                                showPopup = false
+                                    Color.black.opacity(0.3)
+                                        .edgesIgnoringSafeArea(.all)
+                                        .onTapGesture {
+                                            withAnimation {
+                                                showPopup = false
+                                            }
+                                        }
+                                    
+                                    EnhanceBudgetSheet(
+                                        budgieModel: $budgieModel,
+                                        showPopup: $showPopup,
+                                        selectedCategories: $selectedCategories
+                                    )
+                                    .environmentObject(budgetCategoryStore)
+                                }
                             }
+                            .navigationBarHidden(true)
+                            .edgesIgnoringSafeArea(.all)
                         }
-                    
-                    EnhanceBudgetSheet(
-                        budgieModel: $budgieModel,
-                        showPopup: $showPopup,
-                        selectedCategories: $selectedCategories
-                    )
-                    .environmentObject(budgetCategoryStore)
-                }
-            }
-            .navigationBarHidden(true)
-            .edgesIgnoringSafeArea(.all)
-        }
-        .navigationViewStyle(StackNavigationViewStyle())
-        .environmentObject(budgetCategoryStore)
-        .onAppear {
-            formatAndCalculatePaycheckAmount()
-            calculateBudget()
-            populateInitialRecommendedAllocations()  // Add this call
-        }
-        .onChange(of: budgetCategoryStore.categories) { _ in
-            updateScreen()
-        }
-        .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))
-        .sheet(item: $selectedCategoryForEdit) { category in
-            EditCategoryView(category: category, budgieModel: $budgieModel) {
-                updateScreen()
-            }
-        }
+                        .navigationViewStyle(StackNavigationViewStyle())
+                        .environmentObject(budgetCategoryStore)
+                        .onAppear {
+                            formatAndCalculatePaycheckAmount()
+                            calculateBudget()
+                            populateInitialRecommendedAllocations()
+                        }
+                        .onChange(of: budgetCategoryStore.categories) { _ in
+                            updateScreen()
+                        }
+                        .onChange(of: selectedCategories) { _ in
+                            updateScreen()
+                        }
         .sheet(item: $selectedSubcategoryForEdit) { subcategory in
             if let category = selectedCategories.first(where: { $0.subcategories.contains(where: { $0.id == subcategory.id }) }) {
                 EditCategoryView(category: category, subcategory: subcategory, budgieModel: $budgieModel) {
@@ -761,9 +758,9 @@ struct ContentView: View {
     
     // MARK: - Update Screen
     private func updateScreen() {
-        calculateBudget()
-        selectedCategories = BudgetCategoryStore.shared.categories.filter { $0.isSelected }
-    }
+            calculateBudget()
+            selectedCategories = budgetCategoryStore.categories.filter { $0.isSelected }
+        }
     
     // MARK: - BudgetTab Enum
     enum BudgetTab: String, CaseIterable {

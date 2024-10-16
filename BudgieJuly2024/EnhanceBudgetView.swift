@@ -273,11 +273,31 @@ struct EnhanceBudgetSheet: View {
     }
     
     private func addCategoryToBudget(_ category: BudgetCategory) {
+        var newCategory = category
+        newCategory.isSelected = true
+        newCategory.amount = budgieModel.recommendedAllocations[category.id] ?? 0
+
         if !budgetCategoryStore.categories.contains(where: { $0.id == category.id }) {
-            budgetCategoryStore.addCategory(category)
+            budgetCategoryStore.addCategory(newCategory)
+        } else if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+            budgetCategoryStore.categories[index] = newCategory
         }
-        selectedCategories.append(category)
-        budgieModel.updateCategory(category, newAmount: budgieModel.recommendedAllocations[category.id] ?? 0)
+
+        // Update selectedCategories
+        if !selectedCategories.contains(where: { $0.id == newCategory.id }) {
+            selectedCategories.append(newCategory)
+        } else if let index = selectedCategories.firstIndex(where: { $0.id == newCategory.id }) {
+            selectedCategories[index] = newCategory
+        }
+
+        // Update budgieModel
+        budgieModel.updateCategory(newCategory, newAmount: newCategory.amount ?? 0)
+        
+        // Recalculate budget
+        budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+        
+        // Close the sheet
+        showPopup = false
     }
     
     private func calculateBudgetImpact() -> (change: String, amount: Double, newTotal: Double) {
@@ -343,4 +363,8 @@ struct RoundedCorner: Shape {
         let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
         return Path(path.cgPath)
     }
+}
+
+extension Notification.Name {
+    static let budgetUpdated = Notification.Name("budgetUpdated")
 }
