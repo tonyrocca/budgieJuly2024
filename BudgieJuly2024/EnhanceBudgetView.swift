@@ -22,12 +22,23 @@ struct EnhanceBudgetSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             // Custom Add/Recommended Toggle
-            HStack(spacing: 0) {
-                tabButton(for: .add)
-                tabButton(for: .recommended)
+            HStack {
+                Spacer()
+                HStack(spacing: 0) {
+                    tabButton(for: .add)
+                    tabButton(for: .recommended)
+                }
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(20)
+                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                Spacer()
             }
-            .padding(.horizontal)
-            .padding(.top)
+            .padding(.top, 20)
+            .padding(.bottom, 10)
+            
+            Divider()
+                .background(Color.gray.opacity(0.3))
+                .padding(.horizontal)
             
             // Content based on selected tab
             if currentTab == .add {
@@ -40,7 +51,7 @@ struct EnhanceBudgetSheet: View {
         }
         .frame(height: sheetHeight)
         .background(Color(UIColor.systemGroupedBackground))
-        .cornerRadius(20, corners: [.topLeft, .topRight])
+        .clipShape(RoundedCorner(radius: 20, corners: [.topLeft, .topRight]))
         .offset(y: max(offset + screenHeight - sheetHeight, 0))
         .animation(.interactiveSpring(), value: isDragging)
         .gesture(
@@ -76,26 +87,30 @@ struct EnhanceBudgetSheet: View {
         }) {
             Text(tab.title)
                 .font(.subheadline)
-                .foregroundColor(currentTab == tab ? .black : .gray)
+                .fontWeight(.medium)
+                .foregroundColor(currentTab == tab ? .white : .gray)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 16)
-                .background(currentTab == tab ? Color.white : Color.clear)
+                .background(currentTab == tab ? Color.blue : Color.clear)
                 .cornerRadius(20)
         }
     }
     
     private func addCategoriesView() -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Add Categories")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.horizontal)
-                .padding(.top)
-            
-            Text("Add categories that are missing from your current budget.")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-                .padding(.horizontal)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Add Categories")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+
+                Text("Add categories that are missing from your current budget.")
+                    .font(.headline)
+                    .fontWeight(.regular)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal)
+            .padding(.top, 16)
             
             ScrollView {
                 VStack(spacing: 16) {
@@ -110,11 +125,19 @@ struct EnhanceBudgetSheet: View {
     
     private func recommendedCategoriesView() -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Recommended Changes")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.horizontal)
-                .padding(.top)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Recommended Changes")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+
+                Text("Suggestions to improve your budget allocation.")
+                    .font(.headline)
+                    .fontWeight(.regular)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal)
+            .padding(.top, 16)
             
             Spacer()
             
@@ -148,7 +171,7 @@ struct EnhanceBudgetSheet: View {
                         .font(.system(size: 14))
                 }
                 .padding()
-                .background(Color.white)
+                .background(section.color.opacity(0.1))
                 .cornerRadius(10)
             }
             
@@ -192,9 +215,9 @@ struct EnhanceBudgetSheet: View {
                 showConfirmation = true
             }) {
                 Image(systemName: "plus")
-                    .foregroundColor(.black)
+                    .foregroundColor(.white)
                     .padding(8)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.blue)
                     .clipShape(Circle())
             }
         }
@@ -283,20 +306,15 @@ struct EnhanceBudgetSheet: View {
             budgetCategoryStore.categories[index] = newCategory
         }
 
-        // Update selectedCategories
         if !selectedCategories.contains(where: { $0.id == newCategory.id }) {
             selectedCategories.append(newCategory)
         } else if let index = selectedCategories.firstIndex(where: { $0.id == newCategory.id }) {
             selectedCategories[index] = newCategory
         }
 
-        // Update budgieModel
         budgieModel.updateCategory(newCategory, newAmount: newCategory.amount ?? 0)
-        
-        // Recalculate budget
         budgieModel.calculateAllocations(selectedCategories: selectedCategories)
         
-        // Close the sheet
         showPopup = false
     }
     
@@ -346,12 +364,16 @@ enum CategorySection: String {
     var title: String {
         rawValue.capitalized
     }
-}
-
-// MARK: - Custom Corner Radius Extension
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
+    
+    var color: Color {
+        switch self {
+        case .debt:
+            return .red
+        case .expenses:
+            return .orange
+        case .savings:
+            return .green
+        }
     }
 }
 
@@ -365,6 +387,8 @@ struct RoundedCorner: Shape {
     }
 }
 
-extension Notification.Name {
-    static let budgetUpdated = Notification.Name("budgetUpdated")
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
 }
