@@ -21,20 +21,51 @@ struct EnhanceBudgetSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Custom Add/Recommended Toggle
-            HStack {
-                Spacer()
-                HStack(spacing: 0) {
-                    tabButton(for: .add)
-                    tabButton(for: .recommended)
+            // Custom Add/Recommend Toggle
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(EditBudgetTab.allCases, id: \.self) { tab in
+                            Button(action: {
+                                withAnimation {
+                                    currentTab = tab
+                                }
+                            }) {
+                                HStack(spacing: 6) {
+                                    Text(tab.emoji)
+                                        .font(.system(size: 14))
+                                    Text(tab.title)
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                }
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 12)
+                                .background(
+                                    Group {
+                                        if currentTab == tab {
+                                            LinearGradient(gradient: Gradient(colors: [Color.green, Color.blue]),
+                                                           startPoint: .topLeading,
+                                                           endPoint: .bottomTrailing)
+                                        } else {
+                                            Color.white
+                                        }
+                                    }
+                                )
+                                .foregroundColor(currentTab == tab ? .white : .primary)
+                                .cornerRadius(16)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: currentTab == tab ? 0 : 1)
+                                )
+                            }
+                            .id(tab)
+                        }
+                    }
+                    .padding(.horizontal, 16)
                 }
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(20)
-                .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
-                Spacer()
+                .frame(height: 50)
+                .padding(.vertical, 8)
             }
-            .padding(.top, 20)
-            .padding(.bottom, 10)
             
             Divider()
                 .background(Color.gray.opacity(0.3))
@@ -76,23 +107,6 @@ struct EnhanceBudgetSheet: View {
         }
         .alert(isPresented: $showConfirmation) {
             confirmationAlert()
-        }
-    }
-    
-    private func tabButton(for tab: EditBudgetTab) -> some View {
-        Button(action: {
-            withAnimation {
-                currentTab = tab
-            }
-        }) {
-            Text(tab.title)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(currentTab == tab ? .white : .gray)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .background(currentTab == tab ? Color.blue : Color.clear)
-                .cornerRadius(20)
         }
     }
     
@@ -162,17 +176,19 @@ struct EnhanceBudgetSheet: View {
                 }
             }) {
                 HStack {
-                    Text(section.title)
+                    Text("\(section.emoji) \(section.title)")
                         .font(.headline)
-                        .foregroundColor(.primary)
+                        .fontWeight(.semibold)
                     Spacer()
+                    Text("\(categoriesForSection(section).count)")
+                        .font(.headline)
+                        .foregroundColor(Color.primary)
                     Image(systemName: expandedSection == section ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.gray)
-                        .font(.system(size: 14))
+                        .foregroundColor(.black)
                 }
-                .padding()
-                .background(section.color.opacity(0.1))
-                .cornerRadius(10)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .background(Color.white)
             }
             
             if expandedSection == section {
@@ -189,10 +205,10 @@ struct EnhanceBudgetSheet: View {
                 .transition(.opacity)
             }
         }
-        .padding(.horizontal)
         .background(Color.white)
         .cornerRadius(10)
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
+        .padding(.horizontal)
     }
     
     private func categoryRow(for category: BudgetCategory) -> some View {
@@ -215,9 +231,9 @@ struct EnhanceBudgetSheet: View {
                 showConfirmation = true
             }) {
                 Image(systemName: "plus")
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .padding(8)
-                    .background(Color.blue)
+                    .background(Color.gray.opacity(0.1))
                     .clipShape(Circle())
             }
         }
@@ -347,12 +363,26 @@ struct EnhanceBudgetSheet: View {
     }
 }
 
-enum EditBudgetTab: String {
+enum EditBudgetTab: String, CaseIterable {
     case add
     case recommended
     
     var title: String {
-        rawValue.capitalized
+        switch self {
+        case .add:
+            return "Add"
+        case .recommended:
+            return "Recommend"
+        }
+    }
+    
+    var emoji: String {
+        switch self {
+        case .add:
+            return "➕"
+        case .recommended:
+            return "📊"
+        }
     }
 }
 
@@ -365,14 +395,14 @@ enum CategorySection: String {
         rawValue.capitalized
     }
     
-    var color: Color {
+    var emoji: String {
         switch self {
         case .debt:
-            return .red
+            return "💳"
         case .expenses:
-            return .orange
+            return "💸"
         case .savings:
-            return .green
+            return "💰"
         }
     }
 }
