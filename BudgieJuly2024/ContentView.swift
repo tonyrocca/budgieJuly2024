@@ -170,6 +170,14 @@ struct ContentView: View {
                         .onChange(of: selectedCategories) { _ in
                             updateScreen()
                         }
+                        .onReceive(NotificationCenter.default.publisher(for: .budgetUpdated)) { notification in
+                            if let userInfo = notification.userInfo,
+                               let categoryId = userInfo["categoryId"] as? UUID,
+                               let amount = userInfo["amount"] as? Double {
+                                allocations[categoryId] = amount
+                            }
+                            updateScreen()
+                        }
         .sheet(item: $selectedSubcategoryForEdit) { subcategory in
             if let category = selectedCategories.first(where: { $0.subcategories.contains(where: { $0.id == subcategory.id }) }) {
                 EditCategoryView(category: category, subcategory: subcategory, budgieModel: $budgieModel) {

@@ -108,6 +108,10 @@ struct EnhanceBudgetSheet: View {
         .alert(isPresented: $showConfirmation) {
             confirmationAlert()
         }
+        .onAppear {
+            // Calculate recommended allocations when sheet appears
+            budgieModel.calculateRecommendedAllocations(selectedCategories: budgetCategoryStore.categories)
+        }
     }
     
     private func addCategoriesView() -> some View {
@@ -180,9 +184,6 @@ struct EnhanceBudgetSheet: View {
                         .font(.headline)
                         .fontWeight(.semibold)
                     Spacer()
-                    Text("\(categoriesForSection(section).count)")
-                        .font(.headline)
-                        .foregroundColor(Color.primary)
                     Image(systemName: expandedSection == section ? "chevron.up" : "chevron.down")
                         .foregroundColor(.black)
                 }
@@ -212,14 +213,16 @@ struct EnhanceBudgetSheet: View {
     }
     
     private func categoryRow(for category: BudgetCategory) -> some View {
-        HStack {
+        let recommendedAmount = calculateRecommendedAmount(for: category)
+        
+        return HStack {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text(category.emoji)
                     Text(category.name)
                         .font(.headline)
                 }
-                Text("Recommended: \(formatCurrency(budgieModel.recommendedAllocations[category.id] ?? 0))")
+                Text("Recommended: \(formatCurrency(recommendedAmount))")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -240,6 +243,49 @@ struct EnhanceBudgetSheet: View {
         .padding()
         .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(10)
+    }
+    
+    private func calculateRecommendedAmount(for category: BudgetCategory) -> Double {
+        let monthlyIncome = budgieModel.paycheckAmount * budgieModel.paymentCadence.numberOfPaychecksPerMonth
+        
+        let recommendedPercentages: [String: Double] = [
+            "Housing": 0.30,
+            "Transportation": 0.15,
+            "Food": 0.12,
+            "Healthcare": 0.10,
+            "Utilities": 0.08,
+            "Personal Care": 0.05,
+            "Entertainment": 0.05,
+            "Subscriptions": 0.03,
+            "Education": 0.05,
+            "Pets": 0.03
+        ]
+        
+        let savingsPercentages: [String: Double] = [
+            "Emergency Fund": 0.10,
+            "Vacation": 0.05,
+            "New Car": 0.05,
+            "Home Renovation": 0.07,
+            "Investment": 0.10,
+            "Wedding": 0.05,
+            "Education Fund": 0.05,
+            "Retirement": 0.15,
+            "House Down Payment": 0.10,
+            "College Fund": 0.10,
+            "Gadgets": 0.03,
+            "Charity": 0.05,
+            "Business Investment": 0.10,
+            "Clothing Fund": 0.03
+        ]
+        
+        switch category.type {
+        case .need, .want:
+            return monthlyIncome * (recommendedPercentages[category.name] ?? 0.05)
+        case .saving:
+            return monthlyIncome * (savingsPercentages[category.name] ?? 0.05)
+        case .debt:
+            return category.amount ?? (monthlyIncome * 0.1)
+        }
     }
     
     private func addCustomCategoryButton() -> some View {
@@ -312,31 +358,59 @@ struct EnhanceBudgetSheet: View {
     }
     
     private func addCategoryToBudget(_ category: BudgetCategory) {
+        // Calculate recommended amount
+        let recommendedAmount = calculateRecommendedAmount(for: category)
+        
+        // Create new category with recommended amount
         var newCategory = category
         newCategory.isSelected = true
-        newCategory.amount = budgieModel.recommendedAllocations[category.id] ?? 0
-
+        newCategory.amount = recommendedAmount
+        
+        // Update budgetCategoryStore
         if !budgetCategoryStore.categories.contains(where: { $0.id == category.id }) {
             budgetCategoryStore.addCategory(newCategory)
         } else if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
             budgetCategoryStore.categories[index] = newCategory
         }
-
+        
+        // Update selected categories
         if !selectedCategories.contains(where: { $0.id == newCategory.id }) {
             selectedCategories.append(newCategory)
         } else if let index = selectedCategories.firstIndex(where: { $0.id == newCategory.id }) {
             selectedCategories[index] = newCategory
         }
-
-        budgieModel.updateCategory(newCategory, newAmount: newCategory.amount ?? 0)
-        budgieModel.calculateAllocations(selectedCategories: selectedCategories)
+        
+        // Update budgie model allocations
+        budgieModel.allocations[newCategory.id] = recommendedAmount
+        budgieModel.recommendedAllocations[newCategory.id] = recommendedAmount
+        budgieModel.updateCategory(newCategory, newAmount: recommendedAmount)
+        
+        // Force recalculate all allocations
+        let updatedCategories = selectedCategories.map { category -> BudgetCategory in
+            var updatedCategory = category
+            if category.id == newCategory.id {
+                updatedCategory.amount = recommendedAmount
+            }
+            return updatedCategory
+        }
+        
+        budgieModel.calculateAllocations(selectedCategories: updatedCategories)
+        budgieModel.calculateRecommendedAllocations(selectedCategories: updatedCategories)
+        budgieModel.calculatePerfectBudget(selectedCategories: updatedCategories)
+        
+        // Update allocations in ContentView's state
+        NotificationCenter.default.post(
+            name: .budgetUpdated,
+            object: nil,
+            userInfo: ["categoryId": newCategory.id, "amount": recommendedAmount]
+        )
         
         showPopup = false
     }
     
     private func calculateBudgetImpact() -> (change: String, amount: Double, newTotal: Double) {
         let currentTotal = budgieModel.allocations.values.reduce(0, +)
-        let newAmount = budgieModel.recommendedAllocations[categoryToAdd?.id ?? UUID()] ?? 0
+        let newAmount = categoryToAdd.map { calculateRecommendedAmount(for: $0) } ?? 0
         let newTotal = currentTotal + newAmount
         let change = newAmount >= 0 ? "increase" : "decrease"
         return (change, newAmount, budgieModel.paycheckAmount - newTotal)
@@ -362,6 +436,7 @@ struct EnhanceBudgetSheet: View {
         return formatter.string(from: NSNumber(value: amount)) ?? "$0.00"
     }
 }
+
 
 enum EditBudgetTab: String, CaseIterable {
     case add
@@ -421,4 +496,8 @@ extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
     }
+}
+
+extension Notification.Name {
+    static let budgetUpdated = Notification.Name("budgetUpdated")
 }
