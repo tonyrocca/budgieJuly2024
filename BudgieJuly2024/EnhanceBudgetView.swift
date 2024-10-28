@@ -183,17 +183,19 @@ struct EnhanceBudgetSheet: View {
                     Text("\(section.emoji) \(section.title)")
                         .font(.headline)
                         .fontWeight(.semibold)
+                        .foregroundColor(.primary)
                     Spacer()
                     Image(systemName: expandedSection == section ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.black)
+                        .foregroundColor(.gray)
+                        .font(.system(size: 12))
                 }
-                .padding(.vertical, 12)
                 .padding(.horizontal, 16)
+                .padding(.vertical, 14)
                 .background(Color.white)
             }
             
             if expandedSection == section {
-                VStack(spacing: 12) {
+                VStack(spacing: 1) {
                     ForEach(categoriesForSection(section), id: \.id) { category in
                         if !selectedCategories.contains(where: { $0.id == category.id }) {
                             categoryRow(for: category)
@@ -201,14 +203,17 @@ struct EnhanceBudgetSheet: View {
                     }
                     
                     addCustomCategoryButton()
+                        .padding(.top, 8)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 16)
                 }
-                .padding(.top, 8)
+                .background(Color(UIColor.secondarySystemBackground))
                 .transition(.opacity)
             }
         }
         .background(Color.white)
-        .cornerRadius(10)
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.03), radius: 1, x: 0, y: 1)
         .padding(.horizontal)
     }
     
@@ -217,10 +222,11 @@ struct EnhanceBudgetSheet: View {
         
         return HStack {
             VStack(alignment: .leading, spacing: 4) {
-                HStack {
+                HStack(spacing: 6) {
                     Text(category.emoji)
                     Text(category.name)
-                        .font(.headline)
+                        .font(.system(.body, design: .rounded))
+                        .fontWeight(.medium)
                 }
                 Text("Recommended: \(formatCurrency(recommendedAmount))")
                     .font(.subheadline)
@@ -234,15 +240,16 @@ struct EnhanceBudgetSheet: View {
                 showConfirmation = true
             }) {
                 Image(systemName: "plus")
-                    .foregroundColor(.black)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.primary)
                     .padding(8)
-                    .background(Color.gray.opacity(0.1))
+                    .background(Color.gray.opacity(0.08))
                     .clipShape(Circle())
             }
         }
-        .padding()
-        .background(Color(UIColor.secondarySystemBackground))
-        .cornerRadius(10)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color(UIColor.systemBackground))
     }
     
     private func calculateRecommendedAmount(for category: BudgetCategory) -> Double {
@@ -293,15 +300,17 @@ struct EnhanceBudgetSheet: View {
             showAddCategoryForm = true
         }) {
             HStack {
-                Image(systemName: "plus")
+                Image(systemName: "plus.circle.fill")
+                    .foregroundColor(.blue.opacity(0.8))
                 Text("Add Custom Category")
+                    .font(.system(.subheadline, design: .rounded))
+                    .fontWeight(.medium)
             }
-            .font(.subheadline)
-            .foregroundColor(.blue)
-            .padding()
+            .padding(.vertical, 12)
             .frame(maxWidth: .infinity)
-            .background(Color.blue.opacity(0.1))
-            .cornerRadius(10)
+            .background(Color.blue.opacity(0.08))
+            .foregroundColor(.blue)
+            .cornerRadius(8)
         }
     }
     
@@ -445,9 +454,9 @@ enum EditBudgetTab: String, CaseIterable {
     var title: String {
         switch self {
         case .add:
-            return "Add"
+            return "Add Categories"
         case .recommended:
-            return "Recommend"
+            return "Recommendations"
         }
     }
     
