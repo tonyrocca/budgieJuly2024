@@ -218,7 +218,18 @@ class BudgieModel: ObservableObject {
     }
     
     func addCategory(_ category: BudgetCategory) {
-        BudgetCategoryStore.shared.addCategory(category)
+        BudgetCategoryStore.shared.addCategory(
+            name: category.name,
+            emoji: category.emoji,
+            allocationPercentage: category.allocationPercentage,
+            subcategories: category.subcategories,
+            description: category.description,
+            type: category.type,
+            amount: category.amount,
+            dueDate: category.dueDate,
+            isSelected: category.isSelected,
+            priority: category.priority
+        )
         calculateAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
         calculateRecommendedAllocations(selectedCategories: BudgetCategoryStore.shared.categories)
         calculatePerfectBudget(selectedCategories: BudgetCategoryStore.shared.categories)
@@ -275,9 +286,13 @@ class BudgieModel: ObservableObject {
             }
         } else {
             return selectedCategories.sorted { (a, b) -> Bool in
-                let aAmount = allocations[a.id] ?? 0
-                let bAmount = allocations[b.id] ?? 0
-                return (aAmount / (a.amount ?? 1)) > (bAmount / (b.amount ?? 1))
+                if a.priority != b.priority {
+                    return a.priority < b.priority
+                } else {
+                    let aAmount = allocations[a.id] ?? 0
+                    let bAmount = allocations[b.id] ?? 0
+                    return (aAmount / (a.amount ?? 1)) > (bAmount / (b.amount ?? 1))
+                }
             }
         }
     }

@@ -164,11 +164,21 @@ struct DebtSelectionView: View {
             emoji: "💳",
             allocationPercentage: 0.0,
             subcategories: [],
-            description: "Custom debt",
+            description: "Custom debt category",
             type: .debt,
-            isSelected: true
+            isSelected: true,
+            priority: 5  // Default to lowest priority
         )
-        budgetCategoryStore.addCategory(newCategory)
+        budgetCategoryStore.addCategory(
+            name: newDebtName,
+            emoji: "💳",
+            allocationPercentage: 0.0,
+            subcategories: [],
+            description: "Custom debt category",
+            type: .debt,
+            isSelected: true,
+            priority: 5  // Default to lowest priority
+        )
         selectedDebtCategories.append(newCategory.id)
         showAddDebtForm = false
         newDebtName = ""

@@ -339,14 +339,18 @@ struct EnhanceBudgetSheet: View {
     }
     
     private func addCustomCategory() {
+        let emoji = newCategoryType == .debt ? "💳" :
+                    newCategoryType == .saving ? "💰" : "🔹"
+        
         let newCategory = BudgetCategory(
             name: newCategoryName,
-            emoji: "🔹",
+            emoji: emoji,
             allocationPercentage: 0.0,
             subcategories: [],
             description: "Custom category",
             type: newCategoryType,
-            isSelected: true
+            isSelected: true,
+            priority: 5  // Default to lowest priority
         )
         categoryToAdd = newCategory
         showConfirmation = true
@@ -377,24 +381,34 @@ struct EnhanceBudgetSheet: View {
         
         // Update budgetCategoryStore
         if !budgetCategoryStore.categories.contains(where: { $0.id == category.id }) {
-            budgetCategoryStore.addCategory(newCategory)
+            // Use existing BudgetCategoryStore method with all required parameters
+            budgetCategoryStore.addCategory(
+                name: category.name,
+                emoji: category.emoji,
+                allocationPercentage: category.allocationPercentage,
+                subcategories: category.subcategories,
+                description: category.description,
+                type: category.type,
+                amount: recommendedAmount,
+                dueDate: category.dueDate,
+                isSelected: true,
+                priority: category.priority
+            )
         } else if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
             budgetCategoryStore.categories[index] = newCategory
         }
         
-        // Update selected categories
+        // Rest of the existing function remains the same
         if !selectedCategories.contains(where: { $0.id == newCategory.id }) {
             selectedCategories.append(newCategory)
         } else if let index = selectedCategories.firstIndex(where: { $0.id == newCategory.id }) {
             selectedCategories[index] = newCategory
         }
         
-        // Update budgie model allocations
         budgieModel.allocations[newCategory.id] = recommendedAmount
         budgieModel.recommendedAllocations[newCategory.id] = recommendedAmount
         budgieModel.updateCategory(newCategory, newAmount: recommendedAmount)
         
-        // Force recalculate all allocations
         let updatedCategories = selectedCategories.map { category -> BudgetCategory in
             var updatedCategory = category
             if category.id == newCategory.id {
@@ -407,7 +421,6 @@ struct EnhanceBudgetSheet: View {
         budgieModel.calculateRecommendedAllocations(selectedCategories: updatedCategories)
         budgieModel.calculatePerfectBudget(selectedCategories: updatedCategories)
         
-        // Update allocations in ContentView's state
         NotificationCenter.default.post(
             name: .budgetUpdated,
             object: nil,

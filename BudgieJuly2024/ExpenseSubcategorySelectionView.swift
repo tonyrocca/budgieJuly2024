@@ -181,7 +181,12 @@ struct ExpenseSubcategorySelectionView: View {
     }
 
     private func addSubcategory() {
-        let newSubcategory = BudgetSubCategory(name: newSubcategoryName, allocationPercentage: 0.0, description: "")
+        let newSubcategory = BudgetSubCategory(
+            name: newSubcategoryName,
+            allocationPercentage: 0.0,
+            description: "",
+            priority: 5  // Default to lowest priority
+        )
         if let categoryID = currentCategoryID,
            let categoryIndex = budgetCategoryStore.categories.firstIndex(where: { $0.id == categoryID }) {
             budgetCategoryStore.categories[categoryIndex].subcategories.append(newSubcategory)

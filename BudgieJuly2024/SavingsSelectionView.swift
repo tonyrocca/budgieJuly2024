@@ -158,9 +158,19 @@ struct SavingsSelectionView: View {
             subcategories: [],
             description: "Custom savings goal",
             type: .saving,
-            isSelected: true
+            isSelected: true,
+            priority: 5  // Default to lowest priority
         )
-        budgetCategoryStore.addCategory(newCategory)
+        budgetCategoryStore.addCategory(
+            name: newSavingsName,
+            emoji: "💰",
+            allocationPercentage: 0.0,
+            subcategories: [],
+            description: "Custom savings goal",
+            type: .saving,
+            isSelected: true,
+            priority: 5  // Default to lowest priority
+        )
         showAddSavingsForm = false
         newSavingsName = ""
     }

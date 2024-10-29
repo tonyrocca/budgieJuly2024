@@ -390,25 +390,65 @@ struct ContentView: View {
     
     // MARK: - Allocation List View
     private func allocationListView() -> some View {
-        VStack(spacing: 0) {
-            if hasDebt {
-                sectionView(title: "Debt", color: .red, categories: selectedCategories.filter { $0.type == .debt })
+        VStack(spacing: 16) {
+            if budgetDeficitOrSurplus < 0 {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.red)
+                    Text("You're over budget by \(currencyFormatter.string(from: NSNumber(value: abs(budgetDeficitOrSurplus))) ?? "$0")")
+                        .font(.subheadline)
+                        .foregroundColor(.red)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(UIColor.systemBackground))
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.red.opacity(0.2), lineWidth: 1)
+                )
             }
-            if hasExpenses {
-                sectionView(title: "Expenses", color: .orange, categories: selectedCategories.filter { $0.type == .need || $0.type == .want })
-            }
-            if hasSavings {
-                sectionView(title: "Savings", color: .green, categories: selectedCategories.filter { $0.type == .saving })
+
+            VStack(spacing: 0) {
+                if hasDebt {
+                    sectionView(title: "Debt", color: .red, categories: prioritizedCategories(type: .debt))
+                }
+                if hasExpenses {
+                    sectionView(title: "Expenses", color: .orange, categories: prioritizedCategories(type: .need))
+                }
+                if hasSavings {
+                    sectionView(title: "Savings", color: .green, categories: prioritizedCategories(type: .saving))
+                }
             }
         }
         .padding(.horizontal)
+    }
+
+    private func prioritizedCategories(type: CategoryType) -> [BudgetCategory] {
+        let filteredCategories = selectedCategories.filter {
+            if type == .need {
+                return $0.type == .need || $0.type == .want
+            }
+            return $0.type == type
+        }
+        
+        // Only sort by priority if there's a deficit
+        if budgetDeficitOrSurplus < 0 {
+            return filteredCategories.sorted(by: { $0.priority > $1.priority })
+        }
+        return filteredCategories
     }
     
     private func sectionView(title: String, color: Color, categories: [BudgetCategory]) -> some View {
         VStack(spacing: 0) {
             SectionHeaderView(title: title, color: color)
             VStack(spacing: 8) {
-                ForEach(categories) { category in
+                // Sort categories by priority only if there's a deficit
+                let sortedCategories = budgetDeficitOrSurplus < 0
+                    ? categories.sorted(by: { $0.priority > $1.priority })
+                    : categories
+                    
+                ForEach(sortedCategories) { category in
                     categoryView(category)
                 }
             }
@@ -423,15 +463,23 @@ struct ContentView: View {
     
     // MARK: - Updated Category View
     private func categoryView(_ category: BudgetCategory) -> some View {
-        VStack(spacing: 0) {
+        let shouldHighlight = budgetDeficitOrSurplus < 0 && isHighlightedForRemoval(category)
+        
+        return VStack(spacing: 0) {
+            // Category Header
             HStack {
                 Text("\(category.emoji) \(category.name)")
                     .font(.headline)
                     .fontWeight(.semibold)
+                if shouldHighlight {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 12))
+                        .foregroundColor(.red.opacity(0.8))
+                }
                 Spacer()
-                Text("\(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")")
+                Text(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")
                     .font(.headline)
-                    .foregroundColor(Color.primary)
+                    .foregroundColor(shouldHighlight ? .red.opacity(0.8) : Color.primary)
                 Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
                     .foregroundColor(.black)
             }
@@ -447,13 +495,30 @@ struct ContentView: View {
             
             if expandedCategoryIndex == category.id {
                 VStack(spacing: 0) {
+                    // Warning message for highlighted items
+                    if shouldHighlight {
+                        HStack(spacing: 6) {
+                            Text("Consider adjusting this category based on priority")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        
+                        Divider()
+                            .background(Color.gray.opacity(0.3))
+                    }
+                    
+                    // Recommended Amount
                     if let recommendedAmount = budgieModel.recommendedAllocations[category.id] {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Recommended Amount:")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundColor(.secondary)
-                            Text("\(currencyFormatter.string(from: NSNumber(value: recommendedAmount)) ?? "$0")")
+                            Text(currencyFormatter.string(from: NSNumber(value: recommendedAmount)) ?? "$0")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.primary)
@@ -462,28 +527,37 @@ struct ContentView: View {
                         .padding(.vertical, 12)
                         .padding(.horizontal, 16)
                         .background(Color(UIColor.secondarySystemBackground))
-                    }
-                    
-                    Divider()
-                        .background(Color.gray.opacity(0.3))
-                    
-                    descriptionView(for: category)
-                    
-                    if let dueDate = category.dueDate {
+                        
                         Divider()
                             .background(Color.gray.opacity(0.3))
-                        dueDateView(for: dueDate)
                     }
+                    
+                    // Description
+                    descriptionView(for: category)
                     
                     Divider()
                         .background(Color.gray.opacity(0.3))
                     
+                    // Due Date if applicable
+                    if let dueDate = category.dueDate {
+                        dueDateView(for: dueDate)
+                        Divider()
+                            .background(Color.gray.opacity(0.3))
+                    }
+                    
+                    // Edit/Delete buttons
                     editDeleteButtons(for: category)
                 }
             }
         }
         .background(Color.white)
         .cornerRadius(10)
+        .overlay(
+            shouldHighlight ?
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.red.opacity(0.2), lineWidth: 1)
+                : nil
+        )
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
     }
     
@@ -548,6 +622,25 @@ struct ContentView: View {
         .cornerRadius(10)
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 2)
         .padding(.horizontal, 16)
+    }
+    
+    private func isHighlightedForRemoval(_ category: BudgetCategory) -> Bool {
+        guard budgetDeficitOrSurplus < 0 else { return false }
+        
+        var remainingDeficit = abs(budgetDeficitOrSurplus)
+        let sortedCategories = selectedCategories.sorted { $0.priority > $1.priority }
+        
+        for cat in sortedCategories {
+            if remainingDeficit <= 0 {
+                break
+            }
+            if cat.id == category.id {
+                return true
+            }
+            remainingDeficit -= (allocations[cat.id] ?? 0)
+        }
+        
+        return false
     }
     
     // MARK: - Edit/Delete Buttons
