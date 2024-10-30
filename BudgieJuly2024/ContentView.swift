@@ -140,46 +140,59 @@ struct ContentView: View {
                 }
                 
                 if showPopup {
-                                    Color.black.opacity(0.3)
-                                        .edgesIgnoringSafeArea(.all)
-                                        .onTapGesture {
-                                            withAnimation {
-                                                showPopup = false
-                                            }
-                                        }
-                                    
-                                    EnhanceBudgetSheet(
-                                        budgieModel: $budgieModel,
-                                        showPopup: $showPopup,
-                                        selectedCategories: $selectedCategories
-                                    )
-                                    .environmentObject(budgetCategoryStore)
-                                }
+                    Color.black.opacity(0.3)
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            withAnimation {
+                                showPopup = false
                             }
-                            .navigationBarHidden(true)
-                            .edgesIgnoringSafeArea(.all)
                         }
-                        .navigationViewStyle(StackNavigationViewStyle())
-                        .environmentObject(budgetCategoryStore)
-                        .onAppear {
-                            formatAndCalculatePaycheckAmount()
-                            calculateBudget()
-                            populateInitialRecommendedAllocations()
-                        }
-                        .onChange(of: budgetCategoryStore.categories) { _ in
-                            updateScreen()
-                        }
-                        .onChange(of: selectedCategories) { _ in
-                            updateScreen()
-                        }
-                        .onReceive(NotificationCenter.default.publisher(for: .budgetUpdated)) { notification in
-                            if let userInfo = notification.userInfo,
-                               let categoryId = userInfo["categoryId"] as? UUID,
-                               let amount = userInfo["amount"] as? Double {
-                                allocations[categoryId] = amount
-                            }
-                            updateScreen()
-                        }
+                    
+                    EnhanceBudgetSheet(
+                        budgieModel: $budgieModel,
+                        showPopup: $showPopup,
+                        selectedCategories: $selectedCategories
+                    )
+                    .environmentObject(budgetCategoryStore)
+                }
+            }
+            .navigationBarHidden(true)
+            .edgesIgnoringSafeArea(.all)
+        }
+        .navigationViewStyle(StackNavigationViewStyle())
+        .environmentObject(budgetCategoryStore)
+        .onAppear {
+            formatAndCalculatePaycheckAmount()
+            calculateBudget()
+            populateInitialRecommendedAllocations()
+        }
+        .onChange(of: budgetCategoryStore.categories) { _ in
+            updateScreen()
+        }
+        .onChange(of: selectedCategories) { _ in
+            updateScreen()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .budgetUpdated)) { notification in
+            if let userInfo = notification.userInfo,
+               let categoryId = userInfo["categoryId"] as? UUID,
+               let amount = userInfo["amount"] as? Double {
+                allocations[categoryId] = amount
+            }
+            updateScreen()
+        }
+        .alert(isPresented: $showConfirmation) {
+            let impact = calculateBudgetImpact()
+            return Alert(
+                title: Text("Add Category"),
+                message: Text("Adding '\(categoryToAdd?.name ?? "")' will \(impact.change) your budget by \(formatCurrency(abs(impact.amount))).\nYour new \(impact.amount >= 0 ? "surplus" : "deficit") will be \(formatCurrency(abs(impact.newTotal)))."),
+                primaryButton: .default(Text("Add")) {
+                    if let category = categoryToAdd {
+                        addCategoryToBudget(category)
+                    }
+                },
+                secondaryButton: .cancel()
+            )
+        }
         .sheet(item: $selectedSubcategoryForEdit) { subcategory in
             if let category = selectedCategories.first(where: { $0.subcategories.contains(where: { $0.id == subcategory.id }) }) {
                 EditCategoryView(category: category, subcategory: subcategory, budgieModel: $budgieModel) {
@@ -188,6 +201,35 @@ struct ContentView: View {
             }
         }
     }
+    
+    // MARK: - Budget Impact Calculations
+    private func calculateBudgetImpact() -> (change: String, amount: Double, newTotal: Double) {
+        // Get current total allocated amount
+        let currentTotal = allocations.values.reduce(0, +)
+        
+        // Calculate new amount for the category being added
+        let newAmount = categoryToAdd.map { calculateRecommendedAmount(for: $0) } ?? 0
+        
+        // Calculate the new total after adding the category
+        let newTotal = currentTotal + newAmount
+        
+        // Use nil coalescing to safely unwrap paycheckAmount
+        let currentPaycheck = paycheckAmount ?? 0
+        
+        // Determine if this will increase or decrease the budget
+        let change = newAmount >= 0 ? "increase" : "decrease"
+        
+        // Return the impact details with safely unwrapped paycheckAmount
+        return (change, newAmount, currentPaycheck - newTotal)
+    }
+        
+        // MARK: - Currency Formatting
+        private func formatCurrency(_ amount: Double) -> String {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .currency
+            formatter.locale = Locale.current
+            return formatter.string(from: NSNumber(value: amount)) ?? "$0.00"
+        }
     
     // MARK: - Populate Initial Recommended Allocations
     private func populateInitialRecommendedAllocations() {

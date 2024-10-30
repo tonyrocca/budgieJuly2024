@@ -19,7 +19,7 @@ struct PerfectBudgetView: View {
         return formatter
     }()
 
-    init(paycheckAmount: Double, paymentCadence: PaymentCadence) {
+    init(paycheckAmount: Double = 0, paymentCadence: PaymentCadence) {
         self.paycheckAmount = paycheckAmount
         self.paymentCadence = paymentCadence
         self._perfectBudgieModel = State(initialValue: BudgieModel(paycheckAmount: paycheckAmount))
