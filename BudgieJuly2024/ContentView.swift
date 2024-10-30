@@ -50,7 +50,9 @@ struct ContentView: View {
     @State private var selectedTab: BudgetTab = .yourBudget
     @State private var selectedCategories: [BudgetCategory]
     @State private var isMenuOpen = false
-    @State private var hasBudgetingExperience: Bool  // Added this line
+    @State private var hasBudgetingExperience: Bool
+    @State private var categoryToAdd: BudgetCategory?
+    @State private var showConfirmation = false
     @Namespace private var animation
     
     let hasDebt: Bool
@@ -391,6 +393,7 @@ struct ContentView: View {
     // MARK: - Allocation List View
     private func allocationListView() -> some View {
         VStack(spacing: 16) {
+            // Existing deficit warning
             if budgetDeficitOrSurplus < 0 {
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -409,6 +412,7 @@ struct ContentView: View {
                 )
             }
 
+            // Existing categories
             VStack(spacing: 0) {
                 if hasDebt {
                     sectionView(title: "Debt", color: .red, categories: prioritizedCategories(type: .debt))
@@ -420,8 +424,101 @@ struct ContentView: View {
                     sectionView(title: "Savings", color: .green, categories: prioritizedCategories(type: .saving))
                 }
             }
+            
+            // New surplus recommendations section
+            if budgetDeficitOrSurplus > 0 {
+                surplusRecommendationsSection
+            }
         }
         .padding(.horizontal)
+    }
+
+    // New surplus section
+    private var surplusRecommendationsSection: some View {
+        VStack(spacing: 12) {
+            // Header
+            HStack(spacing: 8) {
+                Image(systemName: "plus.circle.fill")
+                    .foregroundColor(.green)
+                Text("Recommended Categories")
+                    .font(.subheadline)
+                    .foregroundColor(.green)
+                Spacer()
+                Text(currencyFormatter.string(from: NSNumber(value: budgetDeficitOrSurplus)) ?? "$0")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.green)
+            }
+            .padding()
+            .background(Color(UIColor.systemBackground))
+            .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.green.opacity(0.2), lineWidth: 1)
+            )
+            
+            // Recommended categories list
+            VStack(spacing: 1) {
+                ForEach(getRecommendedCategories(), id: \.id) { category in
+                    recommendedCategoryRow(category)
+                }
+            }
+            .background(Color(UIColor.systemBackground))
+            .cornerRadius(10)
+        }
+    }
+
+    private func recommendedCategoryRow(_ category: BudgetCategory) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(category.emoji)
+                    Text(category.name)
+                        .font(.system(.body, design: .rounded))
+                        .fontWeight(.medium)
+                }
+                Text("Recommended: \(currencyFormatter.string(from: NSNumber(value: calculateRecommendedAmount(for: category))) ?? "$0")")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            Button(action: {
+                categoryToAdd = category
+                showConfirmation = true
+            }) {
+                Image(systemName: "plus")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .padding(8)
+                    .background(Color.gray.opacity(0.08))
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color(UIColor.systemBackground))
+    }
+
+    private func getRecommendedCategories() -> [BudgetCategory] {
+        let availableCategories = budgetCategoryStore.categories.filter { category in
+            !selectedCategories.contains(where: { $0.id == category.id }) &&
+            category.type != .debt  // Exclude debt categories
+        }
+        
+        return Array(availableCategories.sorted { $0.priority < $1.priority }.prefix(3))
+    }
+
+    private func calculateRecommendedAmount(for category: BudgetCategory) -> Double {
+        // Calculate recommended allocations if not already done
+        budgieModel.calculateRecommendedAllocations(selectedCategories: budgetCategoryStore.categories)
+        
+        // Get the recommended amount from budgieModel
+        let recommendedAmount = budgieModel.recommendedAllocations[category.id] ?? 0
+        
+        // Make sure it doesn't exceed available surplus
+        return min(recommendedAmount, budgetDeficitOrSurplus)
     }
 
     private func prioritizedCategories(type: CategoryType) -> [BudgetCategory] {
@@ -439,7 +536,49 @@ struct ContentView: View {
         return filteredCategories
     }
     
-    private func sectionView(title: String, color: Color, categories: [BudgetCategory]) -> some View {
+private func addCategoryToBudget(_ category: BudgetCategory) {
+    // Calculate recommended amount
+    let recommendedAmount = calculateRecommendedAmount(for: category)
+    
+    // Create new category with recommended amount
+    var newCategory = category
+    newCategory.isSelected = true
+    newCategory.amount = recommendedAmount
+    
+    // Update budgetCategoryStore
+    if !budgetCategoryStore.categories.contains(where: { $0.id == category.id }) {
+        budgetCategoryStore.addCategory(
+            name: category.name,
+            emoji: category.emoji,
+            allocationPercentage: category.allocationPercentage,
+            subcategories: category.subcategories,
+            description: category.description,
+            type: category.type,
+            amount: recommendedAmount,
+            dueDate: nil,
+            isSelected: true,
+            priority: category.priority
+        )
+    }
+    
+    // Update selected categories
+    if !selectedCategories.contains(where: { $0.id == newCategory.id }) {
+        selectedCategories.append(newCategory)
+    }
+    
+    // Update budgie model allocations
+    allocations[newCategory.id] = recommendedAmount
+    budgieModel.recommendedAllocations[newCategory.id] = recommendedAmount
+    
+    // Force recalculate all allocations
+    calculateBudget()
+    
+    // Clear the addition state
+    categoryToAdd = nil
+    showConfirmation = false
+}
+
+private func sectionView(title: String, color: Color, categories: [BudgetCategory]) -> some View {
         VStack(spacing: 0) {
             SectionHeaderView(title: title, color: color)
             VStack(spacing: 8) {
