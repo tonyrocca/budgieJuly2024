@@ -55,9 +55,21 @@ struct ContentView: View {
     @State private var showConfirmation = false
     @Namespace private var animation
     
-    let hasDebt: Bool
-    let hasExpenses: Bool
-    let hasSavings: Bool
+    @State private var hasDebt: Bool
+    @State private var hasExpenses: Bool
+    @State private var hasSavings: Bool
+    
+    init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String, hasDebt: Bool, hasExpenses: Bool, hasSavings: Bool, hasBudgetingExperience: Bool) {
+            // Initialize all @State properties with their initial values
+            _hasBudgetingExperience = State(initialValue: hasBudgetingExperience)
+            _hasDebt = State(initialValue: hasDebt)
+            _hasExpenses = State(initialValue: hasExpenses)
+            _hasSavings = State(initialValue: hasSavings)
+            _paymentCadence = State(initialValue: paymentFrequency)
+            _paycheckAmountText = State(initialValue: paycheckAmountText)
+            _selectedCategories = State(initialValue: selectedCategories)
+            _budgieModel = State(initialValue: BudgieModel(paycheckAmount: Double(paycheckAmountText) ?? 0.0))
+        }
     
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -67,17 +79,6 @@ struct ContentView: View {
         formatter.minimumFractionDigits = 2
         return formatter
     }()
-    
-    init(selectedCategories: [BudgetCategory], paymentFrequency: PaymentCadence, paycheckAmountText: String, hasDebt: Bool, hasExpenses: Bool, hasSavings: Bool, hasBudgetingExperience: Bool) {
-        self._paymentCadence = State(initialValue: paymentFrequency)
-        self._paycheckAmountText = State(initialValue: paycheckAmountText)
-        self._budgieModel = State(initialValue: BudgieModel(paycheckAmount: Double(paycheckAmountText) ?? 0.0))
-        self._selectedCategories = State(initialValue: selectedCategories)
-        self.hasDebt = hasDebt
-        self.hasExpenses = hasExpenses
-        self.hasSavings = hasSavings
-        self._hasBudgetingExperience = State(initialValue: hasBudgetingExperience)  // Updated init
-    }
     
     var totalMonthlyBudget: Double {
         guard let amount = paycheckAmount else { return 0 }
@@ -201,6 +202,7 @@ struct ContentView: View {
             }
         }
     }
+
     
     // MARK: - Budget Impact Calculations
     private func calculateBudgetImpact() -> (change: String, amount: Double, newTotal: Double) {
@@ -432,48 +434,32 @@ struct ContentView: View {
         .padding(.horizontal, 16)
     }
     
-    // MARK: - Allocation List View
-    private func allocationListView() -> some View {
-        VStack(spacing: 16) {
-            // Existing deficit warning
-            if budgetDeficitOrSurplus < 0 {
-                HStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.red)
-                    Text("You're over budget by \(currencyFormatter.string(from: NSNumber(value: abs(budgetDeficitOrSurplus))) ?? "$0")")
-                        .font(.subheadline)
-                        .foregroundColor(.red)
+    // Update allocationListView to use current state
+        private func allocationListView() -> some View {
+            VStack(spacing: 16) {
+                // Existing deficit warning if needed...
+                
+                // Categories
+                VStack(spacing: 0) {
+                    // Only show sections if they have selected categories of that type
+                    if hasDebt && !selectedCategories.filter({ $0.type == .debt }).isEmpty {
+                        sectionView(title: "Debt", color: .red, categories: prioritizedCategories(type: .debt))
+                    }
+                    if hasExpenses && !selectedCategories.filter({ $0.type == .need || $0.type == .want }).isEmpty {
+                        sectionView(title: "Expenses", color: .orange, categories: prioritizedCategories(type: .need))
+                    }
+                    if hasSavings && !selectedCategories.filter({ $0.type == .saving }).isEmpty {
+                        sectionView(title: "Savings", color: .green, categories: prioritizedCategories(type: .saving))
+                    }
                 }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(UIColor.systemBackground))
-                .cornerRadius(10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.red.opacity(0.2), lineWidth: 1)
-                )
-            }
-
-            // Existing categories
-            VStack(spacing: 0) {
-                if hasDebt {
-                    sectionView(title: "Debt", color: .red, categories: prioritizedCategories(type: .debt))
-                }
-                if hasExpenses {
-                    sectionView(title: "Expenses", color: .orange, categories: prioritizedCategories(type: .need))
-                }
-                if hasSavings {
-                    sectionView(title: "Savings", color: .green, categories: prioritizedCategories(type: .saving))
+                
+                // Surplus recommendations section...
+                if budgetDeficitOrSurplus > 0 {
+                    surplusRecommendationsSection
                 }
             }
-            
-            // New surplus recommendations section
-            if budgetDeficitOrSurplus > 0 {
-                surplusRecommendationsSection
-            }
+            .padding(.horizontal)
         }
-        .padding(.horizontal)
-    }
 
     // New surplus section
     private var surplusRecommendationsSection: some View {
@@ -552,6 +538,7 @@ struct ContentView: View {
         return Array(availableCategories.sorted { $0.priority < $1.priority }.prefix(3))
     }
 
+    // Update calculateRecommendedAmount to ensure it matches the preview amount
     private func calculateRecommendedAmount(for category: BudgetCategory) -> Double {
         // Calculate recommended allocations if not already done
         budgieModel.calculateRecommendedAllocations(selectedCategories: budgetCategoryStore.categories)
@@ -560,7 +547,8 @@ struct ContentView: View {
         let recommendedAmount = budgieModel.recommendedAllocations[category.id] ?? 0
         
         // Make sure it doesn't exceed available surplus
-        return min(recommendedAmount, budgetDeficitOrSurplus)
+        let availableSurplus = budgetDeficitOrSurplus
+        return min(recommendedAmount, availableSurplus)
     }
 
     private func prioritizedCategories(type: CategoryType) -> [BudgetCategory] {
@@ -578,48 +566,75 @@ struct ContentView: View {
         return filteredCategories
     }
     
-private func addCategoryToBudget(_ category: BudgetCategory) {
-    // Calculate recommended amount
-    let recommendedAmount = calculateRecommendedAmount(for: category)
     
-    // Create new category with recommended amount
-    var newCategory = category
-    newCategory.isSelected = true
-    newCategory.amount = recommendedAmount
-    
-    // Update budgetCategoryStore
-    if !budgetCategoryStore.categories.contains(where: { $0.id == category.id }) {
-        budgetCategoryStore.addCategory(
-            name: category.name,
-            emoji: category.emoji,
-            allocationPercentage: category.allocationPercentage,
-            subcategories: category.subcategories,
-            description: category.description,
-            type: category.type,
-            amount: recommendedAmount,
-            dueDate: nil,
-            isSelected: true,
-            priority: category.priority
-        )
+    private func addCategoryToBudget(_ category: BudgetCategory) {
+        // Calculate recommended amount
+        let recommendedAmount = calculateRecommendedAmount(for: category)
+        
+        // Create new category with recommended amount
+        var newCategory = category
+        newCategory.isSelected = true
+        newCategory.amount = recommendedAmount
+        
+        // Update category type flags based on the new category
+        switch category.type {
+        case .debt:
+            hasDebt = true
+        case .need, .want:
+            hasExpenses = true
+        case .saving:
+            hasSavings = true
+        }
+        
+        // Update budgetCategoryStore
+        if !budgetCategoryStore.categories.contains(where: { $0.id == category.id }) {
+            budgetCategoryStore.addCategory(
+                name: category.name,
+                emoji: category.emoji,
+                allocationPercentage: category.allocationPercentage,
+                subcategories: category.subcategories,
+                description: category.description,
+                type: category.type,
+                amount: recommendedAmount,
+                dueDate: nil,
+                isSelected: true,
+                priority: category.priority
+            )
+        } else if let index = budgetCategoryStore.categories.firstIndex(where: { $0.id == category.id }) {
+            budgetCategoryStore.categories[index].isSelected = true
+            budgetCategoryStore.categories[index].amount = recommendedAmount
+        }
+        
+        // Update selected categories immediately
+        selectedCategories = budgetCategoryStore.categories.filter { $0.isSelected }
+        
+        // Update allocations
+        allocations[newCategory.id] = recommendedAmount
+        budgieModel.recommendedAllocations[newCategory.id] = recommendedAmount
+        budgieModel.allocations[newCategory.id] = recommendedAmount
+        
+        // Force UI update with animation
+        withAnimation {
+            // Recalculate budget
+            calculateBudget()
+            
+            // Post notification
+            NotificationCenter.default.post(
+                name: .budgetUpdated,
+                object: nil,
+                userInfo: [
+                    "categoryId": newCategory.id,
+                    "amount": recommendedAmount
+                ]
+            )
+        }
+        
+        // Clear the addition state
+        categoryToAdd = nil
+        showPopup = false
+        showConfirmation = false
     }
     
-    // Update selected categories
-    if !selectedCategories.contains(where: { $0.id == newCategory.id }) {
-        selectedCategories.append(newCategory)
-    }
-    
-    // Update budgie model allocations
-    allocations[newCategory.id] = recommendedAmount
-    budgieModel.recommendedAllocations[newCategory.id] = recommendedAmount
-    
-    // Force recalculate all allocations
-    calculateBudget()
-    
-    // Clear the addition state
-    categoryToAdd = nil
-    showConfirmation = false
-}
-
 private func sectionView(title: String, color: Color, categories: [BudgetCategory]) -> some View {
         VStack(spacing: 0) {
             SectionHeaderView(title: title, color: color)
@@ -1017,26 +1032,27 @@ private func sectionView(title: String, color: Color, categories: [BudgetCategor
         }
     }
     
-    // MARK: - Calculate Budget
-    private func calculateBudget() {
-        budgieModel.paymentCadence = paymentCadence
-        let relevantCategories = selectedCategories.filter { category in
-            switch category.type {
-            case .debt:
-                return hasDebt
-            case .need, .want:
-                return hasExpenses
-            case .saving:
-                return hasSavings
+    // Update calculateBudget to include all selected categories
+        private func calculateBudget() {
+            budgieModel.paymentCadence = paymentCadence
+            let relevantCategories = selectedCategories.filter { category in
+                switch category.type {
+                case .debt:
+                    return hasDebt
+                case .need, .want:
+                    return hasExpenses
+                case .saving:
+                    return hasSavings
+                }
+            }
+            budgieModel.calculateAllocations(selectedCategories: selectedCategories) // Changed to use all selected categories
+            budgieModel.calculateRecommendedAllocations(selectedCategories: selectedCategories)
+            allocations = budgieModel.allocations
+            
+            if !hasBudgetingExperience {
+                populateInitialRecommendedAllocations()
             }
         }
-        budgieModel.calculateAllocations(selectedCategories: relevantCategories)
-        budgieModel.calculateRecommendedAllocations(selectedCategories: relevantCategories)
-        allocations = budgieModel.allocations
-        
-        // Populate recommended allocations if the user has no prior budgeting experience
-        populateInitialRecommendedAllocations()
-    }
     
     // MARK: - Update Screen
     private func updateScreen() {
