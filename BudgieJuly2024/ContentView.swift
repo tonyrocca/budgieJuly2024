@@ -534,7 +534,7 @@ struct ContentView: View {
     // New surplus section
     private var surplusRecommendationsSection: some View {
         VStack(spacing: 12) {
-            // Header
+            // Header with adjusted amount
             HStack(spacing: 8) {
                 Image(systemName: "plus.circle.fill")
                     .foregroundColor(.green)
@@ -542,10 +542,15 @@ struct ContentView: View {
                     .font(.subheadline)
                     .foregroundColor(.green)
                 Spacer()
-                Text(currencyFormatter.string(from: NSNumber(value: budgetDeficitOrSurplus)) ?? "$0")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.green)
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(formatAmount(getAdjustedAmount(budgetDeficitOrSurplus)))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.green)
+                    Text(viewPeriod.suffix)
+                        .font(.caption2)
+                        .foregroundColor(.green.opacity(0.8))
+                }
             }
             .padding()
             .background(Color(UIColor.systemBackground))
@@ -565,7 +570,7 @@ struct ContentView: View {
             .cornerRadius(10)
         }
     }
-
+    
     private func recommendedCategoryRow(_ category: BudgetCategory) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
