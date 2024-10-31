@@ -26,6 +26,21 @@ struct SectionHeaderView: View {
     }
 }
 
+// Add this enum to track the view period
+enum ViewPeriod: String, CaseIterable {
+    case perPaycheck = "Per Paycheck"
+    case monthly = "Monthly"
+    case yearly = "Yearly"
+    
+    var suffix: String {
+        switch self {
+        case .perPaycheck: return "/paycheck"
+        case .monthly: return "/mo"
+        case .yearly: return "/yr"
+        }
+    }
+}
+
 // MARK: - ContentView
 struct ContentView: View {
     @StateObject private var budgetCategoryStore = BudgetCategoryStore.shared
@@ -53,6 +68,10 @@ struct ContentView: View {
     @State private var hasBudgetingExperience: Bool
     @State private var categoryToAdd: BudgetCategory?
     @State private var showConfirmation = false
+    @State private var viewPeriod: ViewPeriod = .perPaycheck
+    @State private var isEditingPaycheck = false
+    @State private var editedPaycheckAmount: String = ""
+    @State private var isDropdownOpen = false
     @Namespace private var animation
     
     @State private var hasDebt: Bool
@@ -328,43 +347,94 @@ struct ContentView: View {
             }
         }
     
-    // MARK: - Paycheck Total View
+    // Updated paycheckTotalView
     private func paycheckTotalView() -> some View {
         VStack(spacing: 0) {
+            // Time Period Pills - More subtle design
+            HStack(spacing: 2) {
+                ForEach(ViewPeriod.allCases, id: \.self) { period in
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewPeriod = period
+                        }
+                    }) {
+                        Text(period.rawValue)
+                            .font(.subheadline)
+                            .fontWeight(viewPeriod == period ? .semibold : .regular)
+                            .foregroundColor(viewPeriod == period ? .primary : Color.gray.opacity(0.5))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(viewPeriod == period ?
+                                        Color(UIColor.systemGray6) :
+                                        Color.clear)
+                                    .animation(.easeInOut(duration: 0.2), value: viewPeriod)
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 12)
+            
+            Divider()
+            
+            // Amount Display
             HStack {
-                Text("Paycheck Total")
+                Text("Total")
                     .font(.headline)
                     .foregroundColor(.primary)
+                Text(viewPeriod.suffix)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
                 Spacer()
-                Text(currencyFormatter.string(from: NSNumber(value: totalPerPaycheckBudget)) ?? "$0")
+                Text(formattedAmount)
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
             }
             .padding(.vertical, 16)
             .padding(.horizontal, 20)
-            .background(Color(UIColor.systemBackground))
             
             Divider()
             
+            // Deficit/Surplus Row
             HStack {
-                Text(budgetDeficitOrSurplus >= 0 ? "Per Paycheck Surplus" : "Per Paycheck Deficit")
+                Text(budgetDeficitOrSurplus >= 0 ? "Surplus" : "Deficit")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                Text(viewPeriod.suffix)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 Spacer()
-                Text(currencyFormatter.string(from: NSNumber(value: abs(budgetDeficitOrSurplus))) ?? "$0")
+                Text(formatAmount(getAdjustedAmount(abs(budgetDeficitOrSurplus))))
                     .font(.headline)
                     .foregroundColor(budgetDeficitOrSurplus >= 0 ? .green : .red)
             }
             .padding(.vertical, 16)
             .padding(.horizontal, 20)
-            .background(Color(UIColor.systemBackground))
         }
         .background(Color(UIColor.systemBackground))
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
         .padding(.horizontal, 16)
         .padding(.top, 16)
+    }
+
+    enum ViewPeriod: String, CaseIterable {
+        case perPaycheck = "Per Paycheck"
+        case monthly = "Monthly"
+        case yearly = "Yearly"
+        
+        var suffix: String {
+            switch self {
+            case .perPaycheck: return "/paycheck"
+            case .monthly: return "/mo"
+            case .yearly: return "/yr"
+            }
+        }
     }
     
     // MARK: - Slide Out Menu
@@ -664,21 +734,26 @@ private func sectionView(title: String, color: Color, categories: [BudgetCategor
         return VStack(spacing: 0) {
             // Category Header
             HStack {
-                Text("\(category.emoji) \(category.name)")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                if shouldHighlight {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 12))
-                        .foregroundColor(.red.opacity(0.8))
+                    Text("\(category.emoji) \(category.name)")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    if shouldHighlight {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 12))
+                            .foregroundColor(.red.opacity(0.8))
+                    }
+                    Spacer()
+                    VStack(alignment: .trailing) {
+                        Text(formatAmount(getAdjustedAmount(allocations[category.id] ?? 0)))
+                            .font(.headline)
+                            .foregroundColor(shouldHighlight ? .red.opacity(0.8) : Color.primary)
+                        Text(viewPeriod.suffix)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
+                        .foregroundColor(.black)
                 }
-                Spacer()
-                Text(currencyFormatter.string(from: NSNumber(value: allocations[category.id] ?? 0)) ?? "$0")
-                    .font(.headline)
-                    .foregroundColor(shouldHighlight ? .red.opacity(0.8) : Color.primary)
-                Image(systemName: expandedCategoryIndex == category.id ? "chevron.up" : "chevron.down")
-                    .foregroundColor(.black)
-            }
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
             .background(Color.white)
@@ -1088,5 +1163,34 @@ private func sectionView(title: String, color: Color, categories: [BudgetCategor
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
         return formatter
+    }
+    
+    // Helper to format amounts based on view period
+    private var formattedAmount: String {
+        let amount = switch viewPeriod {
+        case .perPaycheck:
+            paycheckAmount ?? 0
+        case .monthly:
+            (paycheckAmount ?? 0) * paymentCadence.numberOfPaychecksPerMonth
+        case .yearly:
+            (paycheckAmount ?? 0) * paymentCadence.numberOfPaychecksPerMonth * 12
+        }
+        return formatAmount(amount)
+    }
+
+    private func formatAmount(_ amount: Double) -> String {
+        currencyFormatter.string(from: NSNumber(value: amount)) ?? "$0"
+    }
+
+    // Helper to adjust amounts based on view period
+    private func getAdjustedAmount(_ amount: Double) -> Double {
+        switch viewPeriod {
+        case .perPaycheck:
+            return amount
+        case .monthly:
+            return amount * paymentCadence.numberOfPaychecksPerMonth
+        case .yearly:
+            return amount * paymentCadence.numberOfPaychecksPerMonth * 12
+        }
     }
 }
